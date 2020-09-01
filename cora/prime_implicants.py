@@ -232,11 +232,9 @@ class Chart:
     
   
   def preprocess_data(self):
-      
     data_tmp=self.data.copy()
     if self.input_labels is None:
           self.input_labels=[x for x in list(self.data.columns) if (x not in self.output_labels) and (x!=self.case_col)]
-    print("First input columns{}".format(self.input_labels))  
     
     
     if(self.case_col is None or self.case_col == '-None-'):
@@ -244,7 +242,8 @@ class Chart:
         self.case_col = 'case_col'
     if (self.inverse_output):
         data_tmp[self.output_labels]=abs(data_tmp[self.output_lables]-1)
-    #input_columns = [x for x in df_new.columns if x not in OutCols and x != CaseColl]  
+    #input_columns = [x for x in df_new.columns if x not in OutCols and x != CaseColl] 
+    
     params = {'inc_score_{}'.format(c) : (c,inclusion_score) for c in self.output_labels}
     data_grouped=data_tmp.groupby(self.input_labels).agg(n_cut=(self.case_col, 'count'), 
                                                  case_ids=(self.case_col, concatenate_strings),
@@ -271,12 +270,17 @@ class Chart:
         res.columns = map(lambda x: rename_dic[x] if x in rename_dic.keys() else x, res.columns)
         #print('renamed to : {}'.format(res.columns) )
         #print(rename_dic)
-    print("preprocessing_result{}".format(res))
-    print("Input_columns:{}".format(self.input_labels))
-    print("Possible_table:{}".format(res[self.input_labels+self.output_labels]))
+    #print("preprocessing_result{}".format(res))
+    #print("Input_columns:{}".format(self.input_labels))
+    #print("Possible_table:{}".format(res[self.input_labels+self.output_labels]))
+    self.preprocessed_data_raw=res
     self.preprocessed_data=res[self.input_labels+self.output_labels]   
     self.preprocessing=True
 
+  def get_preprocessed_data(self):
+      if not self.preprocessing:
+          self.preprocess_data()
+      return self.preprocessed_data
     
  
   def prepareRows(self):
@@ -368,7 +372,7 @@ class Chart:
     #print("printin_cares{}".format(self.cares))
     #print("labels{}".format(self.labels))
     #print("levels{}".format(self.levels))
-    print("Self_table{}:".format(self.table))
+    #print("Self_table{}:".format(self.table))
     table = self.table.astype(int).tolist()
     column_number = len(table[0])
     preprocessed_table=preprocess_input(table)
@@ -403,18 +407,19 @@ class Chart:
     
     if not self.get_prime_implicants():
         self.get_prime_implicants()
-    #cares=set().union(*[set(x.coverage) for x in self.prime_implicants])
-    res= np.zeros((len(self.cares), len(self.prime_implicants)), dtype=bool)
-    res_idx_to_care = {v:k for k,v in enumerate(self.cares)}
+    cares=set().union(*[set(x.coverage) for x in self.prime_implicants])
+   
+    res= np.zeros((len(cares), len(self.prime_implicants)), dtype=bool)
+    res_idx_to_care = {v:k for k,v in enumerate(cares)}
     for row_nr,implicant in enumerate(self.prime_implicants):
       for x in implicant.coverage:
-        if x not in self.cares:
+        if x not in cares:
           continue
         column_nr = res_idx_to_care[x]
         res[column_nr, row_nr] = True
     if self.multi_output:
-      return pd.DataFrame(res.transpose(),columns=self.cares,index=[(x.implicant,x.outputs) for x in self.prime_implicants])    
-    return pd.DataFrame(res.transpose(),columns=self.cares,index=[(x.implicant) for x in self.prime_implicants])
+      return pd.DataFrame(res.transpose(),columns=cares,index=[(x.implicant,x.outputs) for x in self.prime_implicants])    
+    return pd.DataFrame(res.transpose(),columns=cares,index=[(x.implicant) for x in self.prime_implicants])
     
 
   
@@ -427,7 +432,7 @@ class Chart:
    if self.multi_output:
         raise RuntimeError("irredudant sums are not supported in multi output mode. Use get_irredundant_systems")
    result=find_irredundant_sums(([(i, i.coverage) for i in self.prime_implicants]),self.cares,max_depth)
-   print('result_irr_sums{}:'.format(result))
+   #print('result_irr_sums{}:'.format(result))
    irredundant_objects=[]
    for i,system in enumerate(result):
 	   irredundant_objects.append(Irredundant_system(system,i+1))
@@ -436,7 +441,7 @@ class Chart:
   def get_irredundant_systems(self):
    if not self.get_prime_implicants():
         self.get_prime_implicants()
-   print("printim_pis:{}".format(self.prime_implicants)) 
+   #print("printim_pis:{}".format(self.prime_implicants)) 
    if not self.multi_output:
         raise RuntimeError("irredudant systems are not supported in single output mode. Use get_irredundant_sums")     
    res,l=self._single_ir_systems_for_multi_output()
@@ -454,7 +459,7 @@ class Chart:
      for j in range(l):
        single_res.append([self.prime_implicants[i] for i in r if j+1 in self.prime_implicants[i].outputs])
      res.append(Irredundant_systems_multi(single_res,index,self.output_labels))
-     print(single_res)
+     #print(single_res)
    return res
 
 
@@ -508,7 +513,7 @@ class Irredundant_system():
       #self.raw_implicants
     
   def __str__(self):
-     return 'M{}:{}'.format(self.index,'+'.join(str(i) for i in self.system))
+     return 'M{}:{}'.format(self.index,'+'.join(str(i.implicant) for i in self.system))
 
   def __repr__(self):
      return str(self)
