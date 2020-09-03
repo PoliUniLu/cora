@@ -23,7 +23,7 @@ def data_mining(data,out_col,len_of_tupple,case_col=None,cut=1,inc1=1,inc2=None,
 
 
         ir_sums = data_object.get_irredundant_sums()
-        print(data_object.prime_implicants)
+        #print(data_object.prime_implicants)
         if len(ir_sums) > 0:
           score = round(max(x.inclusion_score(data, list(comb), out_col[0])*x.coverage_score(data, list(comb), out_col[0]) for x in ir_sums),3)
           tr = TupleResult(comb,ir_sums, score)
