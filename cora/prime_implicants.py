@@ -299,7 +299,8 @@ class Chart:
       positiveInputs=positiveRows[columns]
       positiveInputs_rownames=list(positiveInputs.index)
       inputs=self.preprocessed_data.drop(self.output_labels,axis=1)
-    
+      print("toto je inputs: {}".format(inputs))
+      print("input type.{}".format(type(inputs.apply(lambda x: pd.unique(x).tolist(),axis=0, result_type='reduce'))))
       dim=inputs.apply(lambda x: pd.unique(x).tolist(),axis=0, result_type='reduce').array
       dim_corrected=[]
       for ar in dim:
@@ -363,6 +364,10 @@ class Chart:
   
     if not self.prepare_rows_called:
         self.prepareRows()
+        
+    if len(self.table) == 0:
+        self.prime_implicants = tuple()
+        return self.prime_implicants
 
     #if isinstance(self.cares,int):
      #   cares = [self.cares]
@@ -428,6 +433,9 @@ class Chart:
   def get_irredundant_sums(self, max_depth = None):
    if not self.get_prime_implicants():
         self.get_prime_implicants()
+        
+   if len(self.prime_implicants) == 0:
+       return []
         
    if self.multi_output:
         raise RuntimeError("irredudant sums are not supported in multi output mode. Use get_irredundant_systems")
@@ -499,7 +507,10 @@ class Irredundant_systems_multi():
       res+='---- Solution {} ----\n'.format(self.index)
       
       for j, system in enumerate(self.system_multiple):
-         res+=('{}: {}\n'.format(self.output_labels[j], '+'.join(impl.implicant for impl in system)))
+         if any(str(impl.implicant) == '1' for impl in system):
+             res+=('{}: 1\n'.format(self.output_labels[j]))
+         else:
+             res+=('{}: {}\n'.format(self.output_labels[j], '+'.join(impl.implicant for impl in system)))
       return res
   def __repr__(self):
       return str(self)
@@ -551,10 +562,8 @@ def set_to_str(s,levels,label, is_multi_level):
 def minterm_to_str(minterm, levels, labels, tag,multi_output):
     is_multi_level = any(x > 2 for x in levels)
     tmp = [set_to_str(x, y, z, is_multi_level) for x,y,z in zip(minterm, levels, labels)]
-    if multi_output:
-      #print('Som multik som som som.')
-      return '{}'.format('*'.join(x for x in tmp if x != ''))
-    return '{}'.format('*'.join(x for x in tmp if x != ''))
+    res = '{}'.format('*'.join(x for x in tmp if x != ''))
+    return res if res != '' else '1'
 
 
 
