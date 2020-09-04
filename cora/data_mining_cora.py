@@ -21,14 +21,15 @@ def data_mining(data,out_col,len_of_tupple,case_col=None,cut=1,inc1=1,inc2=None,
         cols = list(comb)
         data_object=cora.Chart(data,out_col,cols,case_col=case_col,n_cut=cut,inc_score1=inc1,inc_score2=inc2,U=Uvalue)
 
-
+        #print("combination:{}, len_of Comm:{}, x form comb:{}".format(comb,len(comb), [x for x in comb]))
         ir_sums = data_object.get_irredundant_sums()
-        #print(data_object.prime_implicants)
+        #print("Implicants:{}".format(data_object.prime_implicants))
         if len(ir_sums) > 0:
           score = round(max(x.inclusion_score(data, list(comb), out_col[0])*x.coverage_score(data, list(comb), out_col[0]) for x in ir_sums),3)
-          tr = TupleResult(comb,ir_sums, score)
+          tr = TupleResult([x for x in comb],ir_sums, score)
           res.append(tr)
         else:
+        
           res.append(TupleResult(comb, ir_sums, 0))
       
     return res

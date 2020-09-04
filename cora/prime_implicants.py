@@ -40,7 +40,6 @@ def create_care_translation_dict(cares, labels):
 
 
 def check_element_coverage(row, element):
-    #print('row: {} element: {}'.format(row, element))
     for r,e in zip(row, element[0]):
         if r not in e:
             return False
@@ -101,7 +100,6 @@ def reduction_step(groups,n,multi_output):
             for element2 in groups[i+1]:
                 if element1.can_be_reduced(element2):
                     reduced_element = element1.reduce(element2)
-                    #print('Reducing\n=> {} with {}\n==> to {}'.format(element1, element2, reduced_element))
                     new_groups[i].add(reduced_element)
                     was_any_reduction=True
      
@@ -110,7 +108,6 @@ def reduction_step(groups,n,multi_output):
             for element2 in groups[i]:
                 if element1.can_be_reduced(element2):
                     reduced_element = element1.reduce(element2)
-                    #print('Reducing\n=> {} with {}\n==> to {}'.format(element1, element2, reduced_element))
                     new_groups[i].add(reduced_element)
                     was_any_reduction=True                
     
@@ -118,19 +115,17 @@ def reduction_step(groups,n,multi_output):
     for i in range(0,n+1):
         for element1 in groups[i]:
             if(element1.is_reduced is False and (len(element1.coverage) > 0)):
-                #print('Adding {} to final prime implicants'.format(element1.coverage))
                 if multi_output:
                   final_implicants.add((tuple(element1.minterm),frozenset(element1.coverage), frozenset(element1.tag)))
                 else:
                   final_implicants.add((tuple(element1.minterm),frozenset(element1.coverage))) 
 
 
-    #print('final_implicants={}'.format(final_implicants))                 
             
     return({'groups':new_groups,'implicants':final_implicants,'reduction':was_any_reduction})
 
 #--------------------extra_elimination------------------------#
-# for complex PI, which were just partially reduce to create several new PI with totally reduced variables
+# for complex PI, which were just partially reduced to create several new PIs with totally reduced variables
 
 def extend_with_first(first, arr,multi_output):
   if multi_output:
@@ -159,9 +154,7 @@ def fix_coverage_after_decomposition(table, elements,multi_output):
     new_elements = []
     for e in elements:
         new_coverage = frozenset([x for x in e[1] if check_element_coverage(table[x], e)])
-        #print('e[0]', e[0])
-        #print('e[1]:', e[1])
-       # print('nc:', new_coverage)
+
         if len(new_coverage) > 0:
           if multi_output:
             new_elements.append(tuple([e[0],new_coverage,e[2]]))
@@ -178,10 +171,8 @@ def eliminate_minterms(table,elements, levels,multi_output):
     decomposed = []
     for x in elements:
         decomposed.extend(decomposition(x, levels,multi_output))
-    #print(decomposed)
-    #print(table)
+
     decomposed = fix_coverage_after_decomposition(table, decomposed,multi_output)
-    #print(decomposed)
     n = len(decomposed)
     was_eliminated=[False]*n
     if multi_output:
@@ -195,8 +186,7 @@ def eliminate_minterms(table,elements, levels,multi_output):
     
     for i in range(n):
         for j in range(i+1,n):
-            #print(decomposed[i])
-            #print(decomposed[j])
+
             if is_minterm_subset(decomposed[i],decomposed[j]):
                 was_eliminated[i] = True
             elif is_minterm_subset(decomposed[j],decomposed[i]):
@@ -242,16 +232,14 @@ class Chart:
         self.case_col = 'case_col'
     if (self.inverse_output):
         data_tmp[self.output_labels]=abs(data_tmp[self.output_lables]-1)
-    #input_columns = [x for x in df_new.columns if x not in OutCols and x != CaseColl] 
     
-    params = {'inc_score_{}'.format(c) : (c,inclusion_score) for c in self.output_labels}
+    params = {'inc_{}'.format(c) : (c,inclusion_score) for c in self.output_labels}
     data_grouped=data_tmp.groupby(self.input_labels).agg(n_cut=(self.case_col, 'count'), 
                                                  case_ids=(self.case_col, concatenate_strings),
                                                  **params)
     data_grouped=data_grouped[data_grouped['n_cut']>=self.n_cut]
-    inc_columns=['inc_score_{}'.format(i) for i in self.output_labels]
+    inc_columns=['inc_{}'.format(i) for i in self.output_labels]
     if(self.inc_score2 is None):
-        #print('cicik')
         data_grouped[self.output_labels]=(data_grouped[inc_columns]>=self.inc_score1).astype(int)
     else:
         if(self.U is None):
@@ -268,16 +256,15 @@ class Chart:
     if self.rename_columns:
         rename_dic = {k:v for k,v in zip(self.input_labels, COLUMN_LABELS[:len(self.input_labels)])}
         res.columns = map(lambda x: rename_dic[x] if x in rename_dic.keys() else x, res.columns)
-        #print('renamed to : {}'.format(res.columns) )
-        #print(rename_dic)
-    #print("preprocessing_result{}".format(res))
-    #print("Input_columns:{}".format(self.input_labels))
-    #print("Possible_table:{}".format(res[self.input_labels+self.output_labels]))
+        l=len(self.input_labels)
+        self.input_labels=COLUMN_LABELS[:l]
+
     self.preprocessed_data_raw=res
     self.preprocessed_data=res[self.input_labels+self.output_labels]   
     self.preprocessing=True
 
   def get_preprocessed_data(self):
+              
       if not self.preprocessing:
           self.preprocess_data()
       return self.preprocessed_data
@@ -294,13 +281,11 @@ class Chart:
       multi_mask=self.preprocessed_data[self.output_labels].isin(non_zero_output)
       mask=multi_mask.aggregate(any, axis=1)
       positiveRows=self.preprocessed_data[mask]
-      #print("positiverows{}".format(positiveRows))
       columns=[col for col in positiveRows.columns if col not in self.output_labels]
       positiveInputs=positiveRows[columns]
       positiveInputs_rownames=list(positiveInputs.index)
       inputs=self.preprocessed_data.drop(self.output_labels,axis=1)
-      print("toto je inputs: {}".format(inputs))
-      print("input type.{}".format(type(inputs.apply(lambda x: pd.unique(x).tolist(),axis=0, result_type='reduce'))))
+
       dim=inputs.apply(lambda x: pd.unique(x).tolist(),axis=0, result_type='reduce').array
       dim_corrected=[]
       for ar in dim:
@@ -325,8 +310,7 @@ class Chart:
   
         allInputs_table=allInputs.drop(indexes)
         allInputs_table.columns = columns
-        #TOTO VYHODIT!
-        #positiveInputs=positiveInputs.drop_duplicates()
+
 
         for x in positiveInputs.values:
           ind=find_index2(allInputs_table,x)
@@ -369,22 +353,12 @@ class Chart:
         self.prime_implicants = tuple()
         return self.prime_implicants
 
-    #if isinstance(self.cares,int):
-     #   cares = [self.cares]
-   
-    #print("printim_table:{}".format(self.table))
-    #print("printim_outputy{}".format(self.outputcolumns))
-    #print("printin_cares{}".format(self.cares))
-    #print("labels{}".format(self.labels))
-    #print("levels{}".format(self.levels))
-    #print("Self_table{}:".format(self.table))
+
     table = self.table.astype(int).tolist()
     column_number = len(table[0])
     preprocessed_table=preprocess_input(table)
-    #print("preprocessed_table:{}".format(preprocessed_table))
     prime_implicants=[]
     groups=create_groups(preprocessed_table,column_number, self.cares,self.outputcolumns,self.multi_output)
-    #print(groups)
     reduction_nr = 0
     while(True):
         reduction_res=reduction_step(groups,column_number,self.multi_output)
@@ -397,7 +371,6 @@ class Chart:
         reduction_nr += 1
             
     prime_implicants = eliminate_minterms(table, prime_implicants, self.levels,self.multi_output)
-    #print("PS_original{}".format(prime_implicants))
     coverage_dict = create_care_translation_dict(self.cares, self.positive_cares)
 
     if self.multi_output:
@@ -423,7 +396,7 @@ class Chart:
         column_nr = res_idx_to_care[x]
         res[column_nr, row_nr] = True
     if self.multi_output:
-      return pd.DataFrame(res.transpose(),columns=cares,index=[(x.implicant,x.outputs) for x in self.prime_implicants])    
+      return pd.DataFrame(res.transpose(),columns=cares,index=['{}, {}'.format(x.implicant,x.outputs) for x in self.prime_implicants])    
     return pd.DataFrame(res.transpose(),columns=cares,index=[(x.implicant) for x in self.prime_implicants])
     
 
@@ -440,7 +413,6 @@ class Chart:
    if self.multi_output:
         raise RuntimeError("irredudant sums are not supported in multi output mode. Use get_irredundant_systems")
    result=find_irredundant_sums(([(i, i.coverage) for i in self.prime_implicants]),self.cares,max_depth)
-   #print('result_irr_sums{}:'.format(result))
    irredundant_objects=[]
    for i,system in enumerate(result):
 	   irredundant_objects.append(Irredundant_system(system,i+1))
@@ -449,16 +421,12 @@ class Chart:
   def get_irredundant_systems(self):
    if not self.get_prime_implicants():
         self.get_prime_implicants()
-   #print("printim_pis:{}".format(self.prime_implicants)) 
    if not self.multi_output:
         raise RuntimeError("irredudant systems are not supported in single output mode. Use get_irredundant_sums")     
    res,l=self._single_ir_systems_for_multi_output()
-  # Prepare input for multiplication
-  #print('single_out->{}'.format(res))
+
    mult_input = [set(frozenset(imp for imp in irs) for irs in f) for f in res]
-  #print('mult_input->{}'.format(mult_input))
    reduction_result = reduce(boolean_multiply, mult_input)
-  #print('reduction_res->{}'.format(reduction_result))
    res=[]
    index=0
    for r in reduction_result:
@@ -467,7 +435,6 @@ class Chart:
      for j in range(l):
        single_res.append([self.prime_implicants[i] for i in r if j+1 in self.prime_implicants[i].outputs])
      res.append(Irredundant_systems_multi(single_res,index,self.output_labels))
-     #print(single_res)
    return res
 
 
@@ -505,12 +472,13 @@ class Irredundant_systems_multi():
   def __str__(self):
       res=""
       res+='---- Solution {} ----\n'.format(self.index)
-      
       for j, system in enumerate(self.system_multiple):
          if any(str(impl.implicant) == '1' for impl in system):
-             res+=('{}: 1\n'.format(self.output_labels[j]))
+             res+=('1 <=> {}\n'.format(self.output_labels[j]))
+         elif system==[]:
+             res+=('0 <=> {}\n'.format(self.output_labels[j]))
          else:
-             res+=('{}: {}\n'.format(self.output_labels[j], '+'.join(impl.implicant for impl in system)))
+             res+=('{1} <=> {0}\n'.format(self.output_labels[j], '+'.join(impl.implicant for impl in system)))
       return res
   def __repr__(self):
       return str(self)
@@ -568,7 +536,7 @@ def minterm_to_str(minterm, levels, labels, tag,multi_output):
 
 
 class Multiple_output_item:
-    
+     
     def __init__(self, minterm, coverage, tag):
         self.minterm = tuple(x for x in minterm)
         self.coverage = frozenset(x for x in coverage)
