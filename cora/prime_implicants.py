@@ -493,6 +493,19 @@ class Irredundant_system():
     
   def __str__(self):
      return 'M{}:{}'.format(self.index,'+'.join(str(i.implicant) for i in self.system))
+ 
+  def impl_coverag(self):
+      res = {}
+      for i,impl_i in enumerate(self.system):
+          cov_out=set()
+          for j,impl_j in enumerate(self.system):
+              if j!=i:
+                  cov_out.update(impl_j.coverage)
+          cov_in=impl_i.coverage-cov_out
+
+          res[str(impl_i.implicant)] = len(cov_in) / len(cov_in.union(cov_out))
+      return res
+                  
 
   def __repr__(self):
      return str(self)
