@@ -291,7 +291,8 @@ class Chart:
       positiveInputs_rownames=list(positiveInputs.index)
       inputs=self.preprocessed_data.drop(self.output_labels,axis=1)
       if len(self.input_labels)==1:
-          dim_corrected=[[x for x in range(len(set(inputs)))]]
+          nr_values = len(set(inputs.iloc[:,0].values))
+          dim_corrected=[[x for x in range(max(2,nr_values))]]
       else:
           dim=inputs.apply(lambda x: pd.unique(x).tolist(),axis=0, result_type='reduce').array
           
@@ -501,7 +502,7 @@ class Irredundant_system():
       #self.raw_implicants
     
   def __str__(self):
-     return 'M{}:{}'.format(self.index,' + '.join(str(i.implicant) for i in self.system))
+     return 'M{}: {}'.format(self.index,' + '.join(str(i.implicant) for i in self.system))
  
   def impl_coverag(self):
       res = {}
