@@ -291,7 +291,7 @@ class Chart:
       positiveInputs_rownames=list(positiveInputs.index)
       inputs=self.preprocessed_data.drop(self.output_labels,axis=1)
       if len(self.input_labels)==1:
-          dim_corrected=[len(set(inputs))]
+          dim_corrected=[[x for x in range(len(set(inputs)))]]
       else:
           dim=inputs.apply(lambda x: pd.unique(x).tolist(),axis=0, result_type='reduce').array
           
