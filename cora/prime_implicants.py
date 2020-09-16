@@ -219,6 +219,7 @@ class Chart:
     self.prime_implicants = None
     self.prepare_rows_called = False
     self.multi_output=len(self.output_labels)>1
+    self.rename_dictionary=None
     
   
   def preprocess_data(self):
@@ -233,12 +234,12 @@ class Chart:
     if (self.inverse_output):
         data_tmp[self.output_labels]=abs(data_tmp[self.output_lables]-1)
     
-    params = {'inc_{}'.format(c) : (c,inclusion_score) for c in self.output_labels}
-    data_grouped=data_tmp.groupby(self.input_labels).agg(n_cut=(self.case_col, 'count'), 
-                                                 case_ids=(self.case_col, concatenate_strings),
+    params = {'Inc_{}'.format(c) : (c,inclusion_score) for c in self.output_labels}
+    data_grouped=data_tmp.groupby(self.input_labels).agg(n=(self.case_col, 'count'), 
+                                                 Cases=(self.case_col, concatenate_strings),
                                                  **params)
-    data_grouped=data_grouped[data_grouped['n_cut']>=self.n_cut]
-    inc_columns=['inc_{}'.format(i) for i in self.output_labels]
+    data_grouped=data_grouped[data_grouped['n']>=self.n_cut]
+    inc_columns=['Inc_{}'.format(i) for i in self.output_labels]
     if(self.inc_score2 is None):
         data_grouped[self.output_labels]=(data_grouped[inc_columns]>=self.inc_score1).astype(int)
     else:
@@ -247,14 +248,15 @@ class Chart:
         if(self.U != 0 and self.U != 1):   
             raise Exception('U must be 0 or 1.')
         if (self.U == 1):
-            data_grouped[self.output_labels]=(data_grouped[inc_columns]> self.inc_score2).astype(int)
+            data_grouped[self.output_labels]=(data_grouped[inc_columns]> self.inc_score1).astype(int)
         if (self.U == 0):   
-            data_grouped[self.output_labels]=(data_grouped[inc_columns]>= self.inc_score1).astype(int)
+            data_grouped[self.output_labels]=(data_grouped[inc_columns]>= self.inc_score2).astype(int)
             
         
     res = data_grouped.reset_index()
     if self.rename_columns:
         rename_dic = {k:v for k,v in zip(self.input_labels, COLUMN_LABELS[:len(self.input_labels)])}
+        self.rename_dictionary=rename_dic
         res.columns = map(lambda x: rename_dic[x] if x in rename_dic.keys() else x, res.columns)
         l=len(self.input_labels)
         self.input_labels=COLUMN_LABELS[:l]
@@ -262,7 +264,10 @@ class Chart:
     self.preprocessed_data_raw=res
     self.preprocessed_data=res[self.input_labels+self.output_labels]   
     self.preprocessing=True
-
+   
+  def get_rename_dictionary(self):
+      return self.rename_dictionary
+      
   def get_preprocessed_data(self):
               
       if not self.preprocessing:
@@ -285,8 +290,10 @@ class Chart:
       positiveInputs=positiveRows[columns]
       positiveInputs_rownames=list(positiveInputs.index)
       inputs=self.preprocessed_data.drop(self.output_labels,axis=1)
-
-      dim=inputs.apply(lambda x: pd.unique(x).tolist(),axis=0, result_type='reduce').array
+      if len(inputs)==1:
+          dim=[len(set(inputs))]
+      else:
+          dim=inputs.apply(lambda x: pd.unique(x).tolist(),axis=0, result_type='reduce').array
       dim_corrected=[]
       for ar in dim:
         if len(ar)>1:
@@ -478,7 +485,8 @@ class Irredundant_systems_multi():
          elif system==[]:
              res+=('0 <=> {}\n'.format(self.output_labels[j]))
          else:
-             res+=('{1} <=> {0}\n'.format(self.output_labels[j], '+'.join(impl.implicant for impl in system)))
+             res+=('{1} <=> {0}\n'.format(self.output_labels[j], ' + '.join(impl.implicant for impl in system)))
+      res+='\n'
       return res
   def __repr__(self):
       return str(self)
@@ -492,7 +500,7 @@ class Irredundant_system():
       #self.raw_implicants
     
   def __str__(self):
-     return 'M{}:{}'.format(self.index,'+'.join(str(i.implicant) for i in self.system))
+     return 'M{}:{}'.format(self.index,' + '.join(str(i.implicant) for i in self.system))
  
   def impl_coverag(self):
       res = {}
