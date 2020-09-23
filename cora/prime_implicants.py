@@ -648,9 +648,12 @@ class Implicant:
                 'Size of input columns ({}) does not match implicant size({})'.format(len(input_columns), 
                                                                                       len(self.raw_implicant)))
         tmp_data = data[input_columns]
-        return tmp_data.apply(
-            lambda row_series: 1.0 if all(x in y for x,y in zip(row_series.values, self.raw_implicant)) else 0.0, axis = 1).sum() / len(tmp_data.index)
+        tmp_positive_data = tmp_data[data[output_column]==1]
         
+
+        return  tmp_positive_data.apply(
+           lambda row_series: 1.0 if all(x in y for x,y in zip(row_series.values, self.raw_implicant)) else 0.0, axis = 1).sum() /tmp_data.apply(
+           lambda row_series: 1.0 if all(x in y for x,y in zip(row_series.values, self.raw_implicant)) else 0.0, axis = 1).sum()
         
 
 class Implicant_multi:
