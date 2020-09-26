@@ -508,8 +508,8 @@ class Irredundant_system():
       tmp_data = data[input_columns]
       data[output_column]==1 
       print('mask -> ', tmp_data)
-      tmp_positive_data = tmp_data.loc(data[output_column]==1)
-      print(tmp_positive_data)
+      tmp_positive_data = tmp_data[data[output_column]==1] 
+      #print(tmp_positive_data)
       impl_cov = []
       for i,impl_i in enumerate(self.system):
           print(impl_i)
