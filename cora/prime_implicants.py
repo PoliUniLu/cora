@@ -515,7 +515,7 @@ class Irredundant_system():
           print(impl_i)
           print(impl_i.raw_implicant)
           tmp = tmp_positive_data.apply(
-           lambda row_series: 1 if all(x in y for x,y in zip(row_series.values, impl_i.raw_implicant)) else None, axis = 1)
+           lambda row_series: row_series.name if all(x in y for x,y in zip(row_series.values, impl_i.raw_implicant)) else None, axis = 1)
           print('tmp={}'.format(tmp))
           s = set(x for x in tmp.values if x != np.nan)
           print('s={}'.format(s))
