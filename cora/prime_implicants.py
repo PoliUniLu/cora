@@ -204,7 +204,7 @@ class Chart:
 
   def __init__(self,data,output_labels,input_labels=None,case_col=None,n_cut=1,inc_score1=1,inc_score2=None,
                U=None,inverse_output=False,rename_columns=False,generateMissing=True):
-    self.data=data
+    self.data=data.copy()
     self.input_labels=input_labels
     self.preprocessing=False
     self.n_cut=n_cut
@@ -504,18 +504,37 @@ class Irredundant_system():
   def __str__(self):
      return 'M{}: {}'.format(self.index,' + '.join(str(i.implicant) for i in self.system))
  
-  def impl_coverag(self):
-      res = {}
+  def impl_coverag(self,data, input_columns, output_column):
+      tmp_data = data[input_columns]
+      data[output_column]==1 
+      print('mask -> ', tmp_data)
+      tmp_positive_data = tmp_data.loc(data[output_column]==1)
+      print(tmp_positive_data)
+      impl_cov = []
       for i,impl_i in enumerate(self.system):
-          cov_out=set()
-          for j,impl_j in enumerate(self.system):
-              if j!=i:
-                  cov_out.update(impl_j.coverage)
-          cov_in=impl_i.coverage-cov_out
-
-          res[str(impl_i.implicant)] = len(cov_in) / len(cov_in.union(cov_out))
-      return res
+          print(impl_i)
+          print(impl_i.raw_implicant)
+          tmp = tmp_positive_data.apply(
+           lambda row_series: 1 if all(x in y for x,y in zip(row_series.values, impl_i.raw_implicant)) else None, axis = 1)
+          print('tmp={}'.format(tmp))
+          s = set(x for x in tmp.values if x is not None)
+          print('s={}'.format(s))
+          impl_cov.append(s)
+          #tmp_positive_data.apply(
+          # lambda row_series: 1.0 if all(x in y for x,y in zip(row_series.values, self.raw_implicant)) else 0.0, axis = 1).sum() /tmp_positive_data.apply(
+          # lambda row_series: 1.0 if all(x in y for x,y in zip(row_series.values, self.raw_implicant)) else 0.0, axis = 1).sum()
+          
+      total_cov = set()
+      for x in impl_cov:
+        total_cov.update(x)
+      return {str(impl_i.implicant): len(ic)/len(total_cov) for impl_i, ic in zip(self.system, impl_cov)}
+  
                   
+   
+        
+
+
+
 
   def __repr__(self):
      return str(self)
