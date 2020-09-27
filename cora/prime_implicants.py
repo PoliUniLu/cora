@@ -523,7 +523,7 @@ class Irredundant_system():
                   cov_count[x]=1
       unique_cov = [{x for x in ic if cov_count[x]==1} for ic in impl_cov]
       
-      return {str(impl_i.implicant): len(ic)/len(cov_count) for impl_i, ic in zip(self.system, unique_cov)}
+      return {str(impl_i.implicant): len(ic)/len(tmp_positive_data.index) for impl_i, ic in zip(self.system, unique_cov)}
   
                   
    
