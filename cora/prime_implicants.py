@@ -509,17 +509,21 @@ class Irredundant_system():
       data[output_column]==1 
       tmp_positive_data = tmp_data[data[output_column]==1] 
       impl_cov = []
+      cov_count = {}
       for i,impl_i in enumerate(self.system):
        
           tmp = tmp_positive_data.apply(
            lambda row_series: row_series.name if all(x in y for x,y in zip(row_series.values, impl_i.raw_implicant)) else None, axis = 1)
           s = set(x for x in tmp.values if not np.isnan(x))
           impl_cov.append(s)
-          
-      total_cov = set()
-      for x in impl_cov:
-        total_cov.update(x)
-      return {str(impl_i.implicant): len(ic)/len(total_cov) for impl_i, ic in zip(self.system, impl_cov)}
+          for x in s:
+              if x in cov_count.keys():
+                  cov_count[x]+=1
+              else:
+                  cov_count[x]=1
+      unique_cov = [{x for x in ic if cov_count[x]==1} for ic in impl_cov]
+      
+      return {str(impl_i.implicant): len(ic)/len(cov_count) for impl_i, ic in zip(self.system, unique_cov)}
   
                   
    
