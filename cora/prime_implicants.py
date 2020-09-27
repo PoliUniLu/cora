@@ -507,22 +507,14 @@ class Irredundant_system():
   def impl_coverag(self,data, input_columns, output_column):
       tmp_data = data[input_columns]
       data[output_column]==1 
-      print('mask -> ', tmp_data)
       tmp_positive_data = tmp_data[data[output_column]==1] 
-      #print(tmp_positive_data)
       impl_cov = []
       for i,impl_i in enumerate(self.system):
-          print(impl_i)
-          print(impl_i.raw_implicant)
+       
           tmp = tmp_positive_data.apply(
            lambda row_series: row_series.name if all(x in y for x,y in zip(row_series.values, impl_i.raw_implicant)) else None, axis = 1)
-          print('tmp={}'.format(tmp))
           s = set(x for x in tmp.values if not np.isnan(x))
-          print('s={}'.format(s))
           impl_cov.append(s)
-          #tmp_positive_data.apply(
-          # lambda row_series: 1.0 if all(x in y for x,y in zip(row_series.values, self.raw_implicant)) else 0.0, axis = 1).sum() /tmp_positive_data.apply(
-          # lambda row_series: 1.0 if all(x in y for x,y in zip(row_series.values, self.raw_implicant)) else 0.0, axis = 1).sum()
           
       total_cov = set()
       for x in impl_cov:
