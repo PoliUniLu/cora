@@ -4,9 +4,9 @@ import itertools
 from .petric import find_irredundant_sums,boolean_multiply
 from functools import reduce
 import string 
+import re
 
-
-
+output_pattern=re.compile("^([a-zA-Z0-9]+)\{([0-9]+(,[0-9]+)*)\}$")
 COLUMN_LABELS = list(string.ascii_uppercase) + ["AA", "BB", "CC", "DD", "EE", "FF"]
 
 def concatenate_strings(arr):
@@ -220,19 +220,44 @@ class Chart:
     self.prepare_rows_called = False
     self.multi_output=len(self.output_labels)>1
     self.rename_dictionary=None
+    self.multivalue_output=False
+    
     
   
   def preprocess_data(self):
+    if all(output_pattern.match(i) is not None for i in self.output_labels):
+        self.multivalue_output=True
+    elif any(output_pattern.match(i) is not None for i in self.output_labels):
+         raise RuntimeError("Unssuported output entered!")
+        
+    if self.multivalue_output:
+        outcols_value_map=dict()
+        for i in self.output_labels:
+            values=set(int(x) for x in output_pattern.match(i).group(2).split(","))
+            outcols_value_map[output_pattern.match(i).group(1)]=values
+        
+        
+        for k in outcols_value_map.keys():
+            self.data[k]=self.data[k].apply(lambda x: 1 if x in outcols_value_map[k] else 0)
+         
+            
+            self.output_labels=[str(k) for k in outcols_value_map.keys()]
+        
+        self.output_labels_final=[str(k)+str(set(outcols_value_map[k])) for k in outcols_value_map.keys()]
+    else:
+         self.output_labels_final=self.output_labels
+    
     data_tmp=self.data.copy()
     if self.input_labels is None:
           self.input_labels=[x for x in list(self.data.columns) if (x not in self.output_labels) and (x!=self.case_col)]
+    
     
     
     if(self.case_col is None or self.case_col == '-None-'):
         data_tmp['case_col']=data_tmp.index.values
         self.case_col = 'case_col'
     if (self.inverse_output):
-        data_tmp[self.output_labels]=abs(data_tmp[self.output_lables]-1)
+        data_tmp[self.output_labels]=abs(data_tmp[self.output_labels]-1)
     
     params = {'Inc_{}'.format(c) : (c,inclusion_score) for c in self.output_labels}
     data_grouped=data_tmp.groupby(self.input_labels).agg(n=(self.case_col, 'count'), 
@@ -443,7 +468,7 @@ class Chart:
      single_res = []
      for j in range(l):
        single_res.append([self.prime_implicants[i] for i in r if j+1 in self.prime_implicants[i].outputs])
-     res.append(Irredundant_systems_multi(single_res,index,self.output_labels))
+     res.append(Irredundant_systems_multi(single_res,index,self.output_labels_final))
    return res
 
 
