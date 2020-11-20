@@ -475,9 +475,7 @@ class Chart:
      for j in range(l):
        single_res.append([self.prime_implicants[i] for i in r if j+1 in self.prime_implicants[i].outputs])
      res.append(Irredundant_systems_multi(single_res,index,self.output_labels_final))
-     print(single_res)
-     print(index)
-     print(self.output_labels_final)
+     
    return res
 
 
@@ -528,8 +526,7 @@ class Irredundant_systems_multi():
          else:
              res+=('{1} <=> {0}\n'.format(self.output_labels[j], ' + '.join(impl.implicant for impl in system)))
       res+='\n'
-      print("printim res:{}".format(res))
-      print("printim prvy parameter:{}".format(self.system_multiple))
+
       return res
   def __repr__(self):
       return str(self)
