@@ -5,6 +5,8 @@ from .petric import find_irredundant_sums,boolean_multiply
 from functools import reduce
 import string 
 import re
+from collections import defaultdict
+
 
 output_pattern=re.compile("^([a-zA-Z0-9]+)\{([0-9]+(,[0-9]+)*)\}$")
 COLUMN_LABELS = list(string.ascii_uppercase) + ["AA", "BB", "CC", "DD", "EE", "FF"]
@@ -408,7 +410,11 @@ class Chart:
     coverage_dict = create_care_translation_dict(self.cares, self.positive_cares)
 
     if self.multi_output:
-         self.prime_implicants=tuple(Implicant_multi(minterm_to_str(x[0], self.levels, self.labels,0,self.multi_output),{coverage_dict[y] for y in x[1]},outputs=list(x for x in x[2])) for x in prime_implicants)
+            
+         self.prime_implicants=tuple(Implicant_multi(minterm_to_str(x[0], self.levels, self.labels,0,self.multi_output),x[0],                
+                                     {coverage_dict[y] for y in x[1]},outputs=list(x for x in x[2]), 
+                                      output_labels=[self.output_labels[i-1] for i in list(x for x in x[2])])
+                                      for x in prime_implicants)
     else:
          self.prime_implicants =  tuple(Implicant(minterm_to_str(x[0], self.levels, self.labels,0,self.multi_output),x[0],{coverage_dict[y] for y in x[1]}) for x in prime_implicants)
       
@@ -469,6 +475,9 @@ class Chart:
      for j in range(l):
        single_res.append([self.prime_implicants[i] for i in r if j+1 in self.prime_implicants[i].outputs])
      res.append(Irredundant_systems_multi(single_res,index,self.output_labels_final))
+     print(single_res)
+     print(index)
+     print(self.output_labels_final)
    return res
 
 
@@ -498,11 +507,16 @@ class Chart:
 
 
 class Irredundant_systems_multi():
+  # Class where self represents just one single system
+  # the whole solution is composed out of these systems
+
+  
   def __init__(self,system_multiple,index,output_labels):
       self.system_multiple=system_multiple
       self.index=index
       self.output_labels=output_labels
-  
+   
+            
   def __str__(self):
       res=""
       res+='---- Solution {} ----\n'.format(self.index)
@@ -514,17 +528,22 @@ class Irredundant_systems_multi():
          else:
              res+=('{1} <=> {0}\n'.format(self.output_labels[j], ' + '.join(impl.implicant for impl in system)))
       res+='\n'
+      print("printim res:{}".format(res))
+      print("printim prvy parameter:{}".format(self.system_multiple))
       return res
   def __repr__(self):
       return str(self)
       
+  def coverage_score(self, data, input_columns, output_column):
+        tmp_data = data[data[output_column]==1][input_columns]
+        return tmp_data.apply(
+            lambda row_series: 1.0 if any(all(x in y for x,y in zip(row_series.values, i.raw_implicant)) for i in self.system) else 0.0, axis = 1).mean()
  
 
 class Irredundant_system():
   def __init__(self,system,index):
 	  self.system=system
 	  self.index=index
-      #self.raw_implicants
     
   def __str__(self):
      return 'M{}: {}'.format(self.index,' + '.join(str(i.implicant) for i in self.system))
@@ -549,11 +568,6 @@ class Irredundant_system():
       unique_cov = [{x for x in ic if cov_count[x]==1} for ic in impl_cov]
       
       return {str(impl_i.implicant): len(ic)/len(tmp_positive_data.index) for impl_i, ic in zip(self.system, unique_cov)}
-  
-                  
-   
-        
-
 
 
 
@@ -698,19 +712,68 @@ class Implicant:
 
 class Implicant_multi:
 
-    def __init__(self,implicant,coverage,outputs,cov_score=None,cov_u=None,incl_score=None):
+    def __init__(self,implicant,raw_implicant,coverage,outputs,output_labels,cov_score=None,cov_u=None,incl_score=None):
       self.implicant=implicant
+      self.raw_implicant=raw_implicant
       self.coverage=coverage
 
       self.outputs=outputs
+      self.output_labels=output_labels
 
     def __str__(self):
-        return('{0}:{1},{2}'.format(self.implicant, self.coverage, self.outputs))
+        return('{0}:{1},{2},{3}'.format(self.implicant, self.coverage, self.outputs,self.output_labels))
 
     def __repr__(self):
         return str(self)
 
+    def coverage_score(self, data, input_columns):
+       
+        if (len(input_columns) != len(self.raw_implicant)):
+            raise RuntimeError(
+                'Size of input columns ({}) does not match implicant size({})'.format(len(input_columns), 
+                                                                                      len(self.raw_implicant)))
+        if len(self.outputs) ==1:
+            out=self.output_labels[0]
+                                                                                        
+            tmp_data = data[data[out]==1][input_columns]
 
+            return tmp_data.apply(
+                lambda row_series: 1.0 if all(x in y for x,y in zip(row_series.values, self.raw_implicant)) else 0.0, axis = 1).mean()
+    
+        else:
+           tmp_data = data[data.apply(lambda row_series: all(row_series[output]==1 for output in self.output_labels), axis=1)][input_columns]
+
+           return tmp_data.apply(
+                lambda row_series: 1.0 if all (x in y for x,y in zip(row_series.values, self.raw_implicant)) else 0.0, axis = 1).mean()
+
+    
+    def inclusion_score(self, data, input_columns):
+        if (len(input_columns) != len(self.raw_implicant)):
+            raise RuntimeError(
+                'Size of input columns ({}) does not match implicant size({})'.format(len(input_columns), 
+                                                                                      len(self.raw_implicant)))
+        tmp_data = data[input_columns]
+        if len(self.outputs) ==1:
+            tmp_positive_data = tmp_data[data[self.output_labels[0]]==1]
+        
+
+            return  tmp_positive_data.apply(
+                    lambda row_series: 1.0 if all(x in y for x,y in zip(row_series.values, self.raw_implicant)) else 0.0, axis = 1).sum() /tmp_data.apply(
+                    lambda row_series: 1.0 if all(x in y for x,y in zip(row_series.values, self.raw_implicant)) else 0.0, axis = 1).sum()
+        else:
+            
+           tmp_positive_data = tmp_data[data.apply(lambda row_series: all(row_series[output]==1 for output in self.output_labels), axis=1)]
+
+           return  tmp_positive_data.apply(
+                    lambda row_series: 1.0 if all(x in y for x,y in zip(row_series.values, self.raw_implicant)) else 0.0, axis = 1).sum() /tmp_data.apply(
+                    lambda row_series: 1.0 if all(x in y for x,y in zip(row_series.values, self.raw_implicant)) else 0.0, axis = 1).sum()
+
+
+                   
+                    
+                    
+                    
+                    
 class Multi_value_item:
     
     def __init__(self, minterm, coverage):
