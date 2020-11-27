@@ -230,7 +230,7 @@ def find_index2(arr, x):
     return np.where((arr == x).all(axis=1))[0]  
 
 
-"""
+"""TTTTT
 Optimization Context contaion all data and information necessery to preform
 the computation.
 
