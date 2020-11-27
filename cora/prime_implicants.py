@@ -15,9 +15,8 @@ from collections import defaultdict
 from .petric import find_irredundant_sums,boolean_multiply
 
 
-OUTPUT_PATTERN=re.compile("^([a-zA-Z0-9]+)\{([0-9]+(,[0-9]+)*)\}$")
 COLUMN_LABELS = list(string.ascii_uppercase) + ["AA", "BB", "CC",
-                                                "DD", "EE", "FF"]
+OUTPUT_PATTERN=re.compile("^([a-zA-Z0-9]+)\{([0-9]+(,[0-9]+)*)\}$")                                                "DD", "EE", "FF"]
 
 def concatenate_strings(arr):
     return ','.join([str(x) for x in arr])
@@ -208,10 +207,10 @@ def eliminate_minterms(table,elements, levels,multi_output):
     if multi_output:
       for i in range(n):
           for j in range(i+1,n):
-              if is_minterm_subset(decomposed[i],decomposed[j]) 
+              if is_minterm_subset(decomposed[i],decomposed[j])  \
                   and (decomposed[i][2]).issubset(decomposed[j][2]):
                       was_eliminated[i] = True
-              elif is_minterm_subset(decomposed[j],decomposed[i])
+              elif is_minterm_subset(decomposed[j],decomposed[i]) \
                    and (decomposed[j][2]).issubset(decomposed[i][2]):
                        was_eliminated[j] = True
       return [x for we,x in zip(was_eliminated,decomposed) if not we]   
@@ -231,8 +230,51 @@ def find_index2(arr, x):
     return np.where((arr == x).all(axis=1))[0]  
 
 
+"""
+Optimization Context contaion all data and information necessery to preform
+the computation.
 
-class Chart:
+Parameters
+
+----------
+
+data : dataframe
+    
+output_labels : array of strings
+    The names of the outcome columns from a data frame. If the columns 
+    contain values which require the mapping to the boolean range, a 
+    set of the values can be added at the end of the name string.
+
+input_lables : array if strings
+    The names of the input columns from a data frame
+
+case_col : string
+    The name of the column from a data frame containg the case ids
+
+n_cut : int
+    The minimum number of cases under which a truth table row is declared as a
+    remainder
+        
+inc_score1 : float
+    
+inc_score2 : float
+
+U : int
+    The U number is either 0 or 1.
+
+rename_columns: boolean 
+    If true, the column names are remaned as single letters.
+    
+generateMissing: boolean
+    If false, the conservative solution is calculated.
+    Rows corresponding to the 'don't care' combinations are not
+    taken into the calculation.
+
+        
+
+"""
+
+class OptimizationContext:
 
   def __init__(self,
                data,
@@ -243,7 +285,6 @@ class Chart:
                inc_score1 = 1,
                inc_score2=None,
                U=None,
-               inverse_output=False,
                rename_columns=False,
                generateMissing=True
                ):
@@ -254,7 +295,6 @@ class Chart:
     self.inc_score1=inc_score1
     self.inc_score2=inc_score2
     self.U=U
-    self.inverse_output=inverse_output
     self.rename_columns=rename_columns
     self.case_col=case_col
     self.output_labels=output_labels
@@ -265,25 +305,29 @@ class Chart:
     self.rename_dictionary=None
     self.multivalue_output=False
     
-    
+ 
+ # Function clean and aggregate data. Remove duplicities and inconsistencies.
   
-  def preprocess_data(self):
+  def _preprocess_data(self):
+    # ouput column preprocess
+    
     if all(OUTPUT_PATTERN.match(i) is not None for i in self.output_labels):
         self.multivalue_output = True
     elif any(OUTPUT_PATTERN.match(i) is not None for i in self.output_labels):
          raise RuntimeError("Unssuported output entered!")
-        
+    
     if self.multivalue_output:
         outcols_value_map = dict()
         for i in self.output_labels:
             values = set(int(x) for x in 
                        OUTPUT_PATTERN.match(i).group(2).split(","))
-            outcols_value_map[output_pattern.match(i).group(1)] = values
+            outcols_value_map[OUTPUT_PATTERN.match(i).group(1)] = values
         
         for k in outcols_value_map.keys():
             self.data[k] = self.data[k].apply(lambda x: 1 if x in
                                               outcols_value_map[k] else 0)        
-            self.output_labels = [str(k) for k in outcols_value_map.keys()]        
+            self.output_labels = [str(k) for k in outcols_value_map.keys()] 
+            
         self.output_labels_final = [str(k)+str(set(outcols_value_map[k])) 
                                     for k in outcols_value_map.keys()]
     else:
@@ -297,9 +341,8 @@ class Chart:
     if(self.case_col is None or self.case_col == '-None-'):
         data_tmp['case_col'] = data_tmp.index.values
         self.case_col = 'case_col'
-    if (self.inverse_output):
-        data_tmp[self.output_labels] = abs(data_tmp[self.output_labels]-1)
     
+    # inclusion_score is a function for the data aggregation
     params = {'Inc_{}'.format(c) : (c,inclusion_score) 
               for c in self.output_labels
               }
@@ -309,6 +352,7 @@ class Chart:
         **params)
     data_grouped = data_grouped[data_grouped['n']>= self.n_cut]
     inc_columns = ['Inc_{}'.format(i) for i in self.output_labels]
+    
     if(self.inc_score2 is None):
         data_grouped[self.output_labels] = (
             data_grouped[inc_columns]>= self.inc_score1
@@ -334,93 +378,92 @@ class Chart:
             zip(self.input_labels,COLUMN_LABELS[:len(self.input_labels)])
             }
         self.rename_dictionary = rename_dic
-        res.columns = map(lambda x: rename_dic[x] if x in rename_dic.keys() else x, res.columns)
+        res.columns = map(lambda x: rename_dic[x] if x in rename_dic.keys()
+                          else x, res.columns)
         l = len(self.input_labels)
         self.input_labels = COLUMN_LABELS[:l]
 
     self.preprocessed_data_raw = res
-    self.preprocessed_data = res[self.input_labels+self.output_labels]   
+    self.preprocessed_data = res[self.input_labels + self.output_labels]   
     self.preprocessing = True
-   
-  def get_rename_dictionary(self):
-      return self.rename_dictionary
-      
-  def get_preprocessed_data(self):
-              
-      if not self.preprocessing:
-          self.preprocess_data()
-      return self.preprocessed_data
+       
     
+ # Function creates a truth table from a data frame
+ # if generate_missing then don't cares are added
  
   def prepareRows(self):
       if not self.preprocessing:
           self.preprocess_data()
       
-      mask1=self.preprocessed_data[self.output_labels]
-      nr_rows=len(self.preprocessed_data.index)
-      n=len(mask1.columns)
-      non_zero_output=[1]*n
-      multi_mask=self.preprocessed_data[self.output_labels].isin(non_zero_output)
-      mask=multi_mask.aggregate(any, axis=1)
-      positiveRows=self.preprocessed_data[mask]
-      columns=[col for col in positiveRows.columns if col not in self.output_labels]
-      positiveInputs=positiveRows[columns]
-      positiveInputs_rownames=list(positiveInputs.index)
-      inputs=self.preprocessed_data.drop(self.output_labels,axis=1)
-      if len(self.input_labels)==1:
+      mask1 = self.preprocessed_data[self.output_labels]
+      nr_rows = len(self.preprocessed_data.index)
+      n = len(mask1.columns)
+      non_zero_output = [1]*n
+      multi_mask = self.preprocessed_data[
+          self.output_labels].isin(non_zero_output)
+      mask = multi_mask.aggregate(any, axis=1)
+      positiveRows  = self.preprocessed_data[mask]
+      columns = [col for col in positiveRows.columns if
+                 col not in self.output_labels]
+      positiveInputs = positiveRows[columns]
+      positiveInputs_rownames = list(positiveInputs.index)
+      inputs = self.preprocessed_data.drop(self.output_labels,axis=1)
+      if len(self.input_labels) == 1:
           nr_values = len(set(inputs.iloc[:,0].values))
-          dim_corrected=[[x for x in range(max(2,nr_values))]]
+          dim_corrected = [[x for x in range(max(2,nr_values))]]
       else:
-          dim=inputs.apply(lambda x: pd.unique(x).tolist(),axis=0, result_type='reduce').array
+          dim = inputs.apply(lambda x: pd.unique(x).tolist(),axis=0,
+                             result_type='reduce').array
           
-          dim_corrected=[]
+          dim_corrected = []
           for ar in dim:
-              if len(ar)>1:
+              if len(ar) > 1:
                   dim_corrected.append(ar)
               else:
                   dim_corrected.append([0,1])
-      levels=[len(x) for x in dim_corrected]
-      cares_indexes=list()
+      levels = [len(x) for x in dim_corrected]
+      cares_indexes = list()
 
       if (self.generate_missing):
-        allInputs=pd.DataFrame(itertools.product(*dim_corrected))
-        zero_output=[0]*n
-        multi_mask_zero=self.preprocessed_data[self.output_labels].isin(zero_output)
-        mask_zero=multi_mask_zero.aggregate(all,axis=1)
-        negativeRows=self.preprocessed_data[mask_zero]
-        negativeInputs= negativeRows[columns]
-        indexes=list()
+        allInputs = pd.DataFrame(itertools.product(*dim_corrected))
+        zero_output = [0]*n
+        multi_mask_zero = self.preprocessed_data[
+            self.output_labels].isin(zero_output)
+        mask_zero = multi_mask_zero.aggregate(all,axis=1)
+        negativeRows = self.preprocessed_data[mask_zero]
+        negativeInputs = negativeRows[columns]
+        indexes = list()
         for x in negativeInputs.values:
-          ind=find_index2(allInputs, x)
+          ind = find_index2(allInputs, x)
           indexes.append(ind[0])
   
         allInputs_table=allInputs.drop(indexes)
         allInputs_table.columns = columns
 
-
         for x in positiveInputs.values:
-          ind=find_index2(allInputs_table,x)
+          ind = find_index2(allInputs_table,x)
           cares_indexes.append(ind[0])
         
         if self.multi_output:
-            outcols_merge = pd.merge(allInputs_table, positiveRows, how='inner',on=columns)
-            outcols=outcols_merge[self.output_labels]
-            self.outputcolumns =outcols.transpose().to_numpy()
+            outcols_merge = pd.merge(allInputs_table, positiveRows, 
+                                     how='inner',on=columns)
+            outcols = outcols_merge[self.output_labels]
+            self.outputcolumns = outcols.transpose().to_numpy()
         else:
-            self.outputcolumns=[1]*nr_rows
+            self.outputcolumns = [1]*nr_rows
 
         self.levels = levels
         self.cares = cares_indexes
         self.table = allInputs_table.to_numpy()
-        #self.outputcolumns =outcols.transpose().to_numpy()
         self.labels = columns
         self.positive_cares = positiveInputs_rownames
       else:
-        cares_indexes=[x for x in range(0,len(positiveInputs.to_numpy()))]
+        cares_indexes = [x for x in range(0,len(positiveInputs.to_numpy()))]
         self.levels = levels
         self.cares = cares_indexes
         self.table = positiveInputs.to_numpy()
-        self.outputcolumns = positiveRows[self.output_labels].transpose().to_numpy()
+        self.outputcolumns = positiveRows[
+                             self.output_labels].transpose().to_numpy()
         self.labels = columns
         self.positive_cares = positiveInputs_rownames
       self.prepare_rows_called = True
@@ -552,6 +595,14 @@ class Chart:
  
     return res,l
  
+
+
+
+
+
+
+
+
 
 
 class Irredundant_systems_multi():
