@@ -1,15 +1,23 @@
+"""
+This module contains the implementation of Boolean minimization algorithms.
+
+"""
+
+
 import numpy as np
 import pandas as pd
 import itertools
-from .petric import find_irredundant_sums,boolean_multiply
 from functools import reduce
 import string 
 import re
 from collections import defaultdict
 
+from .petric import find_irredundant_sums,boolean_multiply
 
-output_pattern=re.compile("^([a-zA-Z0-9]+)\{([0-9]+(,[0-9]+)*)\}$")
-COLUMN_LABELS = list(string.ascii_uppercase) + ["AA", "BB", "CC", "DD", "EE", "FF"]
+
+OUTPUT_PATTERN=re.compile("^([a-zA-Z0-9]+)\{([0-9]+(,[0-9]+)*)\}$")
+COLUMN_LABELS = list(string.ascii_uppercase) + ["AA", "BB", "CC",
+                                                "DD", "EE", "FF"]
 
 def concatenate_strings(arr):
     return ','.join([str(x) for x in arr])
@@ -17,13 +25,11 @@ def concatenate_strings(arr):
 def inclusion_score(arr):
     return sum(arr)/len(arr)
 
-
-
 def count_non_zeros(minterm):
-    n=len(minterm)
-    non_zeros=0
+    n = len(minterm)
+    non_zeros = 0
     for i in range(0,n):
-        if minterm[i]=={0}:
+        if minterm[i] == {0}:
             continue
         else:
             non_zeros=non_zeros+1
@@ -35,11 +41,8 @@ def vector_to_minterm(v):
 def preprocess_input(table):
     return [vector_to_minterm(x) for x in table]
 
-
 def create_care_translation_dict(cares, labels):
   return {k:v for k,v in zip(cares, labels)}
-
-
 
 def check_element_coverage(row, element):
     for r,e in zip(row, element[0]):
@@ -47,63 +50,84 @@ def check_element_coverage(row, element):
             return False
     return True
 
-
 def is_minterm_subset(m1,m2):
     for x,y in zip(m1[0], m2[0]):
         if not x.issubset(y):
             return False
     return True
 
+# Funtion which groups minterms according to the number of nonzero digets
+
+# Paramters: truth table, 
+#            column_number- define the number of possible nonzero digits
+#            cares- indexes which correspond to original minterms
+#            outputcolumns- the whole binary output cols from original data
+#            multi_output- bolean variable
+# Output: an array res of objects from classes Multi_value_item or
+#         Multiple_output_item, an i-th element of an array consist of 
+#         objects whose minterms have exactly i nonzero digits
+
 
 def create_groups(table,column_number, cares, outputcolumns, multi_output):
-    res=[]
-    #column_number define the number of possible nonzero digits
+    res = []
     for i in range(0,column_number+1):
         res.append([])
-    index=0
+    index = 0
     if not multi_output:
       for row in table:
-          non_zeros=count_non_zeros(row)
-          res[non_zeros].append(Multi_value_item(row,set([index]) if index in cares else set()))
+          non_zeros = count_non_zeros(row)
+          res[non_zeros].append(Multi_value_item(row,set([index]) 
+                                if index in cares else set()))
           index=index+1
       return res
     else:
-      nr_of_outputs=len(outputcolumns)
+      nr_of_outputs = len(outputcolumns)
       care_index = 0
-
       for row in table:
-          non_zeros=count_non_zeros(row)
+          non_zeros = count_non_zeros(row)
           if index in cares:
-              tag={i for i in range(1,nr_of_outputs+1) if outputcolumns[i-1][care_index]==1}
-              care_index=care_index+1
+              tag = {i for i in range(1,nr_of_outputs+1) 
+                     if outputcolumns[i-1][care_index]==1}
+              care_index = care_index+1
           else:
-              tag={i for i in range(1,nr_of_outputs+1)}
+              tag = {i for i in range(1,nr_of_outputs+1)}
           if len(tag) == 0:
               index=index+1
               continue
-          res[non_zeros].append(Multiple_output_item(row,set([index]) if index in cares else set(),tag))
-          index=index+1
+          res[non_zeros].append(Multiple_output_item(row,set([index])
+                                if index in cares else set(),tag))
+          index = index+1
       return res
 
 
+# Function preforming 1 step elimination of 2 minterms
 
-
+# Function eliminates minterms firstly in adjacting groups, secondly
+# in between the group. In both cases minterms differ only in one sigle digit.
+# Moreover, the function collects implicants, which can't be further eliminate
+# to an array- final implicants.
+# Parameters: groups- an array returned by fun create_groups
+#             n- number of rows of a truth table
+#             multi_output- bolean variable
+# Output: dictionary, which contains new groups after elimination, implicants,
+#         information whether any reduction was perform in this single
+#         elimination
+  
 def reduction_step(groups,n,multi_output):
-    was_any_reduction=False
+    was_any_reduction = False
     new_groups = []
     for i in range(n+1):
         new_groups.append(set())
-    
 
     for i in range(0,n):
-        if len(groups[i])==0:
+        if len(groups[i]) == 0:
             continue
         for element1 in groups[i]:
             for element2 in groups[i+1]:
                 if element1.can_be_reduced(element2):
                     reduced_element = element1.reduce(element2)
                     new_groups[i].add(reduced_element)
-                    was_any_reduction=True
+                    was_any_reduction = True
      
     for i in range(0, n+1):
         for element1 in groups[i]:
@@ -111,38 +135,42 @@ def reduction_step(groups,n,multi_output):
                 if element1.can_be_reduced(element2):
                     reduced_element = element1.reduce(element2)
                     new_groups[i].add(reduced_element)
-                    was_any_reduction=True                
+                    was_any_reduction = True                
     
-    final_implicants=set([])
+    final_implicants = set([])
     for i in range(0,n+1):
         for element1 in groups[i]:
             if(element1.is_reduced is False and (len(element1.coverage) > 0)):
                 if multi_output:
-                  final_implicants.add((tuple(element1.minterm),frozenset(element1.coverage), frozenset(element1.tag)))
+                  final_implicants.add((
+                      tuple(element1.minterm),
+                      frozenset(element1.coverage),
+                      frozenset(element1.tag)))
                 else:
-                  final_implicants.add((tuple(element1.minterm),frozenset(element1.coverage))) 
-
-
+                  final_implicants.add((tuple(element1.minterm),
+                                        frozenset(element1.coverage))) 
             
-    return({'groups':new_groups,'implicants':final_implicants,'reduction':was_any_reduction})
+    return({'groups':new_groups,
+            'implicants':final_implicants,
+            'reduction':was_any_reduction})
 
-#--------------------extra_elimination------------------------#
-# for complex PI, which were just partially reduced to create several new PIs with totally reduced variables
+# Next set of 3 functions perform an extra elimination step 
+
 
 def extend_with_first(first, arr,multi_output):
   if multi_output:
     return [(tuple([first])+x[0], x[1],x[2]) for x in arr]
   return  [(tuple([first])+x[0], x[1]) for x in arr]
 
-
-
 def decomposition(element, levels,multi_output):
-    if len(element[0])==0:
+    if len(element[0]) == 0:
         return [element]
     if multi_output:
-      tmp = decomposition((element[0][1:], element[1],element[2]), levels[1:],multi_output)
+      tmp = decomposition((element[0][1:], element[1],element[2]),
+                           levels[1:],multi_output)
     else:
-      tmp = decomposition((element[0][1:], element[1]), levels[1:],multi_output)
+      tmp = decomposition((element[0][1:], element[1]),
+                           levels[1:],multi_output)
 
     if len(element[0][0]) == 1 or len(element[0][0])==levels[0]:
         return extend_with_first(element[0][0], tmp,multi_output)
@@ -155,7 +183,8 @@ def decomposition(element, levels,multi_output):
 def fix_coverage_after_decomposition(table, elements,multi_output):
     new_elements = []
     for e in elements:
-        new_coverage = frozenset([x for x in e[1] if check_element_coverage(table[x], e)])
+        new_coverage = frozenset([x for x in e[1] if 
+                                  check_element_coverage(table[x], e)])
 
         if len(new_coverage) > 0:
           if multi_output:
@@ -165,25 +194,26 @@ def fix_coverage_after_decomposition(table, elements,multi_output):
 
     return new_elements
 
-#-------------full eliination---------------
-#usning the reduction step while there is something to minimize 
-#and reducing complex PIs to singular elements
 
 def eliminate_minterms(table,elements, levels,multi_output):
     decomposed = []
     for x in elements:
         decomposed.extend(decomposition(x, levels,multi_output))
 
-    decomposed = fix_coverage_after_decomposition(table, decomposed,multi_output)
+    decomposed = fix_coverage_after_decomposition(table, 
+                                                  decomposed,
+                                                  multi_output)
     n = len(decomposed)
-    was_eliminated=[False]*n
+    was_eliminated = [False]*n
     if multi_output:
       for i in range(n):
           for j in range(i+1,n):
-              if is_minterm_subset(decomposed[i],decomposed[j]) and (decomposed[i][2]).issubset(decomposed[j][2]):
-                  was_eliminated[i] = True
-              elif is_minterm_subset(decomposed[j],decomposed[i]) and (decomposed[j][2]).issubset(decomposed[i][2]):
-                  was_eliminated[j] = True
+              if is_minterm_subset(decomposed[i],decomposed[j]) 
+                  and (decomposed[i][2]).issubset(decomposed[j][2]):
+                      was_eliminated[i] = True
+              elif is_minterm_subset(decomposed[j],decomposed[i])
+                   and (decomposed[j][2]).issubset(decomposed[i][2]):
+                       was_eliminated[j] = True
       return [x for we,x in zip(was_eliminated,decomposed) if not we]   
     
     for i in range(n):
@@ -204,8 +234,19 @@ def find_index2(arr, x):
 
 class Chart:
 
-  def __init__(self,data,output_labels,input_labels=None,case_col=None,n_cut=1,inc_score1=1,inc_score2=None,
-               U=None,inverse_output=False,rename_columns=False,generateMissing=True):
+  def __init__(self,
+               data,
+               output_labels,
+               input_labels=None,
+               case_col=None,
+               n_cut = 1,
+               inc_score1 = 1,
+               inc_score2=None,
+               U=None,
+               inverse_output=False,
+               rename_columns=False,
+               generateMissing=True
+               ):
     self.data=data.copy()
     self.input_labels=input_labels
     self.preprocessing=False
@@ -227,70 +268,79 @@ class Chart:
     
   
   def preprocess_data(self):
-    if all(output_pattern.match(i) is not None for i in self.output_labels):
-        self.multivalue_output=True
-    elif any(output_pattern.match(i) is not None for i in self.output_labels):
+    if all(OUTPUT_PATTERN.match(i) is not None for i in self.output_labels):
+        self.multivalue_output = True
+    elif any(OUTPUT_PATTERN.match(i) is not None for i in self.output_labels):
          raise RuntimeError("Unssuported output entered!")
         
     if self.multivalue_output:
-        outcols_value_map=dict()
+        outcols_value_map = dict()
         for i in self.output_labels:
-            values=set(int(x) for x in output_pattern.match(i).group(2).split(","))
-            outcols_value_map[output_pattern.match(i).group(1)]=values
-        
+            values = set(int(x) for x in 
+                       OUTPUT_PATTERN.match(i).group(2).split(","))
+            outcols_value_map[output_pattern.match(i).group(1)] = values
         
         for k in outcols_value_map.keys():
-            self.data[k]=self.data[k].apply(lambda x: 1 if x in outcols_value_map[k] else 0)
-         
-            
-            self.output_labels=[str(k) for k in outcols_value_map.keys()]
-        
-        self.output_labels_final=[str(k)+str(set(outcols_value_map[k])) for k in outcols_value_map.keys()]
+            self.data[k] = self.data[k].apply(lambda x: 1 if x in
+                                              outcols_value_map[k] else 0)        
+            self.output_labels = [str(k) for k in outcols_value_map.keys()]        
+        self.output_labels_final = [str(k)+str(set(outcols_value_map[k])) 
+                                    for k in outcols_value_map.keys()]
     else:
-         self.output_labels_final=self.output_labels
+         self.output_labels_final = self.output_labels
     
-    data_tmp=self.data.copy()
+    data_tmp = self.data.copy()
     if self.input_labels is None:
-          self.input_labels=[x for x in list(self.data.columns) if (x not in self.output_labels) and (x!=self.case_col)]
-    
-    
-    
+          self.input_labels = [x for x in list(self.data.columns) if 
+                               (x not in self.output_labels) 
+                                and (x!=self.case_col)]       
     if(self.case_col is None or self.case_col == '-None-'):
-        data_tmp['case_col']=data_tmp.index.values
+        data_tmp['case_col'] = data_tmp.index.values
         self.case_col = 'case_col'
     if (self.inverse_output):
-        data_tmp[self.output_labels]=abs(data_tmp[self.output_labels]-1)
+        data_tmp[self.output_labels] = abs(data_tmp[self.output_labels]-1)
     
-    params = {'Inc_{}'.format(c) : (c,inclusion_score) for c in self.output_labels}
-    data_grouped=data_tmp.groupby(self.input_labels).agg(n=(self.case_col, 'count'), 
-                                                 Cases=(self.case_col, concatenate_strings),
-                                                 **params)
-    data_grouped=data_grouped[data_grouped['n']>=self.n_cut]
-    inc_columns=['Inc_{}'.format(i) for i in self.output_labels]
+    params = {'Inc_{}'.format(c) : (c,inclusion_score) 
+              for c in self.output_labels
+              }
+    data_grouped = data_tmp.groupby(self.input_labels).agg(
+        n = (self.case_col, 'count'), 
+        Cases = (self.case_col, concatenate_strings),
+        **params)
+    data_grouped = data_grouped[data_grouped['n']>= self.n_cut]
+    inc_columns = ['Inc_{}'.format(i) for i in self.output_labels]
     if(self.inc_score2 is None):
-        data_grouped[self.output_labels]=(data_grouped[inc_columns]>=self.inc_score1).astype(int)
+        data_grouped[self.output_labels] = (
+            data_grouped[inc_columns]>= self.inc_score1
+        ).astype(int)
     else:
         if(self.U is None):
-            raise Exception('When inc.score2 is specified, U must be specified as well.')
+            raise Exception('When inc.score2 is specified,'
+                            +'U must be specified as well.')
         if(self.U != 0 and self.U != 1):   
             raise Exception('U must be 0 or 1.')
         if (self.U == 1):
-            data_grouped[self.output_labels]=(data_grouped[inc_columns]> self.inc_score1).astype(int)
+            data_grouped[self.output_labels] = (data_grouped[inc_columns]>
+                                                self.inc_score1).astype(int)
         if (self.U == 0):   
-            data_grouped[self.output_labels]=(data_grouped[inc_columns]>= self.inc_score2).astype(int)
+            data_grouped[self.output_labels] = (data_grouped[inc_columns]>=
+                                              self.inc_score2).astype(int)
             
         
     res = data_grouped.reset_index()
     if self.rename_columns:
-        rename_dic = {k:v for k,v in zip(self.input_labels, COLUMN_LABELS[:len(self.input_labels)])}
-        self.rename_dictionary=rename_dic
+        rename_dic = {
+            k:v for k,v in
+            zip(self.input_labels,COLUMN_LABELS[:len(self.input_labels)])
+            }
+        self.rename_dictionary = rename_dic
         res.columns = map(lambda x: rename_dic[x] if x in rename_dic.keys() else x, res.columns)
-        l=len(self.input_labels)
-        self.input_labels=COLUMN_LABELS[:l]
+        l = len(self.input_labels)
+        self.input_labels = COLUMN_LABELS[:l]
 
-    self.preprocessed_data_raw=res
-    self.preprocessed_data=res[self.input_labels+self.output_labels]   
-    self.preprocessing=True
+    self.preprocessed_data_raw = res
+    self.preprocessed_data = res[self.input_labels+self.output_labels]   
+    self.preprocessing = True
    
   def get_rename_dictionary(self):
       return self.rename_dictionary
