@@ -59,14 +59,16 @@ def is_minterm_subset(m1,m2):
 # Funtion which groups minterms according to the number of nonzero digets
 
 # Paramters: truth table, 
-#            column_number- define the number of possible nonzero digits
-#            cares- indexes which correspond to original minterms
-#            outputcolumns- the whole binary output cols from original data
-#            multi_output- bolean variable
+#            column_number - defines the number of possible nonzero digits
+#            cares - indexes which correspond to original minterms
+#            outputcolumns - binary output columns from the original data
+#            multi_output - a bolean variable
 # Output: an array res of objects from classes Multi_value_item or
-#         Multiple_output_item, an i-th element of an array consist of 
+#         Multiple_output_item, the i-th element of an array consist of 
 #         objects whose minterms have exactly i nonzero digits
 
+# Definition: a minterm of n variables is a product of the variables
+# 	      in which each appears exactly once in true or complemented form. 
 
 def create_groups(table,column_number, cares, outputcolumns, multi_output):
     res = []
@@ -102,16 +104,19 @@ def create_groups(table,column_number, cares, outputcolumns, multi_output):
 
 # Function preforming 1 step elimination of 2 minterms
 
-# Function eliminates minterms firstly in adjacting groups, secondly
-# in between the group. In both cases minterms differ only in one sigle digit.
-# Moreover, the function collects implicants, which can't be further eliminate
-# to an array- final implicants.
-# Parameters: groups- an array returned by fun create_groups
-#             n- number of rows of a truth table
-#             multi_output- bolean variable
-# Output: dictionary, which contains new groups after elimination, implicants,
-#         information whether any reduction was perform in this single
-#         elimination
+# Function eliminates minterms first in adjacting groups, second in
+# between the group. In both cases minterms differ only in one sigle digit.
+# In addition, the function collects implicants, which can't be further 
+# eliminated to an array- final implicants.
+
+# Parameters: groups - an array returned by fun create_groups
+#             n - the number of rows in the truth table
+#             multi_output - a boolean variable
+
+# Output: dictionary, which contains 
+# 	  (a) new groups of minterms after the elimination, 
+#         (b) implicants   
+#         (c) information if any reduction was performed in this single elimination
   
 def reduction_step(groups,n,multi_output):
     was_any_reduction = False
@@ -228,12 +233,10 @@ def eliminate_minterms(table,elements, levels,multi_output):
 
     
 def find_index2(arr, x):
-    return np.where((arr == x).all(axis=1))[0]  
 
 
 """
-Optimization Context contaion all data and information necessery to preform
-the computation.
+Optimization Context contains the data and information to preform the computation.
 
 Parameters
 
@@ -241,30 +244,32 @@ Parameters
 
 data : dataframe
     
-output_labels : array of strings
-    The names of the outcome columns from a data frame. If the columns 
-    contain values which require the mapping to the boolean range, a 
-    set of the values can be added at the end of the name string.
+output_labels : an array of strings
+    The names of the outcome columns from the data frame. If the columns 
+    contain values requiring to map to the boolean range, the set 
+    of the values can be added at the end of the name string.
 
-input_lables : array if strings
-    The names of the input columns from a data frame
+input_lables : array of strings
+    The names of the input columns from the data frame
 
 case_col : string
-    The name of the column from a data frame containg the case ids
+    The name of the column from the data frame containing the case ids
 
 n_cut : int
     The minimum number of cases under which a truth table row is declared as a
     remainder
         
 inc_score1 : float
+	The minimum sufficiency inclusion score for an output function value of "1"
     
 inc_score2 : float
+	The maximum sufficiency inclusion score for an output function value of "0"
 
 U : int
     The U number is either 0 or 1.
 
 rename_columns: boolean 
-    If true, the column names are remaned as single letters.
+    If true, the column names are renamed as single letters in alphabetic order.
     
 generateMissing: boolean
     If false, the conservative solution is calculated.
@@ -307,7 +312,7 @@ class OptimizationContext:
     self.multivalue_output=False
     
  
- # Function clean and aggregate data. Remove duplicities and inconsistencies.
+ # Function to clean and aggregate data. Removes duplicities and inconsistencies.
   
   def _preprocess_data(self):
     # ouput column preprocess
@@ -389,7 +394,7 @@ class OptimizationContext:
     self.preprocessing = True
        
     
- # Function creates a truth table from a data frame
+ # Function to derive the truth table from a data frame
  # if generate_missing then don't cares are added
  
   def _prepareRows(self):
@@ -697,7 +702,7 @@ class OptimizationContext:
 
 class Irredundant_systems_multi():
   # Class where self represents just one single system
-  # the whole solution is composed out of these systems
+  # the whole solution is composed of these systems
 
   
   def __init__(self,system_multiple,index,output_labels):
