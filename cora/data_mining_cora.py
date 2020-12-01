@@ -26,7 +26,7 @@ def data_mining(data,out_col,len_of_tupple,case_col=None,cut=1,inc1=1,inc2=None,
     
     for i,comb in enumerate(itertools.combinations([x for x in data.columns if (x not in out_col and x!=case_col)], len_of_tupple)):
         cols = list(comb)
-        data_object=cora.Chart(data,out_col,cols,case_col=case_col,n_cut=cut,inc_score1=inc1,inc_score2=inc2,U=Uvalue)
+        data_object=cora.OptimizationContext(data,out_col,cols,case_col=case_col,n_cut=cut,inc_score1=inc1,inc_score2=inc2,U=Uvalue)
 
         #print("combination:{}, len_of Comm:{}, x form comb:{}".format(comb,len(comb), [x for x in comb]))
         ir_sums = data_object.get_irredundant_sums()

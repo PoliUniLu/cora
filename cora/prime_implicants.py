@@ -78,7 +78,7 @@ def create_groups(table,column_number, cares, outputcolumns, multi_output):
     if not multi_output:
       for row in table:
           non_zeros = count_non_zeros(row)
-          res[non_zeros].append(Multi_value_item(row,set([index]) 
+          res[non_zeros].append(Multi_value_minterm(row,set([index]) 
                                 if index in cares else set()))
           index=index+1
       return res
@@ -233,6 +233,7 @@ def eliminate_minterms(table,elements, levels,multi_output):
 
     
 def find_index2(arr, x):
+    return np.where((arr == x).all(axis=1))[0]  
 
 
 """
@@ -887,58 +888,7 @@ class Multiple_output_item:
                        self.coverage.union(other.coverage),new_tag)
 
 
-class Implicant:
-
-    def __init__(self,
-                 implicant,
-                 raw_implicant,
-                 coverage,
-                 cov_score = None,
-                 cov_u = None,
-                 incl_score = None):
-      self.implicant = implicant
-      self.raw_implicant = raw_implicant
-      self.coverage = coverage
-      
-    def __str__(self):
-        return('{0}:{1}'.format(self.implicant, self.coverage))
-
-    def __repr__(self):
-        return str(self)
-    
-    def coverage_score(self, data, input_columns, output_column):
-        if (len(input_columns) != len(self.raw_implicant)):
-            raise RuntimeError(
-                'Size of input columns ({}) does not match implicant\
-                    size({})'.format(len(input_columns),
-                                     len(self.raw_implicant)))
-        tmp_data = data[data[output_column]==1][input_columns]
-        return tmp_data.apply(
-            lambda row_series: 1.0 if all(x in y for x,y in
-                                          zip(row_series.values,
-                                              self.raw_implicant)) 
-                                   else 0.0, axis = 1).mean()
-    
-    def inclusion_score(self, data, input_columns, output_column):
-        if (len(input_columns) != len(self.raw_implicant)):
-            raise RuntimeError(
-                'Size of input columns ({}) does not match implicant\
-                    size({})'.format(len(input_columns),
-                                    len(self.raw_implicant)))
-        tmp_data = data[input_columns]
-        tmp_positive_data = tmp_data[data[output_column]==1]
-        
-
-        return  tmp_positive_data.apply(
-           lambda row_series:
-               1.0 if all(x in y for x,y in zip(row_series.values,
-                                                self.raw_implicant))
-               else 0.0, axis = 1).sum() /tmp_data.apply(
-           lambda row_series: 
-               1.0 if all(x in y for x,y in zip(row_series.values,
-                                                self.raw_implicant)) 
-               else 0.0, axis = 1).sum()
-        
+  
 
 class Implicant_multi:
 
@@ -1034,10 +984,24 @@ class Implicant_multi:
                     lambda row_series: 1.0 if all(x in y for x,y in 
                                                   zip(row_series.values,
                                                       self.raw_implicant))
+
                     else 0.0, axis = 1).sum()
-               
+ 
+                        
+                        
+# Class which define a multi-value minterm/item and map its properties 
+# (coverage, is_reduced) over the reduction process.
+# 
+# Parameter:
+#    minterm - tupple of numbers
+#    coverage - reffers to the indexes of rows which are covered by the 
+#               minterm. At the beggining of minimalization coverage contains
+#               just a single number.
+#    is_reduced - is true when it goes at least to one reduction 
+#   
+                          
                     
-class Multi_value_item:
+class Multi_value_minterm:
     
     def __init__(self, minterm, coverage):
         self.minterm = tuple(x for x in minterm)
@@ -1088,11 +1052,79 @@ class Multi_value_item:
                 new_minterm[i] = self.minterm[i]
             else:
                 new_minterm[i] = self.minterm[i].union(other.minterm[i])
-        return Multi_value_item(new_minterm, 
+        return Multi_value_minterm(new_minterm, 
                        self.coverage.union(other.coverage))
 
 
 
+# A class Implicant reffers to a prime implicant and its properties.
+#
+# Parameters :
+#    implicant - an array of sets of numbers. Each set
+#                corresponds to a one variable.
+#    raw_implicant  - an array of sets of number.  Each set
+#                     corresponds to a one variable and might contain
+#                     a redundant information - more numbers in the sets than 
+#                     in implicant
+#   coverage  - the indexes of rows from original data, which are covered by
+#               the implicant
+#   cov_u - statistic value
+#   incl_score - statistical value   
+#                     
+
+
+class Implicant:
+
+    def __init__(self,
+                 implicant,
+                 raw_implicant,
+                 coverage,
+                 cov_score = None,
+                 cov_u = None,
+                 incl_score = None):
+      self.implicant = implicant
+      self.raw_implicant = raw_implicant
+      self.coverage = coverage
+      
+    def __str__(self):
+        return('{0}:{1}'.format(self.implicant, self.coverage))
+
+    def __repr__(self):
+        return str(self)
+    
+    def coverage_score(self, data, input_columns, output_column):
+        if (len(input_columns) != len(self.raw_implicant)):
+            raise RuntimeError(
+                'Size of input columns ({}) does not match implicant\
+                    size({})'.format(len(input_columns),
+                                     len(self.raw_implicant)))
+        tmp_data = data[data[output_column]==1][input_columns]
+        return tmp_data.apply(
+            lambda row_series: 1.0 if all(x in y for x,y in
+                                          zip(row_series.values,
+                                              self.raw_implicant)) 
+                                   else 0.0, axis = 1).mean()
+    
+    def inclusion_score(self, data, input_columns, output_column):
+        if (len(input_columns) != len(self.raw_implicant)):
+            raise RuntimeError(
+                'Size of input columns ({}) does not match implicant\
+                    size({})'.format(len(input_columns),
+                                    len(self.raw_implicant)))
+        tmp_data = data[input_columns]
+        tmp_positive_data = tmp_data[data[output_column]==1]
+        
+
+        return  tmp_positive_data.apply(
+           lambda row_series:
+               1.0 if all(x in y for x,y in zip(row_series.values,
+                                                self.raw_implicant))
+               else 0.0, axis = 1).sum() /tmp_data.apply(
+           lambda row_series: 
+               1.0 if all(x in y for x,y in zip(row_series.values,
+                                                self.raw_implicant)) 
+               else 0.0, axis = 1).sum()
+      
 
 
 
