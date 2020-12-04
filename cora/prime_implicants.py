@@ -64,7 +64,7 @@ def is_minterm_subset(m1,m2):
 #            outputcolumns - binary output columns from the original data
 #            multi_output - a bolean variable
 # Output: an array res of objects from classes Multi_value_item or
-#         Multiple_output_item, the i-th element of an array consist of 
+#         Multiple_output_minterm, the i-th element of an array consist of 
 #         objects whose minterms have exactly i nonzero digits
 
 # Definition: a minterm of n variables is a product of the variables
@@ -96,7 +96,7 @@ def create_groups(table,column_number, cares, outputcolumns, multi_output):
           if len(tag) == 0:
               index=index+1
               continue
-          res[non_zeros].append(Multiple_output_item(row,set([index])
+          res[non_zeros].append(Multiple_output_minterm(row,set([index])
                                 if index in cares else set(),tag))
           index = index+1
       return res
@@ -234,6 +234,26 @@ def eliminate_minterms(table,elements, levels,multi_output):
     
 def find_index2(arr, x):
     return np.where((arr == x).all(axis=1))[0]  
+
+def set_to_str(s,levels,label, is_multi_level):
+    if len(s) == levels:
+        return ''
+
+    if not is_multi_level:
+        if 0 in s:
+            return label.lower()
+        else:
+            return label.upper()
+    if len(s) == 1:
+        return '{}{{{}}}'.format(label,tuple(s)[0])
+    return '{}{{{}}}'.format(label,','.join(str(x) for x in s))
+
+def minterm_to_str(minterm, levels, labels, tag,multi_output):
+    is_multi_level = any(x > 2 for x in levels)
+    tmp = [set_to_str(x, y, z, is_multi_level) for x,y,z in
+           zip(minterm, levels, labels)]
+    res = '{}'.format('*'.join(x for x in tmp if x != ''))
+    return res if res != '' else '1'
 
 
 """
@@ -527,7 +547,8 @@ class OptimizationContext:
 
     if self.multi_output:
             
-         self.prime_implicants = tuple(Implicant_multi(
+         self.prime_implicants = tuple(Implicant_multi_output(
+             self,
              minterm_to_str(x[0],
                             self.levels,
                             self.labels,
@@ -535,13 +556,15 @@ class OptimizationContext:
                             self.multi_output
                             ),
              x[0],                
-             {coverage_dict[y] for y in x[1]},outputs=list(x for x in x[2]), 
+             {coverage_dict[y] for y in x[1]},
+             outputs=list(x for x in x[2]), 
              output_labels=[self.output_labels[i-1] 
                             for i in list(x for x in x[2])])
              for x in prime_implicants
              )
     else:
          self.prime_implicants = tuple(Implicant(
+             self,
              minterm_to_str(x[0],
                             self.levels,
                             self.labels,
@@ -627,7 +650,7 @@ class OptimizationContext:
                                   )
    irredundant_objects = []
    for i,system in enumerate(result):
-	   irredundant_objects.append(Irredundant_system(system,i+1))
+	   irredundant_objects.append(Irredundant_system(self,system,i+1))
    return irredundant_objects   
     
   
@@ -667,7 +690,7 @@ class OptimizationContext:
      for j in range(l):
        single_res.append([self.prime_implicants[i] for i in r if j+1 in 
                           self.prime_implicants[i].outputs])
-     res.append(Irredundant_systems_multi(single_res,
+     res.append(Irredundant_systems_multi(self,single_res,
                                           index,
                                           self.output_labels_final))
      
@@ -693,7 +716,7 @@ class OptimizationContext:
                                      coverage)
       irredundant_objects = []
       for i,system in enumerate(result):
-          irredundant_objects.append(Irredundant_system(system,i+1))
+          irredundant_objects.append(Irredundant_system(self,system,i+1))
        
       for i in irredundant_objects:
           res.append([i.system for i in irredundant_objects])
@@ -701,15 +724,43 @@ class OptimizationContext:
     return res,l
  
 
+
+"""
+ Class represents a single irredundant system, a solution of multi output 
+ minimization. The complete solution of such minimization is composed out of 
+ these systems.
+ 
+
+Parameters
+
+----------
+
+system : array of strings
+         An array of implicants which form the solution.  
+
+index : int
+        An index of the solution.
+
+cov_score : float
+            statistical value
+
+incl_score : float
+             statistical value
+ 
+"""
+
 class Irredundant_systems_multi():
   # Class where self represents just one single system
   # the whole solution is composed of these systems
 
   
-  def __init__(self,system_multiple,index,output_labels):
+  def __init__(self,context,system_multiple,index,output_labels):
+      self.context=context
       self.system_multiple = system_multiple
       self.index = index
       self.output_labels = output_labels
+      self.cov_score = None 
+      self.incl_score = None
    
             
   def __str__(self):
@@ -729,28 +780,116 @@ class Irredundant_systems_multi():
       return res
   def __repr__(self):
       return str(self)
+  
+  def unique_implicants(self):
+      return [x for x in set(sum(self.system_multiple,list()))]
+  
+  def impl_cov_score(self):
+      data = self.context.data
+      input_columns = self.context.input_labels
+      output_columns = self.context.output_labels
       
-  def coverage_score(self, data, input_columns, output_column):
-        tmp_data = data[data[output_column]==1][input_columns]
-        return tmp_data.apply(
+      tmp_data = data[input_columns]
+      mask=data.apply(lambda row_series: any(row_series[output]==1 for output 
+                                             in output_columns),axis=1)
+      
+      tmp_positive_data = tmp_data[mask] 
+      implicants = self.unique_implicants()
+
+      impl_cov = []
+      cov_count = {}
+      for i,impl_i in enumerate(implicants):
+       
+          tmp = tmp_positive_data.apply(
+           lambda row_series: row_series.name if all(x in y for x,y in 
+                                                     zip(row_series.values,
+                                                         impl_i.raw_implicant))
+                                               else None, axis = 1)
+          s = set(x for x in tmp.values if not np.isnan(x))
+          impl_cov.append(s)
+          for x in s:
+              if x in cov_count.keys():
+                  cov_count[x] += 1
+              else:
+                  cov_count[x] = 1
+      unique_cov = [{x for x in ic if cov_count[x]==1} for ic in impl_cov]
+      
+      return {str(impl_i.implicant): len(ic)/len(tmp_positive_data.index)
+              for impl_i, ic in zip(implicants, unique_cov)}
+
+      
+      
+  def coverage_score(self):
+      
+        data = self.context.data
+        input_columns = self.context.input_labels
+        output_columns = self.context.output_labels
+        implicants = self.unique_implicants()
+        
+        
+        tmp_data = data[data.apply(lambda row_series: 
+                                   any(row_series[output]==1 
+                                       for output in output_columns),axis=1)][
+                                               input_columns]
+                                                   
+
+        
+        
+        self.cov_score = tmp_data.apply(
             lambda row_series: 1.0 if any(all(x in y for x,y in 
                                               zip(row_series.values,
                                                   i.raw_implicant))
-                                          for i in self.system)
+                                          for i in implicants)
                                   else 0.0, axis = 1).mean()
+        return self.cov_score
+  
+  
+      
  
 
+"""
+ Class represents a solution of a minimization problem with a single output -
+ called irredundant system.
+
+Parameters
+
+----------
+
+system : array of strings
+         An array of implicants which form the solution.  
+
+index : int
+        An index of the solution.
+
+cov_score : float
+            statistical value
+
+incl_score : float
+             statistical value
+ 
+"""
+
 class Irredundant_system():
-  def __init__(self,system,index):
-	  self.system = system
-	  self.index = index
+ 
+  def __init__(self,context,system,index):
+     self.context = context
+     self.system = system
+     self.index = index
+     self.cov_score = None
+     self.incl_score = None
+      
+    
     
   def __str__(self):
      return 'M{}: {}'.format(self.index,
                              ' + '.join(str(i.implicant)
                                         for i in self.system))
  
-  def impl_coverag(self,data, input_columns, output_column):
+  def impl_cov_score(self):
+      data = self.context.data
+      input_columns = self.context.input_labels
+      output_column = self.context.output_labels[0] 
+      
       tmp_data = data[input_columns]
       data[output_column] == 1 
       tmp_positive_data = tmp_data[data[output_column]==1] 
@@ -783,50 +922,54 @@ class Irredundant_system():
   def nr_implicants(self):
      return len(self.system)
  
-  def coverage_score(self, data, input_columns, output_column):
+  def coverage_score(self):
+        data = self.context.data
+        input_columns = self.context.input_labels
+        output_column = self.context.output_labels[0]  
+        
         tmp_data = data[data[output_column]==1][input_columns]
-        return tmp_data.apply(
+        self.cov_score= tmp_data.apply(
             lambda row_series: 1.0 if any(all(x in y for x,y in
                                               zip(row_series.values,
                                                   i.raw_implicant))
                                           for i in self.system)
                                    else 0.0, axis = 1).mean()
+        return self.cov_score
  
-  def inclusion_score(self,data, input_columns, output_column):
+  def inclusion_score(self):
+       data = self.context.data
+       input_columns = self.context.input_labels
+       output_column = self.context.output_labels[0]
        tmp_data = data[input_columns]
        mask = tmp_data.apply(
             lambda row_series: any(all(x in y for x,y in 
                                        zip(row_series[input_columns].values,
                                            i.raw_implicant))
                                    for i in self.system), axis = 1)
-       return data.loc[mask,output_column].mean()
+       self.incl_score = data.loc[mask,output_column].mean()
+       return self.incl_score
       
 
+# Class which defines a multi-output minterm/item and describes its properties 
+# (coverage, is_reduced, tag) over the reduction process.
+# 
+# Parameters
+# ----------
+#
+#    minterm : A tupple of numbers. In the first itteration, every tupple 
+#              correponds to one row from the data. 
 
+#    coverage : Set of the indexes of all the rows which are covered by the 
+#               minterm. At the beggining of the  minimalization coverage
+#               contains just a single number - an index of a row represented
+#               by the minterm.           
 
-def set_to_str(s,levels,label, is_multi_level):
-    if len(s) == levels:
-        return ''
+#    is_reduced : True when at least one reduction was performed.
+#    
+#    tag : An arrbitrary number, representing the outputs.
+  
 
-    if not is_multi_level:
-        if 0 in s:
-            return label.lower()
-        else:
-            return label.upper()
-    if len(s) == 1:
-        return '{}{{{}}}'.format(label,tuple(s)[0])
-    return '{}{{{}}}'.format(label,','.join(str(x) for x in s))
-
-def minterm_to_str(minterm, levels, labels, tag,multi_output):
-    is_multi_level = any(x > 2 for x in levels)
-    tmp = [set_to_str(x, y, z, is_multi_level) for x,y,z in
-           zip(minterm, levels, labels)]
-    res = '{}'.format('*'.join(x for x in tmp if x != ''))
-    return res if res != '' else '1'
-
-
-
-class Multiple_output_item:
+class Multiple_output_minterm:
      
     def __init__(self, minterm, coverage, tag):
         self.minterm = tuple(x for x in minterm)
@@ -884,121 +1027,27 @@ class Multiple_output_item:
                 new_minterm[i] = self.minterm[i]
             else:
                 new_minterm[i] = self.minterm[i].union(other.minterm[i])
-        return Multiple_output_item(new_minterm, 
+        return Multiple_output_minterm(new_minterm, 
                        self.coverage.union(other.coverage),new_tag)
 
 
-  
-
-class Implicant_multi:
-
-    def __init__(self,
-                 implicant,
-                 raw_implicant,
-                 coverage,
-                 outputs,
-                 output_labels,
-                 cov_score = None,
-                 cov_u = None,
-                 incl_score = None):
-      self.implicant = implicant
-      self.raw_implicant = raw_implicant
-      self.coverage = coverage
-
-      self.outputs = outputs
-      self.output_labels = output_labels
-
-    def __str__(self):
-        return('{0}:{1},{2},{3}'.format(self.implicant,
-                                        self.coverage,
-                                        self.outputs,
-                                        self.output_labels))
-
-    def __repr__(self):
-        return str(self)
-
-    def coverage_score(self, data, input_columns):
-       
-        if (len(input_columns) != len(self.raw_implicant)):
-            raise RuntimeError(
-                'Size of input columns ({}) does not match implicant\
-                    size({})'.format(len(input_columns), 
-                                     len(self.raw_implicant)))
-        if len(self.outputs) == 1:
-            out=self.output_labels[0]
-                                                                                        
-            tmp_data = data[data[out]==1][input_columns]
-
-            return tmp_data.apply(
-                lambda row_series: 1.0 if all(x in y for x,y in 
-                                              zip(row_series.values,
-                                                  self.raw_implicant)) 
-                                       else 0.0, axis = 1).mean()
-    
-        else:
-           tmp_data = data[data.apply(lambda row_series:
-                                      all(row_series[output]==1 
-                                          for output in self.output_labels),
-                                      axis=1)][input_columns]
-
-           return tmp_data.apply(
-                lambda row_series: 1.0 if all (x in y for x,y in
-                                               zip(row_series.values,
-                                                   self.raw_implicant)) 
-                                       else 0.0, axis = 1).mean()
-
-    
-    def inclusion_score(self, data, input_columns):
-        if (len(input_columns) != len(self.raw_implicant)):
-            raise RuntimeError(
-                'Size of input columns ({}) does not match implicant\
-                    size({})'.format(len(input_columns), 
-                                     len(self.raw_implicant)))
-        tmp_data = data[input_columns]
-        if len(self.outputs) == 1:
-            tmp_positive_data = tmp_data[data[self.output_labels[0]]==1]
-        
-
-            return  tmp_positive_data.apply(
-                    lambda row_series:
-                        1.0 if all(x in y for x,y in zip(row_series.values, 
-                                                         self.raw_implicant))
-                        else 0.0, axis = 1).sum() /tmp_data.apply(
-                    lambda row_series:
-                        1.0 if all(x in y for x,y in zip(row_series.values,
-                                                         self.raw_implicant))
-                        else 0.0, axis = 1).sum()
-        else:
-            
-           tmp_positive_data = tmp_data[data.apply(lambda row_series: 
-                                                   all(row_series[output]==1 
-                                                       for output in 
-                                                       self.output_labels),
-                                                   axis=1)]
-
-           return  tmp_positive_data.apply(
-                    lambda row_series: 1.0 if all(x in y for x,y in 
-                                                  zip(row_series.values,
-                                                      self.raw_implicant))
-                    else 0.0, axis = 1).sum() /tmp_data.apply(
-                    lambda row_series: 1.0 if all(x in y for x,y in 
-                                                  zip(row_series.values,
-                                                      self.raw_implicant))
-
-                    else 0.0, axis = 1).sum()
- 
                         
-                        
-# Class which define a multi-value minterm/item and map its properties 
+# Class which defines a multi-value minterm/item and describes its properties 
 # (coverage, is_reduced) over the reduction process.
 # 
-# Parameter:
-#    minterm - tupple of numbers
-#    coverage - reffers to the indexes of rows which are covered by the 
-#               minterm. At the beggining of minimalization coverage contains
-#               just a single number.
-#    is_reduced - is true when it goes at least to one reduction 
-#   
+# Parameters
+# ----------
+#
+#    minterm : A tupple of numbers. In the first itteration, every tupple 
+#              correponds to one row from the data. 
+
+#    coverage : Set of the indexes of all the rows which are covered by the 
+#               minterm. At the beggining of the  minimalization coverage
+#               contains just a single number - an index of a row represented
+#               by the minterm.           
+
+#    is_reduced : True when at least one reduction was performed.
+ 
                           
                     
 class Multi_value_minterm:
@@ -1057,55 +1106,238 @@ class Multi_value_minterm:
 
 
 
-# A class Implicant reffers to a prime implicant and its properties.
-#
-# Parameters :
-#    implicant - an array of sets of numbers. Each set
-#                corresponds to a one variable.
-#    raw_implicant  - an array of sets of number.  Each set
-#                     corresponds to a one variable and might contain
-#                     a redundant information - more numbers in the sets than 
-#                     in implicant
-#   coverage  - the indexes of rows from original data, which are covered by
-#               the implicant
-#   cov_u - statistic value
-#   incl_score - statistical value   
-#                     
 
+
+
+"""
+A class Implicant_multi_output reffers to a prime implicant generated from 
+multi output data and its properties and relations to the outputs.
+
+
+ Parameters 
+ ----------
+ 
+ context : object
+           An object from the original OptimizationContext class 
+           to which the implacant referes.
+           It contains the original data, output_lables, 
+           input_labels etc...
+              
+ implicant : array of sets
+            An array of sets of numbers. Each set corresponds to a one 
+            of the input variabels. 
+
+                
+ raw_implicant  : an array of sets of number
+                  An arrbitrary representation of an implicant containing 
+                  some redundat information.
+  
+ coverage : set of numbers
+            The set  of the indexes of the rows from the original data, 
+            which are covered by the implicant.
+ 
+ outputs : array of integers
+           The numbers represent the indexes of the corresponding outputs.  
+     
+ output_labels : array of strings
+                 The array contains the output labels.
+  
+ cov_u : float
+      statistic value
+  
+ incl_score : float
+      statistical value   
+                     
+
+"""
+
+class Implicant_multi_output:
+
+    def __init__(self,
+                 context,
+                 implicant,
+                 raw_implicant,
+                 coverage,
+                 outputs,
+                 output_labels,
+                 cov_score = None,
+                 incl_score = None):
+      self.context=context
+      self.implicant = implicant
+      self.raw_implicant = raw_implicant
+      self.coverage = coverage
+
+      self.outputs = outputs
+      self.output_labels = output_labels
+
+    def __str__(self):
+        #return('{0}:{1},{2},{3}'.format(self.implicant,
+        #                                self.coverage,
+        #                                self.outputs,
+        #                                self.output_labels))
+        return ('{}'.format(self.implicant))
+
+    def __repr__(self):
+        return str(self)
+
+    def coverage_score(self):
+        data=self.context.data
+        input_columns=self.context.input_labels
+        
+        if (len(input_columns) != len(self.raw_implicant)):
+            raise RuntimeError(
+                'Size of input columns ({}) does not match implicant\
+                    size({})'.format(len(input_columns), 
+                                     len(self.raw_implicant)))
+        if len(self.outputs) == 1:
+            out=self.output_labels[0]
+                                                                                        
+            tmp_data = data[data[out]==1][input_columns]
+
+            self.cov_score = tmp_data.apply(
+                lambda row_series: 1.0 if all(x in y for x,y in 
+                                              zip(row_series.values,
+                                                  self.raw_implicant)) 
+                                       else 0.0, axis = 1).mean()
+    
+        else:
+           tmp_data = data[data.apply(lambda row_series:
+                                      all(row_series[output]==1 
+                                          for output in self.output_labels),
+                                      axis=1)][input_columns]
+
+           self.cov_score = tmp_data.apply(
+                lambda row_series: 1.0 if all (x in y for x,y in
+                                               zip(row_series.values,
+                                                   self.raw_implicant)) 
+                                       else 0.0, axis = 1).mean()
+        return self.cov_score
+
+    
+    def inclusion_score(self):
+        data=self.context.data
+        input_columns=self.context.input_labels
+        
+        if (len(input_columns) != len(self.raw_implicant)):
+            raise RuntimeError(
+                'Size of input columns ({}) does not match implicant\
+                    size({})'.format(len(input_columns), 
+                                     len(self.raw_implicant)))
+        tmp_data = data[input_columns]
+        if len(self.outputs) == 1:
+            tmp_positive_data = tmp_data[data[self.output_labels[0]]==1]
+        
+
+            self.incl_score = tmp_positive_data.apply(
+                    lambda row_series:
+                        1.0 if all(x in y for x,y in zip(row_series.values, 
+                                                         self.raw_implicant))
+                        else 0.0, axis = 1).sum() /tmp_data.apply(
+                    lambda row_series:
+                        1.0 if all(x in y for x,y in zip(row_series.values,
+                                                         self.raw_implicant))
+                        else 0.0, axis = 1).sum()
+        else:
+            
+           tmp_positive_data = tmp_data[data.apply(lambda row_series: 
+                                                   all(row_series[output]==1 
+                                                       for output in 
+                                                       self.output_labels),
+                                                   axis=1)]
+
+           self.incl_score = tmp_positive_data.apply(
+                    lambda row_series: 1.0 if all(x in y for x,y in 
+                                                  zip(row_series.values,
+                                                      self.raw_implicant))
+                    else 0.0, axis = 1).sum() /tmp_data.apply(
+                    lambda row_series: 1.0 if all(x in y for x,y in 
+                                                  zip(row_series.values,
+                                                      self.raw_implicant))
+
+                    else 0.0, axis = 1).sum()
+        return self.incl_score
+ 
+                    
+
+"""
+A class Implicant reffers to a prime implicant and its properties.
+
+
+ Parameters 
+ ----------
+ 
+ context : object
+           An object from the original OptimizationContext class 
+           to which the implacant referes.
+           It contains the original data, output_lables, 
+           input_labels etc...
+              
+ implicant : array of sets
+            An array of sets of numbers. Each set corresponds to a one 
+            of the input variabels. 
+
+                
+  raw_implicant  : an array of sets of number
+                   An arrbitrary representation of an implicant containing 
+                   some redundat information.
+                  
+  
+  
+  coverage : set of numbers
+             The set  of the indexes of the rows from the original data, 
+             which are covered by the implicant.
+  
+  cov_u : float
+      statistic value
+  
+  incl_score : float
+      statistical value   
+                     
+
+"""
 
 class Implicant:
 
     def __init__(self,
+                 context,
                  implicant,
                  raw_implicant,
                  coverage,
                  cov_score = None,
-                 cov_u = None,
                  incl_score = None):
+      self.context=context  
       self.implicant = implicant
       self.raw_implicant = raw_implicant
       self.coverage = coverage
       
     def __str__(self):
-        return('{0}:{1}'.format(self.implicant, self.coverage))
+        return('{0}'.format(self.implicant))
 
     def __repr__(self):
         return str(self)
     
-    def coverage_score(self, data, input_columns, output_column):
+    def coverage_score(self):
+        data=self.context.data
+        input_columns=self.context.input_labels
+        output_column=self.context.output_labels[0]
+
         if (len(input_columns) != len(self.raw_implicant)):
             raise RuntimeError(
                 'Size of input columns ({}) does not match implicant\
                     size({})'.format(len(input_columns),
                                      len(self.raw_implicant)))
         tmp_data = data[data[output_column]==1][input_columns]
-        return tmp_data.apply(
+        self.cov_score = tmp_data.apply(
             lambda row_series: 1.0 if all(x in y for x,y in
                                           zip(row_series.values,
                                               self.raw_implicant)) 
                                    else 0.0, axis = 1).mean()
+        return self.cov_score
     
-    def inclusion_score(self, data, input_columns, output_column):
+    def inclusion_score(self):
+        data=self.context.data
+        input_columns=self.context.input_labels
+        output_column=self.context.output_labels[0]
         if (len(input_columns) != len(self.raw_implicant)):
             raise RuntimeError(
                 'Size of input columns ({}) does not match implicant\
@@ -1115,7 +1347,7 @@ class Implicant:
         tmp_positive_data = tmp_data[data[output_column]==1]
         
 
-        return  tmp_positive_data.apply(
+        self.incl_score = tmp_positive_data.apply(
            lambda row_series:
                1.0 if all(x in y for x,y in zip(row_series.values,
                                                 self.raw_implicant))
@@ -1124,7 +1356,7 @@ class Implicant:
                1.0 if all(x in y for x,y in zip(row_series.values,
                                                 self.raw_implicant)) 
                else 0.0, axis = 1).sum()
-      
+        return self.incl_score
 
 
 
