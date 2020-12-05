@@ -588,7 +588,7 @@ class OptimizationContext:
     
   """
   
-  def coverage_matrix(self):
+  def prime_implicant_chart(self):
     
     if not self.get_prime_implicants():
         self.get_prime_implicants()
