@@ -1,4 +1,5 @@
 import itertools
+import pandas as pd
 import cora
 
 
@@ -21,14 +22,7 @@ class TupleResult:
             self.max_nr_pi = (max(x.nr_implicants() for x in irrendudant_sums)
                                if self.nr_irr_sums > 0 else 0)
             self.score=score
-    
-    def __str__(self):
-        return ('{}:{},{},{},{}'.format(self.combination,
-                                  self.nr_irr_sums,
-                                  self.min_nr_pi,
-                                  self.max_nr_pi,
-                                  self.score
-                                 ))
+ 
         
     
 
@@ -67,8 +61,20 @@ def data_mining(data,
     
         else:
           res.append(TupleResult(comb, ir_sums, 0))
+    
+    rows = [(x.combination,
+                     x.nr_irr_sums,
+                     x.max_nr_pi, 
+                     x.min_nr_pi,
+                     x.score) for x in res]
+    result = pd.DataFrame(rows,
+                          columns = ['Combination',
+                                     'Nr_of_sums',
+                                     'Max_PIs',
+                                     'Min_PIs',
+                                     'Score'])
       
-    return res
+    return result
 
 
     
