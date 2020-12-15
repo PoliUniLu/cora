@@ -864,10 +864,8 @@ class Irredundant_systems_multi():
              lambda row_series:(1 if sum(row_series[output_columns].values)>0 
                                 else 0), axis = 1)
             
-       print("new outcol: {}".format(new_out))
 
        data["new_output"] = new_out
-       print("new data: {}".format(data))
        self.incl_score = data.loc[mask,"new_output"].mean()
        return self.incl_score
       
