@@ -495,6 +495,10 @@ class OptimizationContext:
         self.positive_cares = positiveInputs_rownames
       self.prepare_rows_called = True
     
+ 
+
+   
+  
   """
   Function computes the prime implicants.
   
@@ -843,7 +847,31 @@ class Irredundant_systems_multi():
                                   else 0.0, axis = 1).mean()
         return self.cov_score
   
-  
+  def inclusion_score(self):
+      
+       data = self.context.data
+       input_columns = self.context.input_labels
+       output_columns = self.context.output_labels
+       tmp_data = data[input_columns]
+       implicants = self.unique_implicants()
+
+       mask = tmp_data.apply(
+            lambda row_series: any(all(x in y for x,y in 
+                                       zip(row_series[input_columns].values,
+                                           i.raw_implicant))
+                                   for i in implicants), axis = 1)
+       new_out = data.apply(
+             lambda row_series:(1 if sum(row_series[output_columns].values)>0 
+                                else 0), axis = 1)
+            
+       print("new outcol: {}".format(new_out))
+
+       data["new_output"] = new_out
+       print("new data: {}".format(data))
+       self.incl_score = data.loc[mask,"new_output"].mean()
+       return self.incl_score
+      
+
       
  
 

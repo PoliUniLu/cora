@@ -6,25 +6,27 @@ import cora
 
 class TupleResult:
     
-    def __init__(self, combination,irrendudant_sums, score):
+    def __init__(self,
+                 combination,
+                 out_len,
+                 irrendudant_systems,
+                 inc_score,
+                 cov_score,
+                 score):
         
         self.combination=combination
-        if(len(irrendudant_sums) == 1 and (str(
-                irrendudant_sums[0].system[0].implicant)=='1')):
-            self.nr_irr_sums = 0
-            self.min_nr_pi = 0
-            self.max_nr_pi = 0
+        if(out_len ==1 and len(irrendudant_systems) == 1 and (str(
+                irrendudant_systems[0].system[0].implicant)=='1')):
+            self.nr_irr_systems = 0
+            self.inc_score = 0
+            self.cov_score = 0
             self.score=score = 0
         else:     
-            self.nr_irr_sums = len(irrendudant_sums)
-            self.min_nr_pi = (min(x.nr_implicants() for x in irrendudant_sums)
-                               if self.nr_irr_sums > 0 else 0)
-            self.max_nr_pi = (max(x.nr_implicants() for x in irrendudant_sums)
-                               if self.nr_irr_sums > 0 else 0)
-            self.score=score
- 
-        
-    
+            self.nr_irr_systems = len(irrendudant_systems)
+            self.inc_score = inc_score
+            self.cov_score = cov_score
+            self.score = score
+   
 
 def data_mining(data,
                 out_col,
@@ -49,29 +51,39 @@ def data_mining(data,
                                                inc_score1=inc1,
                                                inc_score2=inc2,
                                                U=Uvalue)
-
-        ir_sums = data_object.get_irredundant_sums()
+        if len(out_col) == 1:
+            ir_sys = data_object.get_irredundant_sums()
+        else:
+            ir_sys = data_object.get_irredundant_systems()
         
 
-        if len(ir_sums) > 0:
-          score = round(max(x.inclusion_score()*x.coverage_score() for x
-                                                  in ir_sums),3)
-          tr = TupleResult([x for x in comb],ir_sums, score)
-          res.append(tr)
+        if len(ir_sys) > 0:
+            inc_score = round(max(x.inclusion_score() for x in ir_sys),3)
+            cov_score = round(max(x.coverage_score() for x in ir_sys),3)
+            score = round(max(x.inclusion_score()*x.coverage_score() 
+                                                       for x  in ir_sys),3)
+            tr = TupleResult([x for x in comb],
+                                 len(out_col),
+                                 ir_sys,
+                                 inc_score,
+                                 cov_score,
+                                 score)
+            res.append(tr)
     
         else:
-          res.append(TupleResult(comb, ir_sums, 0))
+                res.append(TupleResult(comb, len(out_col), ir_sys, 0, 0, 0))
+        
     
     rows = [(x.combination,
-                     x.nr_irr_sums,
-                     x.max_nr_pi, 
-                     x.min_nr_pi,
-                     x.score) for x in res]
+             x.nr_irr_systems,
+             x.inc_score,
+             x.cov_score,
+             x.score) for x in res]
     result = pd.DataFrame(rows,
                           columns = ['Combination',
-                                     'Nr_of_sums',
-                                     'Max_PIs',
-                                     'Min_PIs',
+                                     'Nr_of_systems',
+                                     'Inc_score',
+                                     'Cov_score',
                                      'Score'])
       
     return result
