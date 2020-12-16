@@ -610,10 +610,12 @@ class OptimizationContext:
       return pd.DataFrame(res.transpose(),
                           columns=cares,
                           index=['{}, {}'.format(x.implicant,x.outputs)
-                                 for x in self.prime_implicants])    
-    return pd.DataFrame(res.transpose(),
-                        columns=cares,
-                        index=[(x.implicant) for x in self.prime_implicants])
+                                 for x in self.prime_implicants]).astype(int)   
+    return pd.DataFrame(
+        res.transpose(),
+        columns=cares,
+        index=[(x.implicant) for x in self.prime_implicants]).astype(int)
+    
     
   """
   Function computes all irredundat solutions for input data with 
