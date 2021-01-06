@@ -10,7 +10,6 @@ import itertools
 from functools import reduce
 import string 
 import re
-from collections import defaultdict
 
 from .petric import find_irredundant_sums,boolean_multiply
 
@@ -23,7 +22,7 @@ def concatenate_strings(arr):
     return ','.join([str(x) for x in arr])
 
 def inclusion_score(arr):
-    return sum(arr)/len(arr)
+    return round(sum(arr)/len(arr),2)
 
 def count_non_zeros(minterm):
     n = len(minterm)
@@ -257,7 +256,8 @@ def minterm_to_str(minterm, levels, labels, tag,multi_output):
 
 
 """
-Optimization Context contains the data and information to preform the computation.
+Optimization Context contains the data and information to preform the 
+computation.
 
 Parameters
 
@@ -290,7 +290,8 @@ U : int
     The U number is either 0 or 1.
 
 rename_columns: boolean 
-    If true, the column names are renamed as single letters in alphabetic order.
+    If true, the column names are renamed as single letters in alphabetic
+    order.
     
 generateMissing: boolean
     If false, the conservative solution is calculated.
@@ -333,7 +334,8 @@ class OptimizationContext:
     self.multivalue_output=False
     
  
- # Function to clean and aggregate data. Removes duplicities and inconsistencies.
+ # Function to clean and aggregate data. Removes duplicities and 
+ # inconsistencies.
   
   def _preprocess_data(self):
     # ouput column preprocess
@@ -436,8 +438,7 @@ class OptimizationContext:
       positiveInputs_rownames = list(positiveInputs.index)
       inputs = self.preprocessed_data.drop(self.output_labels,axis=1)
       if len(self.input_labels) == 1:
-          nr_values = len(set(inputs.iloc[:,0].values))
-          dim_corrected = [[x for x in range(max(2,nr_values))]]
+          dim_corrected = [inputs.iloc[:,0].values]
       else:
           dim = inputs.apply(lambda x: pd.unique(x).tolist(),axis=0,
                              result_type='reduce').array
@@ -653,7 +654,8 @@ class OptimizationContext:
                                   )
    irredundant_objects = []
    for i,system in enumerate(result):
-	   irredundant_objects.append(Irredundant_system(self,system,i+1))
+	   irredundant_objects.append(Irredundant_system(
+           self,system,i+1,self.output_labels_final[0]))
    return irredundant_objects   
   
  
@@ -766,7 +768,7 @@ class OptimizationContext:
                           self.prime_implicants[i].outputs])
      res.append(Irredundant_systems_multi(self,single_res,
                                           index,
-                                          self.output_labels_final))
+                                          self.output_labels_final[0]))
      
    return res
 
@@ -790,7 +792,10 @@ class OptimizationContext:
                                      coverage)
       irredundant_objects = []
       for i,system in enumerate(result):
-          irredundant_objects.append(Irredundant_system(self,system,i+1))
+          irredundant_objects.append(Irredundant_system(self,
+                                                        system,
+                                                        i+1,
+                                                self.output_labels_final))
        
       for i in irredundant_objects:
           res.append([i.system for i in irredundant_objects])
@@ -828,7 +833,8 @@ class Irredundant_systems_multi():
   # the whole solution is composed of these systems
 
   
-  def __init__(self,context,system_multiple,index,output_labels):
+  def __init__(self,context,system_multiple,index,output_labels,
+               cov=None,inc=None):
       self.context=context
       self.system_multiple = system_multiple
       self.index = index
@@ -838,20 +844,63 @@ class Irredundant_systems_multi():
    
             
   def __str__(self):
+    
+          
       res = ""
       res+='---- Solution {} ----\n'.format(self.index)
       for j, system in enumerate(self.system_multiple):
          if any(str(impl.implicant) == '1' for impl in system):
-             res+=('1 <=> {}\n'.format(self.output_labels[j]))
+             res+=('{}: 1\n'.format(self.output_labels[j]))
          elif system == []:
-             res+=('0 <=> {}\n'.format(self.output_labels[j]))
+             res+=('{}: 0\n'.format(self.output_labels[j]))
          else:
-             res+=('{1} <=> {0}\n'.format(self.output_labels[j], 
+             res+=('{0}: {1}\n'.format(self.output_labels[j], 
                                           ' + '.join(impl.implicant 
                                                      for impl in system)))
       res+='\n'
-
       return res
+      
+  def get_descriptive_string(self,cov,inc):
+      res = ""
+      res+='---- Solution {} ----\n'.format(self.index)
+      for j, system in enumerate(self.system_multiple):
+
+          if any(str(impl.implicant) == '1' for impl in system):
+                 res+=('1 <=> {}\n'.format(self.output_labels[j]))
+          elif system == []:
+                 res+=('0 <=> {}\n'.format(self.output_labels[j]))
+          else:        
+              solution_cov = self.coverage_score()
+              solution_inc = self.inclusion_score()
+              if(solution_inc >= inc
+                 and solution_inc >= 0.5
+                 and solution_cov >= cov
+                 and solution_cov >=0.5):
+                res+= ('{1} <=> {0}\n'.format(self.output_labels[j], 
+                                              ' + '.join(impl.implicant 
+                                                         for impl in system)))
+             
+              elif(solution_inc >= inc  and solution_inc >= 0.50):
+                res+= ('{1} => {0}\n'.format(self.output_labels[j], 
+                                              ' + '.join(impl.implicant 
+                                                         for impl in system)))
+              elif(solution_cov >= cov  and solution_cov >= 0.50):
+                  res+= ('{1} <= {0}\n'.format(self.output_labels[j], 
+                                              ' + '.join(impl.implicant 
+                                                         for impl in system)))
+              else:
+                  
+                     res = "Warning! "
+                     break
+      return res           
+                     
+               
+                
+                  
+                  
+                     
+      
+  
   def __repr__(self):
       return str(self)
   
@@ -894,31 +943,32 @@ class Irredundant_systems_multi():
       
       
   def coverage_score(self):
-      
-        data = self.context.data
-        input_columns = self.context.input_labels
-        output_columns = self.context.output_labels
-        implicants = self.unique_implicants()
-        
-        
-        tmp_data = data[data.apply(lambda row_series: 
-                                   any(row_series[output]==1 
-                                       for output in output_columns),axis=1)][
-                                               input_columns]
-                                                   
-
-        
-        
-        self.cov_score = tmp_data.apply(
-            lambda row_series: 1.0 if any(all(x in y for x,y in 
-                                              zip(row_series.values,
-                                                  i.raw_implicant))
-                                          for i in implicants)
-                                  else 0.0, axis = 1).mean()
+        if self.cov_score is None:  
+            data = self.context.data
+            input_columns = self.context.input_labels
+            output_columns = self.context.output_labels
+            implicants = self.unique_implicants()
+            
+            
+            tmp_data = data[data.apply(lambda row_series: 
+                                       any(row_series[output]==1 
+                                           for output in output_columns),
+                                       axis=1)][
+                                                   input_columns]
+                                                       
+    
+            
+            
+            self.cov_score = tmp_data.apply(
+                lambda row_series: 1.0 if any(all(x in y for x,y in 
+                                                  zip(row_series.values,
+                                                      i.raw_implicant))
+                                              for i in implicants)
+                                      else 0.0, axis = 1).mean()
         return self.cov_score
-  
-  def inclusion_score(self):
       
+  def inclusion_score(self):
+    if self.incl_score is None:
        data = self.context.data
        input_columns = self.context.input_labels
        output_columns = self.context.output_labels
@@ -937,7 +987,7 @@ class Irredundant_systems_multi():
 
        data["new_output"] = new_out
        self.incl_score = data.loc[mask,"new_output"].mean()
-       return self.incl_score
+    return self.incl_score
       
 
       
@@ -967,12 +1017,13 @@ incl_score : float
 
 class Irredundant_system():
  
-  def __init__(self,context,system,index):
+  def __init__(self,context,system,index,output):
      self.context = context
      self.system = system
      self.index = index
      self.cov_score = None
      self.incl_score = None
+     self.output = output
       
     
     
@@ -980,6 +1031,27 @@ class Irredundant_system():
      return 'M{}: {}'.format(self.index,
                              ' + '.join(str(i.implicant)
                                         for i in self.system))
+  
+  def get_descriptive_string(self,cov,inc):
+      solution_cov = self.coverage_score()
+      solution_inc = self.inclusion_score()
+      
+      if (solution_cov >= cov
+          and solution_cov >= 0.5
+          and solution_inc >= 0.5
+          and solution_inc >= inc):
+          return '{} <=> {}'.format(' + '.join(str(i.implicant)
+                              for i in self.system),self.output)
+      elif (solution_cov >= cov and solution_cov >=0.5):
+          return '{} <= {}'.format(' + '.join(str(i.implicant)
+                              for i in self.system),self.output)
+      elif (solution_inc >= inc and solution_inc >=0.5):
+          return '{} => {}'.format(' + '.join(str(i.implicant)
+                              for i in self.system),self.output)
+      else:
+          return "Warning!"
+          
+     
  
   def impl_cov_score(self):
       data = self.context.data
@@ -1405,6 +1477,7 @@ class Implicant:
       self.implicant = implicant
       self.raw_implicant = raw_implicant
       self.coverage = coverage
+      self.useless = False
       
     def __str__(self):
         return('{0}'.format(self.implicant))
