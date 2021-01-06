@@ -768,7 +768,7 @@ class OptimizationContext:
                           self.prime_implicants[i].outputs])
      res.append(Irredundant_systems_multi(self,single_res,
                                           index,
-                                          self.output_labels_final[0]))
+                                          self.output_labels_final))
      
    return res
 
@@ -854,7 +854,7 @@ class Irredundant_systems_multi():
          elif system == []:
              res+=('{}: 0\n'.format(self.output_labels[j]))
          else:
-             res+=('{0}: {1}\n'.format(self.output_labels[j], 
+             res+=('{}: {}\n'.format(self.output_labels[j], 
                                           ' + '.join(impl.implicant 
                                                      for impl in system)))
       res+='\n'
