@@ -674,20 +674,21 @@ class OptimizationContext:
   
   def system_details(self):  
    if not self.multi_output:
-      df_res = [str(x).split(':')+[round(x.coverage_score(),2),
-                                  round(x.inclusion_score(),2)]
-               for x in self.get_irredundant_sums()]
+      solution_sample = self.get_irredundant_sums()[0]
+      
+              
    else:
-      df_res = [[x.index]+[""]+[round(x.coverage_score(),2),
-                                  round(x.inclusion_score(),2)]
-               for x in self.get_irredundant_systems()]
+      solution_sample = self.get_irredundant_systems()[0]  
+    
+
+                
       
       
-      
-   df_final = pd.DataFrame(df_res, columns = ['Label',
-                                              'System',
-                                              'Cov.',
-                                              'Inc.']) 
+   df_final = pd.DataFrame({
+          'Cov.' : round(solution_sample.coverage_score(),2),
+          'Inc.' : round(solution_sample.inclusion_score(),2) },
+       index = ["Solution detials"])
+
    return df_final
  
   """
