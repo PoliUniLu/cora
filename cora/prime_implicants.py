@@ -655,7 +655,7 @@ class OptimizationContext:
    irredundant_objects = []
    for i,system in enumerate(result):
 	   irredundant_objects.append(Irredundant_system(
-           self,system,i+1,self.output_labels_final[0]))
+           self,system,i+1))
    return irredundant_objects   
   
  
@@ -767,8 +767,8 @@ class OptimizationContext:
        single_res.append([self.prime_implicants[i] for i in r if j+1 in 
                           self.prime_implicants[i].outputs])
      res.append(Irredundant_systems_multi(self,single_res,
-                                          index,
-                                          self.output_labels_final))
+                                          index
+                                          ))
      
    return res
 
@@ -794,8 +794,8 @@ class OptimizationContext:
       for i,system in enumerate(result):
           irredundant_objects.append(Irredundant_system(self,
                                                         system,
-                                                        i+1,
-                                                self.output_labels_final))
+                                                        i+1
+                                                ))
        
       for i in irredundant_objects:
           res.append([i.system for i in irredundant_objects])
@@ -833,12 +833,12 @@ class Irredundant_systems_multi():
   # the whole solution is composed of these systems
 
   
-  def __init__(self,context,system_multiple,index,output_labels,
-               cov=None,inc=None):
+  def __init__(self,context,system_multiple,index
+               ):
       self.context=context
       self.system_multiple = system_multiple
       self.index = index
-      self.output_labels = output_labels
+      self.output_labels = context.output_labels_final
       self.cov_score = None 
       self.incl_score = None
    
@@ -860,7 +860,7 @@ class Irredundant_systems_multi():
       res+='\n'
       return res
       
-  def get_descriptive_string(self,cov,inc):
+  def get_descriptive_string(self,cov):
       res = ""
       res+='---- Solution {} ----\n'.format(self.index)
       for j, system in enumerate(self.system_multiple):
@@ -872,7 +872,7 @@ class Irredundant_systems_multi():
           else:        
               solution_cov = self.coverage_score()
               solution_inc = self.inclusion_score()
-              if(solution_inc >= inc
+              if(solution_inc >= self.context.inc_score1
                  and solution_inc >= 0.5
                  and solution_cov >= cov
                  and solution_cov >=0.5):
@@ -880,7 +880,8 @@ class Irredundant_systems_multi():
                                               ' + '.join(impl.implicant 
                                                          for impl in system)))
              
-              elif(solution_inc >= inc  and solution_inc >= 0.50):
+              elif(solution_inc >= self.context.inc_score1
+                   and solution_inc >= 0.50):
                 res+= ('{1} => {0}\n'.format(self.output_labels[j], 
                                               ' + '.join(impl.implicant 
                                                          for impl in system)))
@@ -1017,13 +1018,13 @@ incl_score : float
 
 class Irredundant_system():
  
-  def __init__(self,context,system,index,output):
+  def __init__(self,context,system,index):
      self.context = context
      self.system = system
      self.index = index
      self.cov_score = None
      self.incl_score = None
-     self.output = output
+     self.output = context.output_labels_final[0]
       
     
     
@@ -1032,20 +1033,20 @@ class Irredundant_system():
                              ' + '.join(str(i.implicant)
                                         for i in self.system))
   
-  def get_descriptive_string(self,cov,inc):
+  def get_descriptive_string(self,cov):
       solution_cov = self.coverage_score()
       solution_inc = self.inclusion_score()
       
       if (solution_cov >= cov
           and solution_cov >= 0.5
           and solution_inc >= 0.5
-          and solution_inc >= inc):
+          and solution_inc >= self.context.inc_score1):
           return '{} <=> {}'.format(' + '.join(str(i.implicant)
                               for i in self.system),self.output)
       elif (solution_cov >= cov and solution_cov >=0.5):
           return '{} <= {}'.format(' + '.join(str(i.implicant)
                               for i in self.system),self.output)
-      elif (solution_inc >= inc and solution_inc >=0.5):
+      elif (solution_inc >= self.context.inc_score1 and solution_inc >=0.5):
           return '{} => {}'.format(' + '.join(str(i.implicant)
                               for i in self.system),self.output)
       else:
