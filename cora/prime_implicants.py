@@ -10,6 +10,7 @@ import itertools
 from functools import reduce
 import string 
 import re
+from collections import defaultdict
 
 from .petric import find_irredundant_sums,boolean_multiply
 
@@ -687,7 +688,7 @@ class OptimizationContext:
    df_final = pd.DataFrame({
           'Cov.' : round(solution_sample.coverage_score(),2),
           'Inc.' : round(solution_sample.inclusion_score(),2) },
-       index = ["Solution detials"])
+       index = ["Solution details"])
 
    return df_final
  
@@ -909,40 +910,71 @@ class Irredundant_systems_multi():
   def unique_implicants(self):
       return [x for x in set(sum(self.system_multiple,list()))]
   
+  def sort_implicants(self):
+      implicants = self.unique_implicants()
+      res = defaultdict(list)
+      
+
+      for imp1 in implicants:
+          for imp2 in implicants:
+              if(len(imp1.outputs) ==1  
+                  and set(imp1.outputs).issubset(imp2.outputs)
+                  and imp1 != imp2):
+                      res[imp1].append(imp2)
+              elif (len(imp1.outputs) >1 
+                    and set(imp1.outputs) == set(imp2.outputs)
+                    and imp1 != imp2):
+                      res[imp1].append(imp2)
+      
+       # outputs_combinations = set(tuple(x.outputs) for x in implicants)
+       # res = defaultdict(list)
+       # for implicant in implicants:
+       #     for key in outputs_combinations:
+       #         if set(key).issubset(set(implicant.outputs)):
+       #             res[key].append(implicant)
+      return res
+            
+  
   def impl_cov_score(self):
       data = self.context.data
       input_columns = self.context.input_labels
       output_columns = self.context.output_labels
-      
-      tmp_data = data[input_columns]
-      mask=data.apply(lambda row_series: any(row_series[output]==1 for output 
-                                             in output_columns),axis=1)
-      
-      tmp_positive_data = tmp_data[mask] 
       implicants = self.unique_implicants()
-
-      impl_cov = []
-      cov_count = {}
-      for i,impl_i in enumerate(implicants):
-       
+      sorted_implicants = self.sort_implicants()
+      unique_cov = []
+     
+      for impl in sorted_implicants:
+          tmp_data = data[input_columns]
+          outputs = []
+          for i in impl.outputs:
+              outputs.append(output_columns[i-1])
+              
+          mask = data.apply(lambda row_series: all(row_series[output]==1 
+                                for output in outputs),axis=1)
+          
+          tmp_positive_data = tmp_data[mask]
           tmp = tmp_positive_data.apply(
-           lambda row_series: row_series.name if all(x in y for x,y in 
-                                                     zip(row_series.values,
-                                                         impl_i.raw_implicant))
-                                               else None, axis = 1)
-          s = set(x for x in tmp.values if not np.isnan(x))
-          impl_cov.append(s)
-          for x in s:
-              if x in cov_count.keys():
-                  cov_count[x] += 1
-              else:
-                  cov_count[x] = 1
-      unique_cov = [{x for x in ic if cov_count[x]==1} for ic in impl_cov]
+              lambda row_series: row_series.name if all (x in y for x,y in 
+                                                zip(row_series.values,
+                                                    impl.raw_implicant))
+                                                 else np.NAN, axis =1)
+          s_in = set( x for x in tmp.values if not np.isnan(x))
+          s_out = set()
+          for  imp_2 in sorted_implicants[impl]:
+            tmp2 =  tmp_positive_data.apply(
+            lambda row_series: row_series.name if all (x in y for x,y in 
+                                                zip(row_series.values,
+                                                    imp_2.raw_implicant))
+                                                 else np.NAN, axis =1)
+            s_out.update(set(x for x in tmp2.values if not np.isnan(x)))
+          
+          unique_cov.append(len(s_in - s_out)/len(tmp_positive_data.index))
       
-      return {str(impl_i.implicant): len(ic)/len(tmp_positive_data.index)
-              for impl_i, ic in zip(implicants, unique_cov)}
+      return {str(impl_i.implicant): coverage
+              for impl_i, coverage in zip(implicants, unique_cov)}    
+          
+          
 
-      
       
   def coverage_score(self):
         if self.cov_score is None:  
