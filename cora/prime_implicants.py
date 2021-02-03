@@ -17,7 +17,9 @@ from .petric import find_irredundant_sums,boolean_multiply
 
 COLUMN_LABELS = list(string.ascii_uppercase) + ["AA", "BB", "CC","DD",
                                                 "EE", "FF"]
-OUTPUT_PATTERN=re.compile("^([a-zA-Z0-9]+)\{([0-9]+(,[0-9]+)*)\}$")                                                
+OUTPUT_PATTERN = re.compile("^([a-zA-Z0-9]+)\{([0-9]+(,[0-9]+)*)\}$")  
+REGULAR_OUTPUT = re.compile("^([a-zA-Z0-9]+)")
+TEMPORAL_COL_PATTERN = re.compile("^([a-zA-Z0-9]+)\{([0-9]+(,[0-9]+)*)\}$")                                              
 
 def concatenate_strings(arr):
     return ','.join([str(x) for x in arr])
@@ -256,6 +258,7 @@ def minterm_to_str(minterm, levels, labels, tag,multi_output):
     return res if res != '' else '1'
 
 
+
 """
 Optimization Context contains the data and information to preform the 
 computation.
@@ -310,6 +313,7 @@ class OptimizationContext:
                output_labels,
                input_labels=None,
                case_col=None,
+               temporal_labels=None,
                n_cut = 1,
                inc_score1 = 1,
                inc_score2=None,
@@ -327,6 +331,7 @@ class OptimizationContext:
     self.rename_columns=rename_columns
     self.case_col=case_col
     self.output_labels=output_labels
+    self.temporal_labels=temporal_labels
     self.generate_missing = generateMissing
     self.prime_implicants = None
     self.prepare_rows_called = False
@@ -337,14 +342,96 @@ class OptimizationContext:
  
  # Function to clean and aggregate data. Removes duplicities and 
  # inconsistencies.
-  
+ 
+
+    
   def _preprocess_data(self):
-    # ouput column preprocess
+    
+    class InvalidDataException(Exception):
+        pass
+    
+    # temporal columns
+    if self.temporal_labels:
+        if any(TEMPORAL_COL_PATTERN.match(i) is None for i in
+                                             self.temporal_labels):
+                raise RuntimeError("Unssuported temp columns entered!")
+    # valid data
+        tmp_t_labels = {m.group(1):m.group(2) 
+                        for m in [TEMPORAL_COL_PATTERN.match(i)
+                        for i in self.temporal_labels]}
+
+        t_labels = tmp_t_labels.keys()
+        if(not all(self.data[t_labels].apply(
+                    lambda row_series : all( (pd.isna(x) or int(x)==1)
+                                    for x in row_series),axis = 0))):
+         
+            raise InvalidDataException("Invalid data input!")
+        
+        input_data = [x for x in filter(lambda x: x not in t_labels,self.data)]
+        if( not all(self.data[input_data].apply(
+                lambda row_series : all(isinstance(x,int)
+                                for x in row_series),axis = 0))):
+         
+            raise InvalidDataException("Invalid data input!")
+        tmp_idx  = [list(int(x) for x in i.split(",")) 
+                for i in tmp_t_labels.values()]
+        for i in tmp_idx:
+          if(len(i)!=len(set(i)) 
+             or max(i) >len(self.output_labels)+1 
+             or min(i) == 0):
+                 raise RuntimeError("Temporal index out of range!")
+  
+        for i in tmp_t_labels.keys():
+           index =list(int(x) -1 for x in tmp_t_labels[i].split(',')) 
+           positive_temporal_col_data = self.data[self.data[i] == 1]
+           print(positive_temporal_col_data.iloc[:,index])
+           if not all(positive_temporal_col_data.iloc[:,index].eq(1)):
+               raise RuntimeError("Wrong values in temporal column!")
+   
+    else:
+        
+    
+        if(not all(self.data.apply(
+                lambda row_series : all(isinstance(x,int)
+                                for x in row_series),axis = 0))):
+         
+            raise InvalidDataException("Invalid data input!")
+         
+    
+
+    # input_labels check
+    
+    if self.input_labels is None:
+          self.input_labels = [x for x in list(self.data.columns) if 
+                               (x not in self.output_labels) 
+                                and (x!=self.case_col)] 
+    input_data = self.data[self.input_labels]
+    
+    if (any(input_data.apply(lambda row_series: True if
+        len(row_series.unique()) ==1 else False,axis = 0))):
+        
+            raise InvalidDataException("Input columns can not contain"+ 
+                                       " a constat!")
+   
+    
+ 
+       
+    
+    
     
     if all(OUTPUT_PATTERN.match(i) is not None for i in self.output_labels):
         self.multivalue_output = True
-    elif any(OUTPUT_PATTERN.match(i) is not None for i in self.output_labels):
-         raise RuntimeError("Unssuported output entered!")
+    
+    elif not all(REGULAR_OUTPUT.match(i) is not None for i 
+                 in self.output_labels):
+        raise RuntimeError("Unssuported output entered!")
+        
+    
+ 
+    
+    #if any(OUTPUT_PATTERN.match(i) is not None for i in self.output_labels):
+     #    raise RuntimeError("Unssuported output entered!")
+    
     
     if self.multivalue_output:
         outcols_value_map = dict()
@@ -364,10 +451,7 @@ class OptimizationContext:
          self.output_labels_final = self.output_labels
     
     data_tmp = self.data.copy()
-    if self.input_labels is None:
-          self.input_labels = [x for x in list(self.data.columns) if 
-                               (x not in self.output_labels) 
-                                and (x!=self.case_col)]       
+          
     if(self.case_col is None or self.case_col == '-None-'):
         data_tmp['case_col'] = data_tmp.index.values
         self.case_col = 'case_col'
@@ -414,6 +498,7 @@ class OptimizationContext:
         self.input_labels = COLUMN_LABELS[:l]
 
     self.preprocessed_data_raw = res
+    print( self.preprocessed_data_raw)
     self.preprocessed_data = res[self.input_labels + self.output_labels]   
     self.preprocessing = True
        
@@ -872,9 +957,15 @@ class Irredundant_systems_multi():
           elif system == []:
                  res+=('0 <=> {}\n'.format(self.output_labels[j]))
           else:        
+              if(self.context.inc_score2 is not None and 
+                 self.context.U == 0 ):
+                  final_inc_score = self.context.inc_score2
+              else:
+                 final_inc_score = self.context.inc_score1
+                 
               solution_cov = self.coverage_score()
               solution_inc = self.inclusion_score()
-              if(solution_inc >= self.context.inc_score1
+              if(solution_inc >= final_inc_score
                  and solution_inc >= 0.5
                  and solution_cov >= cov
                  and solution_cov >=0.5):
@@ -882,7 +973,7 @@ class Irredundant_systems_multi():
                                               ' + '.join(impl.implicant 
                                                          for impl in system)))
              
-              elif(solution_inc >= self.context.inc_score1
+              elif(solution_inc >=final_inc_score
                    and solution_inc >= 0.50):
                 res+= ('{1} => {0}\n'.format(self.output_labels[j], 
                                               ' + '.join(impl.implicant 
@@ -1066,20 +1157,29 @@ class Irredundant_system():
                              ' + '.join(str(i.implicant)
                                         for i in self.system))
   
+    
   def get_descriptive_string(self,cov):
       solution_cov = self.coverage_score()
       solution_inc = self.inclusion_score()
       
+      if(self.context.inc_score2 is not None and 
+         self.context.U == 0 ):
+          final_inc_score = self.context.inc_score2
+      else:
+          final_inc_score = self.context.inc_score1
+      
+              
+      
       if (solution_cov >= cov
           and solution_cov >= 0.5
           and solution_inc >= 0.5
-          and solution_inc >= self.context.inc_score1):
+          and solution_inc >= final_inc_score):
           return '{} <=> {}'.format(' + '.join(str(i.implicant)
                               for i in self.system),self.output)
       elif (solution_cov >= cov and solution_cov >=0.5):
           return '{} <= {}'.format(' + '.join(str(i.implicant)
                               for i in self.system),self.output)
-      elif (solution_inc >= self.context.inc_score1 and solution_inc >=0.5):
+      elif (solution_inc >= final_inc_score and solution_inc >=0.5):
           return '{} => {}'.format(' + '.join(str(i.implicant)
                               for i in self.system),self.output)
       else:
