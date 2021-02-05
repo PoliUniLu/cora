@@ -396,28 +396,8 @@ class OptimizationContext:
                                 for x in row_series),axis = 0))):
          
             raise InvalidDataException("Invalid data input!")
-         
-    
-
-    # input_labels check
-    
-    if self.input_labels is None:
-          self.input_labels = [x for x in list(self.data.columns) if 
-                               (x not in self.output_labels) 
-                                and (x!=self.case_col)] 
-    input_data = self.data[self.input_labels]
-    
-    if (any(input_data.apply(lambda row_series: True if
-        len(row_series.unique()) ==1 else False,axis = 0))):
         
-            raise InvalidDataException("Input columns can not contain"+ 
-                                       " a constat!")
-   
-    
- 
-       
-    
-    
+  
     
     if all(OUTPUT_PATTERN.match(i) is not None for i in self.output_labels):
         self.multivalue_output = True
@@ -449,6 +429,26 @@ class OptimizationContext:
                                     for k in outcols_value_map.keys()]
     else:
          self.output_labels_final = self.output_labels
+         
+   
+    # input_labels check
+    
+    if self.input_labels is None:
+          self.input_labels = [x for x in list(self.data.columns) if 
+                               (x not in self.output_labels) 
+                                and (x!=self.case_col)] 
+    input_data = self.data[self.input_labels]
+    
+    if (any(input_data.apply(lambda row_series: True if
+        len(row_series.unique()) ==1 else False,axis = 0))):
+        
+            raise InvalidDataException("Input columns can not contain"+ 
+                                       " a constat!")      
+         
+         
+         
+         
+         
     
     data_tmp = self.data.copy()
           
@@ -483,8 +483,8 @@ class OptimizationContext:
         if (self.U == 0):   
             data_grouped[self.output_labels] = (data_grouped[inc_columns]>=
                                               self.inc_score2).astype(int)
-            
-        
+   
+    data_grouped.columns = data_grouped.columns.astype(list)
     res = data_grouped.reset_index()
     if self.rename_columns:
         rename_dic = {
@@ -498,7 +498,6 @@ class OptimizationContext:
         self.input_labels = COLUMN_LABELS[:l]
 
     self.preprocessed_data_raw = res
-    print( self.preprocessed_data_raw)
     self.preprocessed_data = res[self.input_labels + self.output_labels]   
     self.preprocessing = True
        
