@@ -390,8 +390,8 @@ class OptimizationContext:
    
     else:
         
-    
-        if(not all(self.data.apply(
+        inputs = list(x  for x in self.data.columns if x != self.case_col)
+        if(not all(self.data[inputs].apply(
                 lambda row_series : all(isinstance(x,int)
                                 for x in row_series),axis = 0))):
          
