@@ -351,7 +351,7 @@ class OptimizationContext:
         pass
     
     # temporal columns
-    if self.temporal_labels:
+    if self.temporal_labels is not None:
         if any(TEMPORAL_COL_PATTERN.match(i) is None for i in
                                              self.temporal_labels):
                 raise RuntimeError("Unssuported temp columns entered!")
