@@ -484,7 +484,6 @@ class OptimizationContext:
             data_grouped[self.output_labels] = (data_grouped[inc_columns]>=
                                               self.inc_score2).astype(int)
    
-    data_grouped.columns = data_grouped.columns.astype(list)
     res = data_grouped.reset_index()
     if self.rename_columns:
         rename_dic = {
