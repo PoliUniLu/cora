@@ -18,6 +18,10 @@ Use the package manager [pip](https://pip.pypa.io/en/stable/) to install CORA.
 ```bash
 pip install CORA
 ```
+## Google Colab
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/gist/ZuzanaSebb/5c18e152a94ccf76d176ad95889ae36c/cora-1-1-0.ipynb)
+
 
 ## References
 
