@@ -699,15 +699,13 @@ class OptimizationContext:
   """
   
   def prime_implicant_chart(self):
-    if not self.prime_implicants:
-        self.get_prime_implicants()
-  
+    prime_implicants = self.get_prime_implicants()
     cares = set().union(*[set(x.coverage) for x
-                          in self.get_prime_implicants()])
+                          in prime_implicants])
    
-    res = np.zeros((len(cares), len(self.prime_implicants)), dtype=bool)
+    res = np.zeros((len(cares), len(prime_implicants)), dtype=bool)
     res_idx_to_care = {v:k for k,v in enumerate(cares)}
-    for row_nr,implicant in enumerate(self.prime_implicants):
+    for row_nr,implicant in enumerate(prime_implicants):
       for x in implicant.coverage:
         if x not in cares:
           continue
@@ -717,11 +715,11 @@ class OptimizationContext:
       return pd.DataFrame(res.transpose(),
                           columns=cares,
                           index=['{}, {}'.format(x.implicant,x.outputs)
-                                 for x in self.prime_implicants]).astype(int)   
+                                 for x in prime_implicants]).astype(int)   
     return pd.DataFrame(
         res.transpose(),
         columns=cares,
-        index=[(x.implicant) for x in self.prime_implicants]).astype(int)
+        index=[(x.implicant) for x in prime_implicants]).astype(int)
     
     
   """
@@ -748,17 +746,18 @@ class OptimizationContext:
 
        
   def get_irredundant_sums(self, max_depth = None):  
-   if not self.prime_implicants:
-        self.get_prime_implicants()
+   if self.irredundat_sums is not None:
+       return self.irredundat_sums
+   prime_implicants = self.get_prime_implicants()
         
-   if len(self.get_prime_implicants()) == 0:
+   if len(prime_implicants) == 0:
        return []
         
    if self.multi_output:
         raise RuntimeError("irredudant sums are not supported in multi output\
                           mode. Use get_irredundant_systems")
    result = find_irredundant_sums(([(i, i.coverage)
-                                    for i in self.prime_implicants]),
+                                    for i in prime_implicants]),
                                   self.cares,max_depth
                                   )
    irredundant_objects = []
@@ -783,21 +782,15 @@ class OptimizationContext:
  
   
   def system_details(self):  
-      
+   irr_sums = self.get_irredundant_sums()
+   irr_systems = self.get_irredundant_systems()
+
    if not self.multi_output:
-      if not self.irredundat_sums:
-          self.get_irredundant_sums()
-      solution_sample = self.get_irredundant_sums()[0]
+      solution_sample = irr_sums[0]
               
    else:
-      if not self.irredundant_systems:
-          self.get_irredundant_systems()
-      solution_sample = self.get_irredundant_systems()[0]  
-    
-
-                
-      
-      
+      solution_sample = irr_systems[0]  
+        
    df_final = pd.DataFrame({
           'Cov.' : round(solution_sample.coverage_score(),2),
           'Inc.' : round(solution_sample.inclusion_score(),2) },
@@ -817,41 +810,32 @@ class OptimizationContext:
   """    
 
   def pi_details(self):  
-   if not self.prime_implicants:
-       self.get_prime_implicants()
+   prime_implicants = self.get_prime_implicants()
+   irr_sums = self.get_irredundant_sums()
+   irr_systems = self.get_irredundant_systems()
+   
    cov_x=[(x.implicant,
            round(x.coverage_score(),2),
-           round(x.inclusion_score(),2))for x in self.get_prime_implicants()]
+           round(x.inclusion_score(),2))for x in prime_implicants]
    
    if not self.multi_output:
-       if not self.irredundat_sums:
-           self.get_irredundant_sums()
-           
-       new_cols = ["M"+str(x.index) for x in self.get_irredundant_sums()] 
-       cov_per_impl = [x.impl_cov_score() for x in self.get_irredundant_sums()]
+       new_cols = ["M"+str(x.index) for x in irr_sums] 
+       cov_per_impl = [x.impl_cov_score() for x in irr_sums]
 
    else:
-       if not self.irredundant_systems:
-           self.get_irredundant_systems()
-           
-       new_cols = ["S"+str(x.index) for x in self.get_irredundant_systems()]
-       cov_per_impl = [x.impl_cov_score() for x in 
-                       self.get_irredundant_systems()]
+       new_cols = ["S"+str(x.index) for x in irr_systems]
+       cov_per_impl = [x.impl_cov_score() for x in irr_systems]
 
    df_implicant = pd.DataFrame(cov_x,columns=['PI','Cov.r','Inc.'])
    for f_cov_per_impl, f_label in zip(cov_per_impl, new_cols):
        tmp = [ round(f_cov_per_impl[x.implicant],2) if x.implicant
               in f_cov_per_impl.keys() else None 
-              for x in self.get_prime_implicants()]
+              for x in prime_implicants]
        df_implicant[f_label] = tmp
 
 
    return df_implicant    
 
-      
-      
-    
-   
       
   
   """
@@ -873,8 +857,11 @@ class OptimizationContext:
   
     
   def get_irredundant_systems(self):
-   if not self.prime_implicants:
-        self.get_prime_implicants()
+   if self.irredundant_systems is not None:
+       return self.irredundant_systems
+   
+       
+   prime_implicants = self.get_prime_implicants()
    
    if not self.multi_output:
         raise RuntimeError("irredudant systems are not supported in single\
@@ -889,8 +876,8 @@ class OptimizationContext:
      index = index  + 1  
      single_res = []
      for j in range(l):
-       single_res.append([self.prime_implicants[i] for i in r if j+1 in 
-                          self.prime_implicants[i].outputs])
+       single_res.append([prime_implicants[i] for i in r if j+1 in 
+                          prime_implicants[i].outputs])
      res.append(Irredundant_systems_multi(self,single_res,
                                           index
                                          ))
@@ -901,11 +888,12 @@ class OptimizationContext:
 
 
   def _single_ir_systems_for_multi_output(self):
+    prime_implicants = self.get_prime_implicants()
     l = len(self.output_labels)
     imp_per_output = []
     for i in range(l):
       imp_per_output.append(list())
-    for i,impl in enumerate(self.prime_implicants):
+    for i,impl in enumerate(prime_implicants):
       for j in range(l):
         if (j+1) in set(impl.outputs):
           imp_per_output[j].append((i,impl)) 
