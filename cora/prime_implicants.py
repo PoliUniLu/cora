@@ -842,7 +842,7 @@ class OptimizationContext:
        df_implicant[f_label] = tmp
 
    self.pi_details= df_implicant  
-   return    
+   return self.pi_details   
 
       
   
