@@ -22,6 +22,11 @@ pip install CORA
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/gist/ZuzanaSebb/551cd0cd72abecf85cd5656bdd29c35a/cora-1-0-0.ipynb)
 
+## Citation Info
+
+When using CORA, please cite as follows:
+
+Sebechlebská, Zuzana, Lusine Mkrtchyan and Alrik Thiem. 2021. CORA: A Python package for Combinational Regularity Analysis, Version *current version number*. Available from: https://github.com/PoliUniLu/cora.
 
 ## References
 
