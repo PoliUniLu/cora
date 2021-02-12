@@ -340,6 +340,9 @@ class OptimizationContext:
     self.multi_output=len(self.output_labels)>1
     self.rename_dictionary=None
     self.multivalue_output=False
+    self.pi_details=None
+    self.sol_details=None
+    self.pi_chart=None
     
  
  # Function to clean and aggregate data. Removes duplicities and 
@@ -699,6 +702,8 @@ class OptimizationContext:
   """
   
   def prime_implicant_chart(self):
+    if self.pi_chart is not None:
+        return self.pi_chart
     prime_implicants = self.get_prime_implicants()
     cares = set().union(*[set(x.coverage) for x
                           in prime_implicants])
@@ -716,11 +721,11 @@ class OptimizationContext:
                           columns=cares,
                           index=['{}, {}'.format(x.implicant,x.outputs)
                                  for x in prime_implicants]).astype(int)   
-    return pd.DataFrame(
+    self.pi_chart =  pd.DataFrame(
         res.transpose(),
         columns=cares,
         index=[(x.implicant) for x in prime_implicants]).astype(int)
-    
+    return self.pi_chart 
     
   """
   Function computes all irredundat solutions for input data with 
@@ -781,7 +786,9 @@ class OptimizationContext:
   """  
  
   
-  def system_details(self):  
+  def system_details(self):
+   if self.sol_details is not None:
+       return self.sol_details
    if not self.multi_output:
       irr_sums = self.get_irredundant_sums()
       solution_sample = irr_sums[0]
@@ -790,12 +797,12 @@ class OptimizationContext:
       irr_systems = self.get_irredundant_systems()
       solution_sample = irr_systems[0]  
         
-   df_final = pd.DataFrame({
+   self.sol_details = pd.DataFrame({
           'Cov.' : round(solution_sample.coverage_score(),2),
           'Inc.' : round(solution_sample.inclusion_score(),2) },
        index = ["Solution details"])
 
-   return df_final
+   return self.sol_details
  
   """
   Function gives a statistical overview of all prime implicants.
@@ -809,6 +816,8 @@ class OptimizationContext:
   """    
 
   def pi_details(self):  
+   if self.pi_details is not None:
+       return self.pi_details
    prime_implicants = self.get_prime_implicants()
    
    cov_x=[(x.implicant,
@@ -832,8 +841,8 @@ class OptimizationContext:
               for x in prime_implicants]
        df_implicant[f_label] = tmp
 
-
-   return df_implicant    
+   self.pi_details= df_implicant  
+   return    
 
       
   
