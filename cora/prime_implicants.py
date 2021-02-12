@@ -748,7 +748,7 @@ class OptimizationContext:
 
        
   def get_irredundant_sums(self, max_depth = None):  
-   if not self.primme_implicants:
+   if not self.prime_implicants:
         self.get_prime_implicants()
         
    if len(self.get_prime_implicants()) == 0:
