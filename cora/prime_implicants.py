@@ -782,13 +782,12 @@ class OptimizationContext:
  
   
   def system_details(self):  
-   irr_sums = self.get_irredundant_sums()
-   irr_systems = self.get_irredundant_systems()
-
    if not self.multi_output:
+      irr_sums = self.get_irredundant_sums()
       solution_sample = irr_sums[0]
               
    else:
+      irr_systems = self.get_irredundant_systems()
       solution_sample = irr_systems[0]  
         
    df_final = pd.DataFrame({
@@ -811,18 +810,18 @@ class OptimizationContext:
 
   def pi_details(self):  
    prime_implicants = self.get_prime_implicants()
-   irr_sums = self.get_irredundant_sums()
-   irr_systems = self.get_irredundant_systems()
    
    cov_x=[(x.implicant,
            round(x.coverage_score(),2),
            round(x.inclusion_score(),2))for x in prime_implicants]
    
    if not self.multi_output:
+       irr_sums = self.get_irredundant_sums()
        new_cols = ["M"+str(x.index) for x in irr_sums] 
        cov_per_impl = [x.impl_cov_score() for x in irr_sums]
 
    else:
+       irr_systems = self.get_irredundant_systems()
        new_cols = ["S"+str(x.index) for x in irr_systems]
        cov_per_impl = [x.impl_cov_score() for x in irr_systems]
 
