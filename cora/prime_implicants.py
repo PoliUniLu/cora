@@ -334,6 +334,8 @@ class OptimizationContext:
     self.temporal_labels=temporal_labels
     self.generate_missing = generateMissing
     self.prime_implicants = None
+    self.irredundat_sums = None
+    self.irredundant_systems = None
     self.prepare_rows_called = False
     self.multi_output=len(self.output_labels)>1
     self.rename_dictionary=None
@@ -351,10 +353,12 @@ class OptimizationContext:
         pass
     
     # temporal columns
+    # auxiliary, indicator columns
+    
     if self.temporal_labels is not None:
         if any(TEMPORAL_COL_PATTERN.match(i) is None for i in
                                              self.temporal_labels):
-                raise RuntimeError("Unssuported temp columns entered!")
+                raise RuntimeError("Unsupported temp columns entered!")
     # valid data
         tmp_t_labels = {m.group(1):m.group(2) 
                         for m in [TEMPORAL_COL_PATTERN.match(i)
@@ -362,17 +366,22 @@ class OptimizationContext:
 
         t_labels = tmp_t_labels.keys()
         if(not all(self.data[t_labels].apply(
-                    lambda row_series : all( (pd.isna(x) or int(x)==1)
+                    lambda row_series : all( (pd.isna(x) 
+                                              or int(x)==1
+                                              or int(x)==0)
                                     for x in row_series),axis = 0))):
          
             raise InvalidDataException("Invalid data input!")
         
-        input_data = [x for x in filter(lambda x: x not in t_labels,self.data)]
+        input_data = [x for x in filter(lambda x: x not in t_labels,self.data)
+                      if x != self.case_col ]
+        
         if( not all(self.data[input_data].apply(
                 lambda row_series : all(isinstance(x,int)
                                 for x in row_series),axis = 0))):
          
             raise InvalidDataException("Invalid data input!")
+            
         tmp_idx  = [list(int(x) for x in i.split(",")) 
                 for i in tmp_t_labels.values()]
         for i in tmp_idx:
@@ -383,10 +392,22 @@ class OptimizationContext:
   
         for i in tmp_t_labels.keys():
            index =list(int(x) -1 for x in tmp_t_labels[i].split(',')) 
-           positive_temporal_col_data = self.data[self.data[i] == 1]
+           positive_temporal_col_data = self.data[self.data.apply(
+               lambda row_series: all(x ==1 
+                                      or x==0 for x in row_series),axis =1)]
            print(positive_temporal_col_data.iloc[:,index])
-           if not all(positive_temporal_col_data.iloc[:,index].eq(1)):
-               raise RuntimeError("Wrong values in temporal column!")
+           if not positive_temporal_col_data.iloc[:,index].all(axis = None):
+               raise RuntimeError("Incorrect values in auxiliary column!")
+           #positive_in_cols = self.data
+           #if (all(positive_temporal_col_data.iloc[:,index].eq(1)) and 
+               
+        #for col in t_labels:
+            
+         #   l  = len(self.data) - len(self.data[self.data[t_label] ])       
+               
+               
+               
+            
    
     else:
         
@@ -404,7 +425,7 @@ class OptimizationContext:
     
     elif not all(REGULAR_OUTPUT.match(i) is not None for i 
                  in self.output_labels):
-        raise RuntimeError("Unssuported output entered!")
+        raise RuntimeError("Unsupported output entered!")
         
     
  
@@ -442,8 +463,8 @@ class OptimizationContext:
     if (any(input_data.apply(lambda row_series: True if
         len(row_series.unique()) ==1 else False,axis = 0))):
         
-            raise InvalidDataException("Input columns can not contain"+ 
-                                       " a constat!")      
+            raise InvalidDataException("Please respecify your input data",\
+                                       +" constants are not allowed!")      
          
          
          
@@ -678,7 +699,8 @@ class OptimizationContext:
   """
   
   def prime_implicant_chart(self):
-    
+    if not self.prime_implicants:
+        self.get_prime_implicants()
   
     cares = set().union(*[set(x.coverage) for x
                           in self.get_prime_implicants()])
@@ -725,7 +747,10 @@ class OptimizationContext:
   """
 
        
-  def get_irredundant_sums(self, max_depth = None):     
+  def get_irredundant_sums(self, max_depth = None):  
+   if not self.primme_implicants:
+        self.get_prime_implicants()
+        
    if len(self.get_prime_implicants()) == 0:
        return []
         
@@ -740,7 +765,8 @@ class OptimizationContext:
    for i,system in enumerate(result):
 	   irredundant_objects.append(Irredundant_system(
            self,system,i+1))
-   return irredundant_objects   
+   self.irredundat_sums = irredundant_objects
+   return self.irredundat_sums    
   
  
   """
@@ -757,11 +783,15 @@ class OptimizationContext:
  
   
   def system_details(self):  
-   if not self.multi_output:
-      solution_sample = self.get_irredundant_sums()[0]
       
+   if not self.multi_output:
+      if not self.irredundat_sums:
+          self.get_irredundant_sums()
+      solution_sample = self.get_irredundant_sums()[0]
               
    else:
+      if not self.irredundant_systems:
+          self.get_irredundant_systems()
       solution_sample = self.get_irredundant_systems()[0]  
     
 
@@ -787,14 +817,23 @@ class OptimizationContext:
   """    
 
   def pi_details(self):  
+   if not self.prime_implicants:
+       self.get_prime_implicants()
    cov_x=[(x.implicant,
            round(x.coverage_score(),2),
            round(x.inclusion_score(),2))for x in self.get_prime_implicants()]
+   
    if not self.multi_output:
+       if not self.irredundat_sums:
+           self.get_irredundant_sums()
+           
        new_cols = ["M"+str(x.index) for x in self.get_irredundant_sums()] 
        cov_per_impl = [x.impl_cov_score() for x in self.get_irredundant_sums()]
 
    else:
+       if not self.irredundant_systems:
+           self.get_irredundant_systems()
+           
        new_cols = ["S"+str(x.index) for x in self.get_irredundant_systems()]
        cov_per_impl = [x.impl_cov_score() for x in 
                        self.get_irredundant_systems()]
@@ -834,8 +873,9 @@ class OptimizationContext:
   
     
   def get_irredundant_systems(self):
-   if not self.get_prime_implicants():
+   if not self.prime_implicants:
         self.get_prime_implicants()
+   
    if not self.multi_output:
         raise RuntimeError("irredudant systems are not supported in single\
                            output mode. Use get_irredundant_sums")     
@@ -853,9 +893,9 @@ class OptimizationContext:
                           self.prime_implicants[i].outputs])
      res.append(Irredundant_systems_multi(self,single_res,
                                           index
-                                          ))
-     
-   return res
+                                         ))
+   self.irredundant_systems = res  
+   return  self.irredundant_systems
 
 
 
