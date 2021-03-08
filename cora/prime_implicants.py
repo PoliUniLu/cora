@@ -19,7 +19,7 @@ COLUMN_LABELS = list(string.ascii_uppercase) + ["AA", "BB", "CC","DD",
                                                 "EE", "FF"]
 OUTPUT_PATTERN = re.compile("^([a-zA-Z0-9]+)\{([0-9]+(,[0-9]+)*)\}$")  
 REGULAR_OUTPUT = re.compile("^([a-zA-Z0-9]+)")
-TEMPORAL_COL_PATTERN = re.compile("^([a-zA-Z0-9]+)\{([0-9]+(,[0-9]+)*)\}$")                                              
+TEMPORAL_COL_PATTERN = re.compile("^([a-zA-Z0-9-\_]+)\{([0-9]+(,[0-9]+)*)\}$")                                              
 
 def concatenate_strings(arr):
     return ','.join([str(x) for x in arr])
@@ -232,7 +232,26 @@ def eliminate_minterms(table,elements, levels,multi_output):
                 was_eliminated[j] = True
     return [x for we,x in zip(was_eliminated,decomposed) if not we]
 
+def eliminate_useless_temp_implicants(impl_str,temporal_labels,input_labels):
+       implicant_parts =[i.lower() for i in impl_str.split('*')]
+       tmp_t_labels = {m.group(1):m.group(2) 
+                        for m in [TEMPORAL_COL_PATTERN.match(i)
+                        for i in temporal_labels]}
 
+       t_labels = tmp_t_labels.keys()
+       for label in t_labels:
+           if label.lower() in implicant_parts:
+              indx = [int(x)-1 for x in  tmp_t_labels[label].split(",")]
+              for possible_literal in [input_labels[i] for i in indx]:
+                  if possible_literal.lower() not in implicant_parts:
+                      return False
+                  
+              
+               
+       return True
+            
+            
+    
     
 def find_index2(arr, x):
     return np.where((arr == x).all(axis=1))[0]  
@@ -255,6 +274,7 @@ def minterm_to_str(minterm, levels, labels, tag,multi_output):
     tmp = [set_to_str(x, y, z, is_multi_level) for x,y,z in
            zip(minterm, levels, labels)]
     res = '{}'.format('*'.join(x for x in tmp if x != ''))
+    
     return res if res != '' else '1'
 
 
@@ -347,7 +367,7 @@ class OptimizationContext:
  
  # Function to clean and aggregate data. Removes duplicities and 
  # inconsistencies.
- 
+      
 
     
   def _preprocess_data(self):
@@ -388,9 +408,11 @@ class OptimizationContext:
         tmp_idx  = [list(int(x) for x in i.split(",")) 
                 for i in tmp_t_labels.values()]
         for i in tmp_idx:
-          if(len(i)!=len(set(i)) 
-             or max(i) >len(self.output_labels)+1 
-             or min(i) == 0):
+          if(len(i) != 2
+             or(max(i) >len(self.data.columns)-
+                        len(self.output_labels)-len(self.temporal_labels)+1) 
+             or min(i) < 1
+             or max(i) == min(i)):
                  raise RuntimeError("Temporal index out of range!")
   
         for i in tmp_t_labels.keys():
@@ -398,18 +420,22 @@ class OptimizationContext:
            positive_temporal_col_data = self.data[self.data.apply(
                lambda row_series: all(x ==1 
                                       or x==0 for x in row_series),axis =1)]
-           print(positive_temporal_col_data.iloc[:,index])
            if not positive_temporal_col_data.iloc[:,index].all(axis = None):
                raise RuntimeError("Incorrect values in auxiliary column!")
-           #positive_in_cols = self.data
-           #if (all(positive_temporal_col_data.iloc[:,index].eq(1)) and 
-               
-        #for col in t_labels:
-            
-         #   l  = len(self.data) - len(self.data[self.data[t_label] ])       
+        
                
                
-               
+        tmp = self.data[t_labels].apply(
+                    lambda row_series :[[int(x)] if not pd.isna(x) 
+                                           else [0,1] for x in row_series],
+                                           axis = 0)
+        
+        for i,label in enumerate(t_labels):
+            self.data[label] = tmp.iloc[:,i]
+            data_tmp = self.data.explode(label)
+            self.data = data_tmp
+       
+ 
             
    
     else:
@@ -431,10 +457,6 @@ class OptimizationContext:
         raise RuntimeError("Unsupported output entered!")
         
     
- 
-    
-    #if any(OUTPUT_PATTERN.match(i) is not None for i in self.output_labels):
-     #    raise RuntimeError("Unssuported output entered!")
     
     
     if self.multivalue_output:
@@ -479,7 +501,6 @@ class OptimizationContext:
     if(self.case_col is None or self.case_col == '-None-'):
         data_tmp['case_col'] = data_tmp.index.values
         self.case_col = 'case_col'
-    
     # inclusion_score is a function for the data aggregation
     params = {'Inc_{}'.format(c) : (c,inclusion_score) 
               for c in self.output_labels
@@ -657,7 +678,16 @@ class OptimizationContext:
                                           self.multi_output)
     coverage_dict = create_care_translation_dict(self.cares,
                                                  self.positive_cares)
-
+    
+    prime_implicants = filter(lambda x:
+        eliminate_useless_temp_implicants(
+            minterm_to_str(x[0],self.levels,self.labels,0,self.multi_output),
+            self.temporal_labels,
+            self.input_labels), 
+        prime_implicants)
+    
+    
+        
     if self.multi_output:
             
          self.prime_implicants = tuple(Implicant_multi_output(
