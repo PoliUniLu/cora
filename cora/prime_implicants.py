@@ -483,8 +483,9 @@ class OptimizationContext:
           self.input_labels = [x for x in list(self.data.columns) if 
                                (x not in self.output_labels) 
                                 and (x!=self.case_col)] 
-   
-    input_data = self.data[self.input_labels]
+          input_data = self.data[self.input_labels]
+    else:
+          input_data = self.data[self.input_labels + [x for x in t_labels]]
     if (any(input_data.apply(lambda row_series: True if
         len(row_series.unique()) ==1 else False,axis = 0))):
         
@@ -541,7 +542,8 @@ class OptimizationContext:
         l = len(self.input_labels)
         self.input_labels = COLUMN_LABELS[:l]
     self.preprocessed_data_raw = res
-    self.preprocessed_data = res[self.input_labels + self.output_labels]  
+    self.preprocessed_data = res[[x for x in input_data.columns]
+                                 + self.output_labels] 
     self.preprocessing = True
        
     
