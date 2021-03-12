@@ -483,8 +483,8 @@ class OptimizationContext:
           self.input_labels = [x for x in list(self.data.columns) if 
                                (x not in self.output_labels) 
                                 and (x!=self.case_col)] 
+   
     input_data = self.data[self.input_labels]
-    
     if (any(input_data.apply(lambda row_series: True if
         len(row_series.unique()) ==1 else False,axis = 0))):
         
@@ -505,13 +505,13 @@ class OptimizationContext:
     params = {'Inc_{}'.format(c) : (c,inclusion_score) 
               for c in self.output_labels
               }
-    data_grouped = data_tmp.groupby(self.input_labels).agg(
+
+    data_grouped = data_tmp.groupby([x for x in input_data.columns]).agg(
         n = (self.case_col, 'count'), 
         Cases = (self.case_col, concatenate_strings),
         **params)
     data_grouped = data_grouped[data_grouped['n']>= self.n_cut]
     inc_columns = ['Inc_{}'.format(i) for i in self.output_labels]
-    
     if(self.inc_score2 is None):
         data_grouped[self.output_labels] = (
             data_grouped[inc_columns]>= self.inc_score1
@@ -540,9 +540,8 @@ class OptimizationContext:
                           else x, res.columns)
         l = len(self.input_labels)
         self.input_labels = COLUMN_LABELS[:l]
-
     self.preprocessed_data_raw = res
-    self.preprocessed_data = res[self.input_labels + self.output_labels]   
+    self.preprocessed_data = res[self.input_labels + self.output_labels]  
     self.preprocessing = True
        
     
@@ -679,12 +678,12 @@ class OptimizationContext:
     coverage_dict = create_care_translation_dict(self.cares,
                                                  self.positive_cares)
     
-    prime_implicants = filter(lambda x:
-        eliminate_useless_temp_implicants(
-            minterm_to_str(x[0],self.levels,self.labels,0,self.multi_output),
-            self.temporal_labels,
-            self.input_labels), 
-        prime_implicants)
+    #prime_implicants = filter(lambda x:
+     #   eliminate_useless_temp_implicants(
+      #      minterm_to_str(x[0],self.levels,self.labels,0,self.multi_output),
+       #     self.temporal_labels,
+        #    self.input_labels), 
+        #prime_implicants)
     
     
         
@@ -784,17 +783,18 @@ class OptimizationContext:
    if self.irredundat_sums is not None:
        return self.irredundat_sums
    prime_implicants = self.get_prime_implicants()
-        
    if len(prime_implicants) == 0:
        return []
         
    if self.multi_output:
         raise RuntimeError("irredudant sums are not supported in multi output\
                           mode. Use get_irredundant_systems")
+ 
    result = find_irredundant_sums(([(i, i.coverage)
                                     for i in prime_implicants]),
                                   self.cares,max_depth
-                                  )
+   
+                            )
    irredundant_objects = []
    for i,system in enumerate(result):
 	   irredundant_objects.append(Irredundant_system(
