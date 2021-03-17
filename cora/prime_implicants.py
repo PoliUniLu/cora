@@ -360,7 +360,7 @@ class OptimizationContext:
     self.multi_output=len(self.output_labels)>1
     self.rename_dictionary=None
     self.multivalue_output=False
-    self.pi_details=None
+    self.details=None
     self.sol_details=None
     self.pi_chart=None
     
@@ -422,8 +422,16 @@ class OptimizationContext:
                                       or x==0 for x in row_series),axis =1)]
            if not positive_temporal_col_data.iloc[:,index].all(axis = None):
                raise RuntimeError("Incorrect values in auxiliary column!")
-        
+           reference_data = self.data.iloc[:,index]
+           positive_reference_data  = self.data[reference_data.apply
+                                                     (lambda row_series:
+                                                      all(x == 1 
+                                                for x in row_series),axis =1)]
+           if any(pd.isna(positive_reference_data[i])):
+               raise RuntimeError("Incorrect values in auxiliary column!")
                
+
+
                
         tmp = self.data[t_labels].apply(
                     lambda row_series :[[int(x)] if not pd.isna(x) 
@@ -440,7 +448,7 @@ class OptimizationContext:
    
     else:
         
-        inputs = list(x  for x in self.data.columns if x != self.case_col)
+        inputs = list(x  for x in self.output_labels + self.input_labels)
         if(not all(self.data[inputs].apply(
                 lambda row_series : all(isinstance(x,int)
                                 for x in row_series),axis = 0))):
@@ -484,8 +492,11 @@ class OptimizationContext:
                                (x not in self.output_labels) 
                                 and (x!=self.case_col)] 
           input_data = self.data[self.input_labels]
-    else:
+    elif self.input_labels is not  None and self.temporal_labels is not None:
           input_data = self.data[self.input_labels + [x for x in t_labels]]
+    elif self.input_labels is not  None and self.temporal_labels is  None:
+          input_data = self.data[self.input_labels]
+    
     if (any(input_data.apply(lambda row_series: True if
         len(row_series.unique()) ==1 else False,axis = 0))):
         
@@ -683,9 +694,9 @@ class OptimizationContext:
     #prime_implicants = filter(lambda x:
      #   eliminate_useless_temp_implicants(
       #      minterm_to_str(x[0],self.levels,self.labels,0,self.multi_output),
-       #     self.temporal_labels,
-        #    self.input_labels), 
-        #prime_implicants)
+      # self.temporal_labels,
+       #     self.input_labels), 
+       # prime_implicants)
     
     
         
@@ -848,8 +859,8 @@ class OptimizationContext:
   """    
 
   def pi_details(self):  
-   if self.pi_details is not None:
-       return self.pi_details
+   if self.details is not None:
+       return self.details
    prime_implicants = self.get_prime_implicants()
    
    cov_x=[(x.implicant,
@@ -873,8 +884,8 @@ class OptimizationContext:
               for x in prime_implicants]
        df_implicant[f_label] = tmp
 
-   self.pi_details= df_implicant  
-   return self.pi_details   
+   self.details= df_implicant  
+   return self.details   
 
       
   
