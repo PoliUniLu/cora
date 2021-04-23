@@ -103,6 +103,8 @@ def create_groups(table,column_number, cares, outputcolumns, multi_output):
           index = index+1
       return res
 
+    
+    
 
 # Function preforming 1 step elimination of 2 minterms
 
@@ -363,6 +365,7 @@ class OptimizationContext:
     self.details=None
     self.sol_details=None
     self.pi_chart=None
+    self.input_data=None
     
  
  # Function to clean and aggregate data. Removes duplicities and 
@@ -396,10 +399,10 @@ class OptimizationContext:
          
             raise InvalidDataException("Invalid data input!")
         
-        input_data = [x for x in filter(lambda x: x not in t_labels,self.data)
+        inp_data = [x for x in filter(lambda x: x not in t_labels,self.data)
                       if x != self.case_col ]
         
-        if( not all(self.data[input_data].apply(
+        if( not all(self.data[inp_data].apply(
                 lambda row_series : all(isinstance(x,int)
                                 for x in row_series),axis = 0))):
          
@@ -496,7 +499,8 @@ class OptimizationContext:
           input_data = self.data[self.input_labels + [x for x in t_labels]]
     elif self.input_labels is not  None and self.temporal_labels is  None:
           input_data = self.data[self.input_labels]
-    
+    if self.input_data is None:
+        self.input_data = input_data
     if (any(input_data.apply(lambda row_series: True if
         len(row_series.unique()) ==1 else False,axis = 0))):
         
@@ -654,6 +658,7 @@ class OptimizationContext:
      
   """
 
+      
 
   def get_prime_implicants(self):
     if self.prime_implicants is not None:
@@ -1105,7 +1110,7 @@ class Irredundant_systems_multi():
   
   def impl_cov_score(self):
       data = self.context.data
-      input_columns = self.context.input_labels
+      input_columns = self.context.input_data.columns
       output_columns = self.context.output_labels
       implicants = self.unique_implicants()
       sorted_implicants = self.sort_implicants()
@@ -1147,7 +1152,7 @@ class Irredundant_systems_multi():
   def coverage_score(self):
         if self.cov_score is None:  
             data = self.context.data
-            input_columns = self.context.input_labels
+            input_columns = self.context.input_data.columns
             output_columns = self.context.output_labels
             implicants = self.unique_implicants()
             
@@ -1172,7 +1177,7 @@ class Irredundant_systems_multi():
   def inclusion_score(self):
     if self.incl_score is None:
        data = self.context.data
-       input_columns = self.context.input_labels
+       input_columns = self.context.input_data.columns
        output_columns = self.context.output_labels
        tmp_data = data[input_columns]
        implicants = self.unique_implicants()
@@ -1266,7 +1271,7 @@ class Irredundant_system():
  
   def impl_cov_score(self):
       data = self.context.data
-      input_columns = self.context.input_labels
+      input_columns = self.context.input_data.columns
       output_column = self.context.output_labels[0] 
       
       tmp_data = data[input_columns]
@@ -1303,7 +1308,7 @@ class Irredundant_system():
  
   def coverage_score(self):
         data = self.context.data
-        input_columns = self.context.input_labels
+        input_columns = self.context.input_data.columns
         output_column = self.context.output_labels[0]  
         
         tmp_data = data[data[output_column]==1][input_columns]
@@ -1317,7 +1322,7 @@ class Irredundant_system():
  
   def inclusion_score(self):
        data = self.context.data
-       input_columns = self.context.input_labels
+       input_columns = self.context.input_data.columns
        output_column = self.context.output_labels[0]
        tmp_data = data[input_columns]
        mask = tmp_data.apply(
@@ -1561,8 +1566,8 @@ class Implicant_multi_output:
 
     def coverage_score(self):
         data=self.context.data
-        input_columns=self.context.input_labels
-        
+        input_columns=self.context.input_data.columns
+       
         if (len(input_columns) != len(self.raw_implicant)):
             raise RuntimeError(
                 'Size of input columns ({}) does not match implicant\
@@ -1595,7 +1600,7 @@ class Implicant_multi_output:
     
     def inclusion_score(self):
         data=self.context.data
-        input_columns=self.context.input_labels
+        input_columns=self.context.input_data.columns
         
         if (len(input_columns) != len(self.raw_implicant)):
             raise RuntimeError(
@@ -1698,7 +1703,7 @@ class Implicant:
     
     def coverage_score(self):
         data=self.context.data
-        input_columns=self.context.input_labels
+        input_columns=self.context.input_data.columns
         output_column=self.context.output_labels[0]
 
         if (len(input_columns) != len(self.raw_implicant)):
@@ -1716,7 +1721,7 @@ class Implicant:
     
     def inclusion_score(self):
         data=self.context.data
-        input_columns=self.context.input_labels
+        input_columns=self.context.input_data.columns
         output_column=self.context.output_labels[0]
         if (len(input_columns) != len(self.raw_implicant)):
             raise RuntimeError(
