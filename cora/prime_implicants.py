@@ -449,14 +449,16 @@ class OptimizationContext:
  
             
    
-    else:
+    #else:
         
-        inputs = list(x  for x in self.output_labels + self.input_labels)
-        if(not all(self.data[inputs].apply(
-                lambda row_series : all(isinstance(x,int)
-                                for x in row_series),axis = 0))):
+        
+     #   inputs = list(x  for x in list(self.data.columns) if x!= self.case_col)
+      #  print(inputs)
+       # if(not all(self.data[inputs].apply(
+        #        lambda row_series : all(isinstance(x,int)
+         #                       for x in row_series),axis = 0))):
          
-            raise InvalidDataException("Invalid data input!")
+          ##  raise InvalidDataException("Invalid data input!")
         
   
     
