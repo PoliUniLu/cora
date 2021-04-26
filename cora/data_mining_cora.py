@@ -114,7 +114,7 @@ def data_mining(data,
         cols = list(x[1] for x in comb)
 
         tmp_temp = [x for x in temp_cols if any(x.startswith(y+'{') for y in cols)]
-        input_cols = [x for x in cols if x not in tmp_temp]
+        input_cols = [x for x in cols if all(not y.startswith(x+'{') for y in tmp_temp)]
         if valid_combination(comb,tmp_temp):
             
             
