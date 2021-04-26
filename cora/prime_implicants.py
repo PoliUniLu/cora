@@ -513,7 +513,6 @@ class OptimizationContext:
          
     
     data_tmp = self.data.copy()
-          
     if(self.case_col is None or self.case_col == '-None-'):
         data_tmp['case_col'] = data_tmp.index.values
         self.case_col = 'case_col'
@@ -695,13 +694,17 @@ class OptimizationContext:
                                           self.multi_output)
     coverage_dict = create_care_translation_dict(self.cares,
                                                  self.positive_cares)
-    
-    #prime_implicants = filter(lambda x:
-     #   eliminate_useless_temp_implicants(
-      #      minterm_to_str(x[0],self.levels,self.labels,0,self.multi_output),
-      # self.temporal_labels,
-       #     self.input_labels), 
-       # prime_implicants)
+    if self.temporal_labels is not None:
+        prime_implicants = filter(lambda x:
+                                  eliminate_useless_temp_implicants(
+                                      minterm_to_str(x[0],
+                                                     self.levels,
+                                                     self.labels,
+                                                     0,
+                                                     self.multi_output),
+                                      self.temporal_labels,
+                                      self.input_labels), 
+                                  prime_implicants)
     
     
         
