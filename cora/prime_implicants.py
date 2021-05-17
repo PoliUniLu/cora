@@ -13,7 +13,8 @@ import re
 from collections import defaultdict
 
 from .petric import find_irredundant_sums,boolean_multiply
-
+from .on_off_alg import on_off_grouping,reduction
+from .multiply import transform_to_raw_implicant
 
 COLUMN_LABELS = list(string.ascii_uppercase) + ["AA", "BB", "CC","DD",
                                                 "EE", "FF"]
@@ -120,7 +121,8 @@ def create_groups(table,column_number, cares, outputcolumns, multi_output):
 # Output: dictionary, which contains 
 # 	  (a) new groups of minterms after the elimination, 
 #         (b) implicants   
-#         (c) information if any reduction was performed in this single elimination
+#         (c) information if any reduction was performed in this single 
+#             elimination
   
 def reduction_step(groups,n,multi_output):
     was_any_reduction = False
@@ -371,10 +373,10 @@ class OptimizationContext:
  # Function to clean and aggregate data. Removes duplicities and 
  # inconsistencies.
       
-
-    
-  def _preprocess_data(self):
-    
+  def data_validation(self):
+      
+      
+     
     class InvalidDataException(Exception):
         pass
     
@@ -385,6 +387,7 @@ class OptimizationContext:
         if any(TEMPORAL_COL_PATTERN.match(i) is None for i in
                                              self.temporal_labels):
                 raise RuntimeError("Unsupported temp columns entered!")
+    
     # valid data
         tmp_t_labels = {m.group(1):m.group(2) 
                         for m in [TEMPORAL_COL_PATTERN.match(i)
@@ -449,18 +452,22 @@ class OptimizationContext:
  
             
    
-    #else:
+    else:
         
-        
-     #   inputs = list(x  for x in list(self.data.columns) if x!= self.case_col)
-      #  print(inputs)
-       # if(not all(self.data[inputs].apply(
-        #        lambda row_series : all(isinstance(x,int)
-         #                       for x in row_series),axis = 0))):
+        if self.input_labels is None:
+            
+            inputs = list(x  for x in list(self.data.columns) 
+                          if x!= self.case_col)
+        else:
+            inputs = self.input_labels
+        if(not all(self.data[inputs].apply(
+                lambda row_series : all(isinstance(x,int)
+                                for x in row_series),axis = 0))):
          
-          ##  raise InvalidDataException("Invalid data input!")
+            raise InvalidDataException("Invalid data input!")
         
   
+    # outputs 
     
     if all(OUTPUT_PATTERN.match(i) is not None for i in self.output_labels):
         self.multivalue_output = True
@@ -468,9 +475,6 @@ class OptimizationContext:
     elif not all(REGULAR_OUTPUT.match(i) is not None for i 
                  in self.output_labels):
         raise RuntimeError("Unsupported output entered!")
-        
-    
-    
     
     if self.multivalue_output:
         outcols_value_map = dict()
@@ -490,19 +494,27 @@ class OptimizationContext:
          self.output_labels_final = self.output_labels
          
    
-    # input_labels check
+    # inputs
     
     if self.input_labels is None:
           self.input_labels = [x for x in list(self.data.columns) if 
                                (x not in self.output_labels) 
                                 and (x!=self.case_col)] 
+         
           input_data = self.data[self.input_labels]
+          
     elif self.input_labels is not  None and self.temporal_labels is not None:
-          input_data = self.data[self.input_labels + [x for x in t_labels]]
+         
+        input_data = self.data[self.input_labels + [x for x in t_labels]]
+    
     elif self.input_labels is not  None and self.temporal_labels is  None:
-          input_data = self.data[self.input_labels]
+          
+        input_data = self.data[self.input_labels]
+    
     if self.input_data is None:
+        
         self.input_data = input_data
+    
     if (any(input_data.apply(lambda row_series: True if
         len(row_series.unique()) ==1 else False,axis = 0))):
         
@@ -510,9 +522,13 @@ class OptimizationContext:
                                        +" constants are not allowed!")      
          
          
-         
-         
-         
+   
+    
+    
+  def _preprocess_data(self):
+    
+    self.data_validation()
+             
     
     data_tmp = self.data.copy()
     if(self.case_col is None or self.case_col == '-None-'):
@@ -523,7 +539,7 @@ class OptimizationContext:
               for c in self.output_labels
               }
 
-    data_grouped = data_tmp.groupby([x for x in input_data.columns]).agg(
+    data_grouped = data_tmp.groupby([x for x in self.input_data.columns]).agg(
         n = (self.case_col, 'count'), 
         Cases = (self.case_col, concatenate_strings),
         **params)
@@ -558,13 +574,29 @@ class OptimizationContext:
         l = len(self.input_labels)
         self.input_labels = COLUMN_LABELS[:l]
     self.preprocessed_data_raw = res
-    self.preprocessed_data = res[[x for x in input_data.columns]
+    self.preprocessed_data = res[[x for x in self.input_data.columns]
                                  + self.output_labels] 
     self.preprocessing = True
        
     
  # Function to derive the truth table from a data frame
  # if generate_missing then don't cares are added
+  def get_levels(self):
+      inputs = self.preprocessed_data.drop(self.output_labels,axis=1)
+      if len(self.input_labels) == 1:
+          dim_corrected = [inputs.iloc[:,0].values]
+      else:
+          dim = inputs.apply(lambda x: pd.unique(x).tolist(),axis=0,
+                             result_type='reduce').array
+          
+          dim_corrected = []
+          for ar in dim:
+              if len(ar) > 1:
+                  dim_corrected.append(ar)
+              else:
+                  dim_corrected.append([0,1])
+      levels = [len(x) for x in dim_corrected]
+      return levels
  
   def _prepareRows(self):
       if not self.preprocessing:
@@ -647,7 +679,8 @@ class OptimizationContext:
    
   
   """
-  Function computes the prime implicants.
+  Function computes the prime implicants. Calculation is based on the 
+  classical Mc-Clussky algorithm.
   
   Returns
   
@@ -739,7 +772,63 @@ class OptimizationContext:
              {coverage_dict[y] for y in x[1]}) for x in prime_implicants)
       
     return self.prime_implicants
+  
+    
+  """
+  Function computes the prime implicants. Calculation is based on the on-off
+  algorithm.
+  
+  Returns
+  
+  -------
+  
+  prime_implicants = array
+  Function return an array of the objects prime_implicants.
+        
+     
+  """
 
+  def get_prime_implicants_on_off(self):
+    if self.prime_implicants is not None:
+      return self.prime_implicants
+  
+    if not self.preprocessing:
+          self._preprocess_data()
+       
+    
+    self.levels = self.get_levels()
+    self.labels = [col for col in self.preprocessed_data.columns if
+               col not in self.output_labels]
+    
+    
+    
+    onset, offset = on_off_grouping(self.preprocessed_data,
+                                    self.output_labels[0],
+                                    self.multi_output)
+    
+    impl_dict = reduction(onset,offset)
+
+    self.prime_implicants = []
+    for impl, cov in impl_dict.items():
+        raw_i = transform_to_raw_implicant(impl, self.levels)
+    
+        self.prime_implicants.append(Implicant(
+             self,
+             minterm_to_str(raw_i,
+                            self.levels,
+                            self.labels,
+                            0,
+                            self.multi_output),
+             raw_i,cov))
+      
+    return self.prime_implicants    
+   
+    
+    
+    
+    
+    
+    
   """
   Function creates a prime implicant chart.
     
