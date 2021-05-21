@@ -133,7 +133,8 @@ def data_mining(data,
                                                    n_cut=cut,
                                                    inc_score1=inc1,
                                                    inc_score2=inc2,
-                                                   U=Uvalue)
+                                                   U=Uvalue,
+                                                   algorithm= "ON-DC")
             if len(out_col) == 1:
                 ir_sys = data_object.get_irredundant_sums()
             else:

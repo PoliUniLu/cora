@@ -343,7 +343,8 @@ class OptimizationContext:
                inc_score2=None,
                U=None,
                rename_columns=False,
-               generateMissing=True
+               generateMissing=True,
+               algorithm= "ON-DC"
                ):
     self.data=data.copy()
     self.input_labels=input_labels
@@ -368,6 +369,7 @@ class OptimizationContext:
     self.sol_details=None
     self.pi_chart=None
     self.input_data=None
+    self.algorithm =algorithm
     
  
  # Function to clean and aggregate data. Removes duplicities and 
@@ -694,16 +696,15 @@ class OptimizationContext:
 
       
 
-  def get_prime_implicants(self):
-    if self.prime_implicants is not None:
-      return self.prime_implicants
+  def get_prime_implicants_1_DC(self):
+    
   
     if not self.prepare_rows_called:
         self._prepareRows()
         
     if len(self.table) == 0:
-        self.prime_implicants = tuple()
-        return self.prime_implicants
+        prime_implicants = tuple()
+        return prime_implicants
 
 
     table = self.table.astype(int).tolist()
@@ -745,7 +746,7 @@ class OptimizationContext:
         
     if self.multi_output:
             
-         self.prime_implicants = tuple(Implicant_multi_output(
+         prime_implicants_fin = tuple(Implicant_multi_output(
              self,
              minterm_to_str(x[0],
                             self.levels,
@@ -761,7 +762,7 @@ class OptimizationContext:
              for x in prime_implicants
              )
     else:
-         self.prime_implicants = tuple(Implicant(
+         prime_implicants_fin = tuple(Implicant(
              self,
              minterm_to_str(x[0],
                             self.levels,
@@ -771,7 +772,7 @@ class OptimizationContext:
              x[0],
              {coverage_dict[y] for y in x[1]}) for x in prime_implicants)
       
-    return self.prime_implicants
+    return prime_implicants_fin
   
     
   """
@@ -789,8 +790,7 @@ class OptimizationContext:
   """
 
   def get_prime_implicants_on_off(self):
-    if self.prime_implicants is not None:
-      return self.prime_implicants
+  
   
     if not self.preprocessing:
           self._preprocess_data()
@@ -807,12 +807,11 @@ class OptimizationContext:
                                     self.multi_output)
     
     impl_dict = reduction(onset,offset)
-
-    self.prime_implicants = []
+    prime_implicants = []
     for impl, cov in impl_dict.items():
         raw_i = transform_to_raw_implicant(impl, self.levels)
     
-        self.prime_implicants.append(Implicant(
+        prime_implicants.append(Implicant(
              self,
              minterm_to_str(raw_i,
                             self.levels,
@@ -820,11 +819,32 @@ class OptimizationContext:
                             0,
                             self.multi_output),
              raw_i,cov))
+    if self.temporal_labels is  None:
+        return prime_implicants
+    
+    else:
+        prime_implicants_fin = tuple(x for x in filter(lambda x:
+                                  eliminate_useless_temp_implicants(
+                                      x.implicant,
+                                      self.temporal_labels,
+                                      self.input_labels), 
+                                  prime_implicants))
+    
       
-    return self.prime_implicants    
+        return prime_implicants_fin    
    
     
-    
+  def get_prime_implicants(self):
+        if self.prime_implicants is not None:
+            return self.prime_implicants
+        
+        if self.algorithm == "ON-DC":
+            self.prime_implicants = self.get_prime_implicants_1_DC()
+        elif self.algorithm == "ON-OFF":
+            self.prime_implicants = self.get_prime_implicants_on_off()
+       
+        return self.prime_implicants
+            
     
     
     
