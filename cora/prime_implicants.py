@@ -799,7 +799,8 @@ class OptimizationContext:
     self.levels = self.get_levels()
     self.labels = [col for col in self.preprocessed_data.columns if
                col not in self.output_labels]
-    
+    self.cares = [int(x) for x in self.preprocessed_data[
+                            self.preprocessed_data[self.output_labels[0]] == 1].index]
     
     
     onset, offset = on_off_grouping(self.preprocessed_data,
