@@ -698,7 +698,6 @@ class OptimizationContext:
 
   def get_prime_implicants_1_DC(self):
     
-  
     if not self.prepare_rows_called:
         self._prepareRows()
         
@@ -706,7 +705,7 @@ class OptimizationContext:
         prime_implicants = tuple()
         return prime_implicants
 
-
+   
     table = self.table.astype(int).tolist()
     column_number = len(table[0])
     preprocessed_table = preprocess_input(table)
@@ -795,13 +794,14 @@ class OptimizationContext:
     if not self.preprocessing:
           self._preprocess_data()
        
-    
+    if all(self.preprocessed_data[self.output_labels[0]]):
+        return self.get_prime_implicants_1_DC()
     self.levels = self.get_levels()
     self.labels = [col for col in self.preprocessed_data.columns if
                col not in self.output_labels]
+
     self.cares = [int(x) for x in self.preprocessed_data[
                             self.preprocessed_data[self.output_labels[0]] == 1].index]
-    
     
     onset, offset = on_off_grouping(self.preprocessed_data,
                                     self.output_labels[0],
