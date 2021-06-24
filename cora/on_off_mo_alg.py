@@ -4,12 +4,7 @@ import numpy as np
 
 from .on_off_alg import Multi_value_minterm_on, On_off_reduction_matrix, bool_multiply
 from .multiply import transform_to_raw_implicant
-#from prime_implicants import minterm_to_str
 
-
-table =pd.read_csv("//Users/zuzka/Downloads/Book5 (2).csv",sep=',')
-table = table[table.columns[2:]]
-outputs = ["C","D"]
     
 class MultiValueMintermOnMo(Multi_value_minterm_on):
     
@@ -150,20 +145,3 @@ def reduction_mo(onset, offset):
     
         
 
-        
-    
-    
-    
-    
-        
- 
-        #coverage,m = prepare_m_for_bool_multiply(reduced_matrix)
-        #res = bool_multiply(m)
-        
-        
-   #     for imp in res:
-   #         imp_cov_dict[imp].update(coverage)
-   # return imp_cov_dict
-    
-
-    
