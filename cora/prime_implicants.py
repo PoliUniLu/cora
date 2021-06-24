@@ -14,6 +14,7 @@ from collections import defaultdict
 
 from .petric import find_irredundant_sums,boolean_multiply
 from .on_off_alg import on_off_grouping,reduction
+from .on_off_mo_alg import on_off_grouping_mo, reduction_mo
 from .multiply import transform_to_raw_implicant
 
 COLUMN_LABELS = list(string.ascii_uppercase) + ["AA", "BB", "CC","DD",
@@ -520,7 +521,7 @@ class OptimizationContext:
     if (any(input_data.apply(lambda row_series: True if
         len(row_series.unique()) ==1 else False,axis = 0))):
         
-            raise InvalidDataException("Please respecify your input data",\
+            raise InvalidDataException("Please respecify your input data"
                                        +" constants are not allowed!")      
          
          
@@ -793,46 +794,105 @@ class OptimizationContext:
   
     if not self.preprocessing:
           self._preprocess_data()
+    
+    if len(self.output_labels) > 0:
+        self.levels = self.get_levels()
+        self.labels = [col for col in self.preprocessed_data.columns if
+                   col not in self.output_labels]
+        self.cares = [int(x) for x in 
+                     self.preprocessed_data[self.output_labels].apply(lambda row: any(x for x in row),axis =1).index]
+        onset, offset = on_off_grouping_mo(self.preprocessed_data,
+                                           self.output_labels)
        
-    if all(self.preprocessed_data[self.output_labels[0]]):
-        return self.get_prime_implicants_1_DC()
-    self.levels = self.get_levels()
-    self.labels = [col for col in self.preprocessed_data.columns if
-               col not in self.output_labels]
-
-    self.cares = [int(x) for x in self.preprocessed_data[
-                            self.preprocessed_data[self.output_labels[0]] == 1].index]
-    
-    onset, offset = on_off_grouping(self.preprocessed_data,
-                                    self.output_labels[0],
-                                    self.multi_output)
-    
-    impl_dict = reduction(onset,offset)
-    prime_implicants = []
-    for impl, cov in impl_dict.items():
-        raw_i = transform_to_raw_implicant(impl, self.levels)
-    
-        prime_implicants.append(Implicant(
-             self,
-             minterm_to_str(raw_i,
-                            self.levels,
-                            self.labels,
-                            0,
-                            self.multi_output),
-             raw_i,cov))
-    if self.temporal_labels is  None:
-        return prime_implicants
-    
+        impl_dict = reduction_mo(onset, offset)
+        tmp_res = []
+        for tag,implicants in impl_dict.items():
+            
+            for im in implicants:
+                raw_im = transform_to_raw_implicant(im, self.levels)
+                cov = frozenset([int(x) for x in self.preprocessed_data[self.preprocessed_data.apply(
+                    lambda row: all(x in y for x,y in zip(row, raw_im)),axis = 1)].index] )
+                o_tag = {int(i+1) for i,x in enumerate(tag) if x}
+                tmp_res.append(Implicant_multi_output(self, 
+                                                  minterm_to_str(raw_im,
+                                                  self.levels,
+                                                  self.labels,
+                                                  0,
+                                                  self.multi_output),
+                                                  raw_im,
+                                                  cov,
+                                                  o_tag,
+                                                  self.output_labels))
+        res = []
+        for i in tmp_res:
+            add_to_res = True
+            for x in res:
+                if x.raw_implicant == i.raw_implicant:
+                    x.outputs.update(i.outputs)
+                    add_to_res = False
+                    break
+            if add_to_res:
+                res.append(i)
+                
+        for x in res:
+            x.outputs = list(x.outputs)
+                
+        
+        if self.temporal_labels is  None:
+            return res
+        
+        else:
+            prime_implicants_fin = tuple(x for x in filter(lambda x:
+                                      eliminate_useless_temp_implicants(
+                                          x.implicant,
+                                          self.temporal_labels,
+                                          self.input_labels), 
+                                      res))
+        
+          
+            return prime_implicants_fin    
+   
     else:
-        prime_implicants_fin = tuple(x for x in filter(lambda x:
-                                  eliminate_useless_temp_implicants(
-                                      x.implicant,
-                                      self.temporal_labels,
-                                      self.input_labels), 
-                                  prime_implicants))
+       
+        if all(self.preprocessed_data[self.output_labels[0]]):
+            return self.get_prime_implicants_1_DC()
+        self.levels = self.get_levels()
+        self.labels = [col for col in self.preprocessed_data.columns if
+                   col not in self.output_labels]
     
-      
-        return prime_implicants_fin    
+        self.cares = [int(x) for x in self.preprocessed_data[
+                                self.preprocessed_data[self.output_labels[0]] == 1].index]
+        
+        onset, offset = on_off_grouping(self.preprocessed_data,
+                                        self.output_labels[0],
+                                        self.multi_output)
+        
+        impl_dict = reduction(onset,offset)
+        prime_implicants = []
+        for impl, cov in impl_dict.items():
+            raw_i = transform_to_raw_implicant(impl, self.levels)
+        
+            prime_implicants.append(Implicant(
+                 self,
+                 minterm_to_str(raw_i,
+                                self.levels,
+                                self.labels,
+                                0,
+                                self.multi_output),
+                 raw_i,cov))
+        if self.temporal_labels is  None:
+            return prime_implicants
+        
+        else:
+            prime_implicants_fin = tuple(x for x in filter(lambda x:
+                                      eliminate_useless_temp_implicants(
+                                          x.implicant,
+                                          self.temporal_labels,
+                                          self.input_labels), 
+                                      prime_implicants))
+        
+          
+            return prime_implicants_fin    
    
     
   def get_prime_implicants(self):

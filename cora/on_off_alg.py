@@ -153,6 +153,7 @@ def set_labels(term_object,labels):
 
 
 def on_off_grouping(table, output, multi_output = False):
+    
 
     data_positive =table[table[output] == 1]
     inputs =  [x for x in table.columns if x!= output]
