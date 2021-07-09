@@ -96,16 +96,21 @@ def on_off_grouping_mo(table,outputs):
     tags_tuples = table[outputs].apply(tuple, axis=1)
     ind_on = [int(x) for x in table[onset_index].index]
     
+    
     onset = [MultiValueMintermOnMo(row,{ind},tags) for row,ind,tags in
-             zip(onset_table,ind_on,tags_tuples)]
+             zip(onset_table,ind_on,tags_tuples[onset_index])]
 
     offset_index =  data_output.apply(lambda row_series:
                                      not all(x for x in row_series),axis = 1)
     offset_data = data_output
-        
+
     offset = table[offset_index]
     offset_data = offset[input_columns].apply(tuple, axis=1)
-    offset_tags = offset[outputs].apply(tuple, axis=1)
+    offset_tags_tmp = offset[outputs].applymap(lambda x: 1 if x == 0 else 0)
+        
+    offset_tags = offset_tags_tmp.apply(tuple, axis = 0)
+
+    #offset_tags = offset_tags_tmp.apply()
     offset = offset_data, offset_tags
       
     return onset, offset
@@ -121,10 +126,11 @@ def number_to_tuple(x: int, l: int):
 def reduction_mo(onset, offset):
     
     on_off_matrices = []
+
     for minterm in onset:
-        m = OnOffReductionMatrixMo(
-    
-                                    minterm.reduce_with_off_set(offset))
+        
+        m_res = minterm.reduce_with_off_set(offset)
+        m = OnOffReductionMatrixMo(m_res)
         on_off_matrices.append(m)  
    
     
@@ -132,11 +138,17 @@ def reduction_mo(onset, offset):
     
     tag_length = len(next(x for x in onset).tag)
     
+    
     tag_imp_dict = defaultdict(list)
     for m in on_off_matrices:
+        m_reduced = m.reduction()
+        
         for current_tag in map(lambda x: number_to_tuple(x, tag_length), range(1, 2**tag_length)):
-            current_minterms = [mt for mt in m.reduction() if any(x > 0 and y > 0 for x,y in zip(current_tag, mt.tag))]
-            tag_imp_dict[reversed(current_tag)].extend(bool_multiply([x.minterm for x in current_minterms]))
+            current_minterms = [mt for mt in m_reduced
+                                if any(x > 0 and y > 0 for x,y in zip(current_tag, mt.tag))]
+   
+            b_m = bool_multiply([x.minterm for x in current_minterms])
+            tag_imp_dict[reversed(current_tag)].extend(b_m)
             
        
     return tag_imp_dict

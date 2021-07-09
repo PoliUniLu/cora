@@ -100,10 +100,11 @@ def data_mining(data,
                 cut=1,
                 inc1=1,
                 inc2=None,
-                Uvalue=None):
+                Uvalue=None,
+                alg="ON-DC"):
     res = []
-    
-    for i,comb in enumerate(itertools.combinations([(ind+1,x) for ind,x in 
+    if temp_cols is not None:
+        for i,comb in enumerate(itertools.combinations([(ind+1,x) for ind,x in 
                                                     enumerate(data.columns) 
                                                     if (x not in out_col and
                                                     
@@ -111,21 +112,20 @@ def data_mining(data,
                                                     ], 
                                                    len_of_tupple)):
        
-        cols = list(x[1] for x in comb)
-
-        tmp_temp = [x for x in temp_cols if any(x.startswith(y+'{') for y in cols)]
-        input_cols = [x for x in cols if all(not y.startswith(x+'{') for y in tmp_temp)]
-        if valid_combination(comb,tmp_temp):
+            cols = list(x[1] for x in comb)
+            tmp_temp = [x for x in temp_cols if any(x.startswith(y+'{') for y in cols)]
+            input_cols = [x for x in cols if all(not y.startswith(x+'{') for y in tmp_temp)]
+            if valid_combination(comb,tmp_temp):
             
             
-            if len(tmp_temp) >= 1 :
-                temp_labels = tmp_temp
-            else:
-                temp_labels = None
+                if len(tmp_temp) >= 1 :
+                    temp_labels = tmp_temp
+                else:
+                    temp_labels = None
       
             
             
-            data_object = cora.OptimizationContext(data,
+                data_object = cora.OptimizationContext(data,
                                                    out_col,
                                                    input_cols,
                                                    case_col=case_col,
@@ -134,7 +134,53 @@ def data_mining(data,
                                                    inc_score1=inc1,
                                                    inc_score2=inc2,
                                                    U=Uvalue,
-                                                   algorithm= "ON-DC")
+                                                   algorithm=alg)
+                
+                
+                if len(out_col) == 1:
+                    ir_sys = data_object.get_irredundant_sums()
+                else:
+                    ir_sys = data_object.get_irredundant_systems()
+                
+                if len(ir_sys) > 0:
+                    inc_score = round(max(x.inclusion_score() for x in ir_sys),3)
+                    cov_score = round(max(x.coverage_score() for x in ir_sys),3)
+                    score = round(max(x.inclusion_score()*x.coverage_score() 
+                                                           for x  in ir_sys),3)
+                    tr = TupleResult(cols,
+                                     len(out_col),
+                                     ir_sys,
+                                     inc_score,
+                                     cov_score,
+                                     score)
+                    res.append(tr)
+        
+                else:
+                   res.append(TupleResult(cols, len(out_col), ir_sys, 0, 0, 0))
+            
+                
+                
+                
+                
+    else:
+        
+        for i,comb in enumerate(itertools.combinations([x for x in data.columns 
+   
+                                                    if (x not in out_col and
+                                                        x!=case_col)], 
+                                                           len_of_tupple)):
+            cols = list(comb)
+            data_object = cora.OptimizationContext(data,
+                                                   out_col,
+                                                   cols,
+                                                   case_col=case_col,
+                                                   temporal_labels= None,
+                                                   n_cut=cut,
+                                                   inc_score1=inc1,
+                                                   inc_score2=inc2,
+                                                   U=Uvalue,
+                                                   algorithm=alg)
+            
             if len(out_col) == 1:
                 ir_sys = data_object.get_irredundant_sums()
             else:
@@ -142,20 +188,20 @@ def data_mining(data,
             
     
             if len(ir_sys) > 0:
-                inc_score = round(max(x.inclusion_score() for x in ir_sys),3)
-                cov_score = round(max(x.coverage_score() for x in ir_sys),3)
-                score = round(max(x.inclusion_score()*x.coverage_score() 
+                    inc_score = round(max(x.inclusion_score() for x in ir_sys),3)
+                    cov_score = round(max(x.coverage_score() for x in ir_sys),3)
+                    score = round(max(x.inclusion_score()*x.coverage_score() 
                                                            for x  in ir_sys),3)
-                tr = TupleResult(cols,
+                    tr = TupleResult(cols,
                                      len(out_col),
                                      ir_sys,
                                      inc_score,
                                      cov_score,
                                      score)
-                res.append(tr)
+                    res.append(tr)
         
             else:
-                    res.append(TupleResult(cols, len(out_col), ir_sys, 0, 0, 0))
+                 res.append(TupleResult(cols, len(out_col), ir_sys, 0, 0, 0))
             
         
     rows = [(x.combination,

@@ -618,12 +618,12 @@ class OptimizationContext:
       positiveInputs = positiveRows[columns]
       positiveInputs_rownames = list(positiveInputs.index)
       inputs = self.preprocessed_data.drop(self.output_labels,axis=1)
+
+   
       if len(self.input_labels) == 1:
           dim_corrected = [inputs.iloc[:,0].values]
       else:
-          dim = inputs.apply(lambda x: pd.unique(x).tolist(),axis=0,
-                             result_type='reduce').array
-          
+          dim = [pd.unique(col.values).tolist() for _,col in inputs.iteritems()]
           dim_corrected = []
           for ar in dim:
               if len(ar) > 1:
@@ -794,7 +794,7 @@ class OptimizationContext:
   
     if not self.preprocessing:
           self._preprocess_data()
-    
+
     if len(self.output_labels) > 0:
         self.levels = self.get_levels()
         self.labels = [col for col in self.preprocessed_data.columns if
