@@ -44,7 +44,6 @@ class MultiValueMintermOnMo(Multi_value_minterm_on):
     def reduce_with_off_set(self, off_matrix):
         res = []       
         for ind,(elm,tag) in enumerate(zip(off_matrix[0], off_matrix[1])):
-            print('Trying to reduce minterm {} tag {} with offset element {} tag {}:'.format(self.minterm, self.tag, elm, tag))
         
             new_minterm = list()
             n= len(self.minterm)
@@ -57,7 +56,6 @@ class MultiValueMintermOnMo(Multi_value_minterm_on):
                     new_minterm.append(int(-1))
                 
             new_tag = [x*y for x,y in zip(tag, self.tag)]
-            print('-> new minterm {} tag {}'.format(new_minterm, new_tag))
            
             if(any(new_tag)):
                 
@@ -116,8 +114,7 @@ def on_off_grouping_mo(table,outputs):
 
     #offset_tags = offset_tags_tmp.apply()
     offset = offset_data, offset_tags
-    print('offset tags')
-    print(offset_tags)
+
       
     return onset, offset
 
