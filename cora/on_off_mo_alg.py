@@ -40,11 +40,11 @@ class MultiValueMintermOnMo(Multi_value_minterm_on):
     def reduce(self, other):
         tmp = super().reduce(other)
         return MultiValueMintermOnMo(tmp.minterm, tmp.coverage, self.tag)
-   
+     
     def reduce_with_off_set(self, off_matrix):
         res = []       
         for ind,(elm,tag) in enumerate(zip(off_matrix[0], off_matrix[1])):
-
+            print('Trying to reduce minterm {} tag {} with offset element {} tag {}:'.format(self.minterm, self.tag, elm, tag))
         
             new_minterm = list()
             n= len(self.minterm)
@@ -57,7 +57,11 @@ class MultiValueMintermOnMo(Multi_value_minterm_on):
                     new_minterm.append(int(-1))
                 
             new_tag = [x*y for x,y in zip(tag, self.tag)]
-            res.append(MultiValueMintermOnMo(new_minterm, 
+            print('-> new minterm {} tag {}'.format(new_minterm, new_tag))
+           
+            if(any(new_tag)):
+                
+                res.append(MultiValueMintermOnMo(new_minterm, 
                        self.coverage, new_tag))
 
         return res
@@ -108,10 +112,12 @@ def on_off_grouping_mo(table,outputs):
     offset_data = offset[input_columns].apply(tuple, axis=1)
     offset_tags_tmp = offset[outputs].applymap(lambda x: 1 if x == 0 else 0)
         
-    offset_tags = offset_tags_tmp.apply(tuple, axis = 0)
+    offset_tags = offset_tags_tmp.apply(tuple, axis = 1)
 
     #offset_tags = offset_tags_tmp.apply()
     offset = offset_data, offset_tags
+    print('offset tags')
+    print(offset_tags)
       
     return onset, offset
 
@@ -128,14 +134,18 @@ def reduction_mo(onset, offset):
     on_off_matrices = []
 
     for minterm in onset:
-        
         m_res = minterm.reduce_with_off_set(offset)
+        print("Reduced {} wiht offset:".format(minterm))
+        print(m_res)
         m = OnOffReductionMatrixMo(m_res)
+        print("reduction matrix")
+        print(m)
         on_off_matrices.append(m)  
    
     
 
-    
+    print('===> on_off_matrices')
+    print(on_off_matrices)
     tag_length = len(next(x for x in onset).tag)
     
     
@@ -144,11 +154,16 @@ def reduction_mo(onset, offset):
         m_reduced = m.reduction()
         
         for current_tag in map(lambda x: number_to_tuple(x, tag_length), range(1, 2**tag_length)):
-            current_minterms = [mt for mt in m_reduced
-                                if any(x > 0 and y > 0 for x,y in zip(current_tag, mt.tag))]
+            if any(all(x == y for x,y in zip(current_tag, mt.tag)) for mt in m_reduced):
+                current_minterms = [mt for mt in m_reduced
+                                    if any(x > 0 and y > 0 for x,y in zip(current_tag, mt.tag))]
+                print ('minterms_for_tag {}:'.format(current_tag))
+                for x in current_minterms:
+                    print('  {}'.format(x))
    
-            b_m = bool_multiply([x.minterm for x in current_minterms])
-            tag_imp_dict[reversed(current_tag)].extend(b_m)
+                b_m = bool_multiply([x.minterm for x in current_minterms])
+                print('b_m = {}'.format(b_m))
+                tag_imp_dict[reversed(current_tag)].extend(b_m)
             
        
     return tag_imp_dict
