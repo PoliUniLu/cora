@@ -701,7 +701,6 @@ class OptimizationContext:
     
     if not self.prepare_rows_called:
         self._prepareRows()
-    print(self.preprocessed_data)
     
     if len(self.table) == 0:
         prime_implicants = tuple()
@@ -801,7 +800,6 @@ class OptimizationContext:
         return self.get_prime_implicants_1_DC()
     
 
-    print(self.preprocessed_data)
     if len(self.output_labels) > 1:
         self.levels = self.get_levels()
         self.labels = [col for col in self.preprocessed_data.columns if
@@ -810,22 +808,18 @@ class OptimizationContext:
                      self.preprocessed_data[self.output_labels].apply(lambda row: any(x for x in row),axis =1).index]
         onset, offset = on_off_grouping_mo(self.preprocessed_data,
                                            self.output_labels)
-        print("Onset")
-        print(onset)
-        print("Offset")
-        print(offset)
+
         impl_dict = reduction_mo(onset, offset)
         tmp_res = []
         for tag,implicants in impl_dict.items():
             
             for im in implicants:
                 raw_im = transform_to_raw_implicant(im, self.levels)
-                print('transform to raw impl in = {} out = {}'.format(im, raw_im))
                 cov = frozenset([int(x) for x in self.preprocessed_data[self.preprocessed_data.apply(
                     lambda row: all(x in y for x,y in zip(row, raw_im)),axis = 1)].index] )
                 #tmp_output_tag_data = self.preprocessed_data.iloc[[x for x in cov],:])
                 #tmp_output_tag_data[self.output_labels].apply(lambda col: sum(x) for x in )
-                o_tag = {int(x+1) for i,x in enumerate(tag) if x}
+                o_tag = {int(i+1) for i,x in enumerate(tag) if x}
                 tmp_res.append(Implicant_multi_output(self, 
                                                   minterm_to_str(raw_im,
                                                   self.levels,

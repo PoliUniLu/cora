@@ -135,17 +135,13 @@ def reduction_mo(onset, offset):
 
     for minterm in onset:
         m_res = minterm.reduce_with_off_set(offset)
-        print("Reduced {} wiht offset:".format(minterm))
-        print(m_res)
+
         m = OnOffReductionMatrixMo(m_res)
-        print("reduction matrix")
-        print(m)
+
         on_off_matrices.append(m)  
    
     
 
-    print('===> on_off_matrices')
-    print(on_off_matrices)
     tag_length = len(next(x for x in onset).tag)
     
     
@@ -157,13 +153,10 @@ def reduction_mo(onset, offset):
             if any(all(x == y for x,y in zip(current_tag, mt.tag)) for mt in m_reduced):
                 current_minterms = [mt for mt in m_reduced
                                     if any(x > 0 and y > 0 for x,y in zip(current_tag, mt.tag))]
-                print ('minterms_for_tag {}:'.format(current_tag))
-                for x in current_minterms:
-                    print('  {}'.format(x))
+            
    
                 b_m = bool_multiply([x.minterm for x in current_minterms])
-                print('b_m = {}'.format(b_m))
-                tag_imp_dict[reversed(current_tag)].extend(b_m)
+                tag_imp_dict[tuple([x for x in reversed(current_tag)])].extend(b_m)
             
        
     return tag_imp_dict
