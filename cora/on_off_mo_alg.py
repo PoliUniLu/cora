@@ -147,13 +147,12 @@ def reduction_mo(onset, offset):
         m_reduced = m.reduction()
         
         for current_tag in map(lambda x: number_to_tuple(x, tag_length), range(1, 2**tag_length)):
-            if any(all(x == y for x,y in zip(current_tag, mt.tag)) for mt in m_reduced):
-                current_minterms = [mt for mt in m_reduced
-                                    if any(x > 0 and y > 0 for x,y in zip(current_tag, mt.tag))]
+            current_minterms = [mt for mt in m_reduced
+                                if any(x > 0 and y > 0 for x,y in zip(current_tag, mt.tag))]
             
    
-                b_m = bool_multiply([x.minterm for x in current_minterms])
-                tag_imp_dict[tuple([x for x in reversed(current_tag)])].extend(b_m)
+            b_m = bool_multiply([x.minterm for x in current_minterms])
+            tag_imp_dict[tuple([x for x in reversed(current_tag)])].extend(b_m)
             
        
     return tag_imp_dict
