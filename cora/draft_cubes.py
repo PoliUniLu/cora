@@ -1,16 +1,8 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Aug 30 13:00:51 2021
 
-@author: zuzka
-"""
+
 import pandas as pd
 import numpy as np
 
-#file = pd.read_csv("//Users/zuzka/Downloads/test_cubes.csv",sep=";")
-file = pd.read_csv("//Users/zuzka/Downloads/bergschlosser_2008_MV_PRAET_fin.csv",sep = ";")
-print(file)
 
 class ValuedVariable:
     
