@@ -16,6 +16,7 @@ from .petric import find_irredundant_sums,boolean_multiply
 from .on_off_alg import on_off_grouping,reduction
 from .on_off_mo_alg import on_off_grouping_mo, reduction_mo
 from .multiply import transform_to_raw_implicant
+from .draft_cubes import find_implicants_cubes,transform_to_raw_imp
 
 COLUMN_LABELS = list(string.ascii_uppercase) + ["AA", "BB", "CC","DD",
                                                 "EE", "FF"]
@@ -788,7 +789,53 @@ class OptimizationContext:
         
      
   """
+  def get_prime_implicants_cubes(self):
+       
+     if not self.preprocessing:
+          self._preprocess_data()
+     self.levels = self.get_levels()
+     self.labels = [col for col in self.preprocessed_data.columns if
+                   col not in self.output_labels]
+     self.cares = [int(x) for x in 
+                     self.preprocessed_data[self.output_labels].apply(lambda row: any(x for x in row),axis =1).index]
+     
+     implicants = find_implicants_cubes(self.preprocessed_data,self.output_labels[0],self.input_labels)
 
+     prime_implicants = []
+     for impl in implicants:
+            raw_i = transform_to_raw_imp(impl, self.levels)
+            cov = frozenset([int(x) for x in self.preprocessed_data[self.preprocessed_data.apply(
+                    lambda row: all(x in y for x,y in zip(row, raw_i)),axis = 1)].index] )
+            prime_implicants.append(Implicant(
+                 self,
+                 minterm_to_str(raw_i,
+                                self.levels,
+                                self.labels,
+                                0,
+                                False),
+                 raw_i,cov))
+   
+     return prime_implicants
+
+ 
+  
+  def coverage_of_pi(self,implicant):
+        data = self.preprocessed_data
+        input_columns = self.input_data.columns
+        
+        outputs = self.output_labels
+        res = set()
+        for ind,out in enumerate(outputs):
+            tmp_data = data[data[out]==1][input_columns]
+            
+            if any(tmp_data.apply(
+                lambda row_series: all(x in y for x,y in 
+                                              zip(row_series.values,
+                                                  implicant)),axis=1)):
+                        res.add(ind+1)
+        return res
+    
+        
   def get_prime_implicants_on_off(self):
   
   
@@ -796,8 +843,11 @@ class OptimizationContext:
           self._preprocess_data()
     #  constant outputs
     outputs = self.preprocessed_data[self.output_labels]
-    if (all(outputs.apply(lambda col: True if len(col.unique()) == 1 else False,axis = 1))):
+    if (all(outputs.apply(lambda col: True if len(col.unique()) == 1
+                                                else False,axis = 1))):
         return self.get_prime_implicants_1_DC()
+    
+    
     
 
     if len(self.output_labels) > 1:
@@ -805,7 +855,9 @@ class OptimizationContext:
         self.labels = [col for col in self.preprocessed_data.columns if
                    col not in self.output_labels]
         self.cares = [int(x) for x in 
-                     self.preprocessed_data[self.output_labels].apply(lambda row: any(x for x in row),axis =1).index]
+                     self.preprocessed_data[
+                         self.output_labels].apply(
+                             lambda row: any(x for x in row),axis =1).index]
         onset, offset = on_off_grouping_mo(self.preprocessed_data,
                                            self.output_labels)
 
@@ -814,12 +866,16 @@ class OptimizationContext:
         for tag,implicants in impl_dict.items():
             
             for im in implicants:
+            
+                
                 raw_im = transform_to_raw_implicant(im, self.levels)
-                cov = frozenset([int(x) for x in self.preprocessed_data[self.preprocessed_data.apply(
-                    lambda row: all(x in y for x,y in zip(row, raw_im)),axis = 1)].index] )
-                #tmp_output_tag_data = self.preprocessed_data.iloc[[x for x in cov],:])
-                #tmp_output_tag_data[self.output_labels].apply(lambda col: sum(x) for x in )
-                o_tag = {int(i+1) for i,x in enumerate(tag) if x}
+                cov = frozenset([int(x) for x in
+                                 self.preprocessed_data[
+                                     self.preprocessed_data.apply(
+                    lambda row: all(x in y for x,y in zip(row, raw_im)),
+                    axis = 1)].index] )
+               
+                o_tag = self.coverage_of_pi(raw_im) 
                 tmp_res.append(Implicant_multi_output(self, 
                                                   minterm_to_str(raw_im,
                                                   self.levels,
@@ -906,7 +962,9 @@ class OptimizationContext:
         if self.prime_implicants is not None:
             return self.prime_implicants
         
-        if self.algorithm == "ON-DC":
+        if self.algorithm == "Cubes":
+            self.prime_implicants = self.get_prime_implicants_cubes()
+        elif self.algorithm == "ON-DC":
             self.prime_implicants = self.get_prime_implicants_1_DC()
         elif self.algorithm == "ON-OFF":
             self.prime_implicants = self.get_prime_implicants_on_off()
