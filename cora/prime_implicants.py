@@ -702,7 +702,6 @@ class OptimizationContext:
     
     if not self.prepare_rows_called:
         self._prepareRows()
-    
     if len(self.table) == 0:
         prime_implicants = tuple()
         return prime_implicants
@@ -819,22 +818,26 @@ class OptimizationContext:
 
  
   
-  def coverage_of_pi(self,implicant):
+  def output_coverage_of_pi(self,raw_implicant):
         data = self.preprocessed_data
-        input_columns = self.input_data.columns
+        #input_columns = self.input_data.columns
         
         outputs = self.output_labels
         res = set()
         for ind,out in enumerate(outputs):
-            tmp_data = data[data[out]==1][input_columns]
+            #tmp_data = data[data[out]==1][input_columns]
             
-            if any(tmp_data.apply(
+            if all(data[out][ data.apply(
                 lambda row_series: all(x in y for x,y in 
                                               zip(row_series.values,
-                                                  implicant)),axis=1)):
-                        res.add(ind+1)
+                                                  raw_implicant)),axis=1)]):
+                       
+            
+            
+                res.add(ind+1)
         return res
     
+  
         
   def get_prime_implicants_on_off(self):
   
@@ -869,13 +872,14 @@ class OptimizationContext:
             
                 
                 raw_im = transform_to_raw_implicant(im, self.levels)
+                o_tag = self.output_coverage_of_pi(raw_im) 
+             
                 cov = frozenset([int(x) for x in
                                  self.preprocessed_data[
                                      self.preprocessed_data.apply(
                     lambda row: all(x in y for x,y in zip(row, raw_im)),
                     axis = 1)].index] )
-               
-                o_tag = self.coverage_of_pi(raw_im) 
+                
                 tmp_res.append(Implicant_multi_output(self, 
                                                   minterm_to_str(raw_im,
                                                   self.levels,
@@ -968,6 +972,8 @@ class OptimizationContext:
             self.prime_implicants = self.get_prime_implicants_1_DC()
         elif self.algorithm == "ON-OFF":
             self.prime_implicants = self.get_prime_implicants_on_off()
+        else:
+            raise AttributeError('Unknown algorithm "{}"?'.format(self.algorithm))
        
         return self.prime_implicants
             
