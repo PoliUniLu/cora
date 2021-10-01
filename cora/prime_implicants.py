@@ -605,7 +605,6 @@ class OptimizationContext:
   def _prepareRows(self):
       if not self.preprocessing:
           self._preprocess_data()
-      
       mask1 = self.preprocessed_data[self.output_labels]
       nr_rows = len(self.preprocessed_data.index)
       n = len(mask1.columns)
@@ -846,8 +845,10 @@ class OptimizationContext:
           self._preprocess_data()
     #  constant outputs
     outputs = self.preprocessed_data[self.output_labels]
+   
     if (all(outputs.apply(lambda col: True if len(col.unique()) == 1
-                                                else False,axis = 1))):
+                                                else False,axis = 0))):
+        
         return self.get_prime_implicants_1_DC()
     
     
@@ -920,7 +921,6 @@ class OptimizationContext:
             return prime_implicants_fin    
    
     else:
-       
         if all(self.preprocessed_data[self.output_labels[0]]):
             return self.get_prime_implicants_1_DC()
         self.levels = self.get_levels()
