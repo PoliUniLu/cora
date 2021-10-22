@@ -351,6 +351,7 @@ class OptimizationContext:
     self.data=data.copy()
     self.input_labels=input_labels
     self.preprocessing=False
+    self.validation=False
     self.n_cut=n_cut
     self.inc_score1=inc_score1
     self.inc_score2=inc_score2
@@ -526,12 +527,13 @@ class OptimizationContext:
                                        +" constants are not allowed!")      
          
          
-   
+    self.validation = True
     
     
   def _preprocess_data(self):
     
-    self.data_validation()
+    if not self.validation:
+          self.data_validation()
              
     
     data_tmp = self.data.copy()
@@ -578,10 +580,10 @@ class OptimizationContext:
         l = len(self.input_labels)
         self.input_labels = COLUMN_LABELS[:l]
     self.preprocessed_data_raw = res
+    
     self.preprocessed_data = res[[x for x in self.input_data.columns]
                                  + self.output_labels] 
     self.preprocessing = True
-       
     
  # Function to derive the truth table from a data frame
  # if generate_missing then don't cares are added
