@@ -584,7 +584,14 @@ class OptimizationContext:
     self.preprocessed_data = res[[x for x in self.input_data.columns]
                                  + self.output_labels] 
     self.preprocessing = True
-    
+  
+  def get_preprocessed_data(self,raw=False):
+      if not self.preprocessing:
+          self._preprocess_data()
+      if raw:
+        return self.preprocessed_data_raw   
+      else:
+         return self.preprocessed_data
  # Function to derive the truth table from a data frame
  # if generate_missing then don't cares are added
   def get_levels(self):
@@ -1065,6 +1072,7 @@ class OptimizationContext:
    for i,system in enumerate(result):
 	   irredundant_objects.append(Irredundant_system(
            self,system,i+1))
+      
    self.irredundat_sums = irredundant_objects
    return self.irredundat_sums    
   
@@ -1218,9 +1226,51 @@ class OptimizationContext:
           res.append([i.system for i in irredundant_objects])
  
     return res,l
- 
-
-
+    
+  def get_solution_dataframe(self):
+       prime_implicants = self.get_prime_implicants()
+       if not self.multi_output:
+         
+            solutions = self.get_irredundant_sums()
+           
+            
+            n_rows = len(solutions)
+            n_cols = len(prime_implicants)
+            
+            data = np.zeros(shape=(n_rows, n_cols), dtype=int)
+            for r,solution in enumerate(solutions):
+                impl_set = frozenset(i.implicant for i in solution.system)
+                for c,implicant in enumerate(prime_implicants):
+                    if implicant.implicant in impl_set:
+                        data[r,c] = 1
+            return pd.DataFrame(data,range(n_rows),
+                                [i.implicant for i in prime_implicants])
+       else:
+              
+              solutions = self.get_irredundant_systems()
+              l = len(self.output_labels)
+              n_rows = len(solutions) * l
+              n_cols = len(prime_implicants) 
+              data = np.zeros(shape=(n_rows, n_cols), dtype=int)
+              #data_indexes = pd.DataFrame(columns = ["Sol_index","Out_index"])
+              for i, solution in enumerate(solutions):
+                  
+                  for out, single_output_solution in enumerate(solution.system_multiple):
+                      impl_set_out = frozenset(i.implicant for i in single_output_solution)
+                      for c,implicant in enumerate(prime_implicants):
+                          if implicant.implicant in impl_set_out:
+                
+                              data[l*i+out,c] = 1
+              df = pd.DataFrame(data,range(n_rows),
+                                [i.implicant for i in prime_implicants])
+              
+              out_strings = ["Out"+ str(i+1) for i in range(l)]
+              df["Out_index"] = out_strings * len(solutions)
+              tmp= []
+              for i in range(len(solutions)):
+                  tmp.extend(["Sol"+str(i+1)]*l)
+              df["Sol_index"] = tmp
+              return df
 """
  Class represents a single irredundant system, a solution of multi output 
  minimization. The complete solution of such minimization is composed out of 
