@@ -17,6 +17,7 @@ from .on_off_alg import on_off_grouping,reduction
 from .on_off_mo_alg import on_off_grouping_mo, reduction_mo
 from .multiply import transform_to_raw_implicant
 from .draft_cubes import find_implicants_cubes,transform_to_raw_imp
+from .essential import get_essential_implicants,transform_to_raw_impl,reduce_the_onset
 
 COLUMN_LABELS = list(string.ascii_uppercase) + ["AA", "BB", "CC","DD",
                                                 "EE", "FF"]
@@ -283,6 +284,18 @@ def minterm_to_str(minterm, levels, labels, tag,multi_output):
     
     return res if res != '' else '1'
 
+def calculate_essential_indexes(prime_implicants):    
+         essentials = []
+
+         essentials_histogram = defaultdict(lambda:0)
+         for x in prime_implicants:
+             for y in x[1]:
+                 essentials_histogram[y] += 1
+        
+         for e in  essentials_histogram.keys():
+             if essentials_histogram[e] ==1:
+                 essentials.append(e)
+         return set(essentials)
 
 
 """
@@ -704,7 +717,7 @@ class OptimizationContext:
      
   """
 
-      
+
 
   def get_prime_implicants_1_DC(self):
     
@@ -770,6 +783,18 @@ class OptimizationContext:
              for x in prime_implicants
              )
     else:
+         essential_indexes = calculate_essential_indexes(prime_implicants)
+         essential_implicants = [x for x in prime_implicants if 
+                                 set(x[1]).intersection(essential_indexes)]
+         all_essential_indexes =  set.union(*[set(x[1]) 
+                                              for x in essential_implicants])
+         useless = [x for x in prime_implicants 
+                    if x[1].issubset(all_essential_indexes) and 
+                    x not in essential_implicants] 
+         prime_implicants_new = [x for x in prime_implicants 
+                                 if x not in useless]
+         essential_tag = [ x in essential_implicants 
+                          for x in prime_implicants_new]
          prime_implicants_fin = tuple(Implicant(
              self,
              minterm_to_str(x[0],
@@ -778,7 +803,11 @@ class OptimizationContext:
                             0,
                             self.multi_output),
              x[0],
-             {coverage_dict[y] for y in x[1]}) for x in prime_implicants)
+             {coverage_dict[y] for y in x[1]},essential = y)
+             for x,y in zip(prime_implicants_new,essential_tag)
+             
+             )
+         
       
     return prime_implicants_fin
   
@@ -796,33 +825,7 @@ class OptimizationContext:
         
      
   """
-  def get_prime_implicants_cubes(self):
-       
-     if not self.preprocessing:
-          self._preprocess_data()
-     self.levels = self.get_levels()
-     self.labels = [col for col in self.preprocessed_data.columns if
-                   col not in self.output_labels]
-     self.cares = [int(x) for x in 
-                     self.preprocessed_data[self.output_labels].apply(lambda row: any(x for x in row),axis =1).index]
-     
-     implicants = find_implicants_cubes(self.preprocessed_data,self.output_labels[0],self.input_labels)
-
-     prime_implicants = []
-     for impl in implicants:
-            raw_i = transform_to_raw_imp(impl, self.levels)
-            cov = frozenset([int(x) for x in self.preprocessed_data[self.preprocessed_data.apply(
-                    lambda row: all(x in y for x,y in zip(row, raw_i)),axis = 1)].index] )
-            prime_implicants.append(Implicant(
-                 self,
-                 minterm_to_str(raw_i,
-                                self.levels,
-                                self.labels,
-                                0,
-                                False),
-                 raw_i,cov))
-   
-     return prime_implicants
+  
 
  
   
@@ -933,18 +936,37 @@ class OptimizationContext:
         if all(self.preprocessed_data[self.output_labels[0]]):
             return self.get_prime_implicants_1_DC()
         self.levels = self.get_levels()
+        
         self.labels = [col for col in self.preprocessed_data.columns if
                    col not in self.output_labels]
     
         self.cares = [int(x) for x in self.preprocessed_data[
                                 self.preprocessed_data[self.output_labels[0]] == 1].index]
         
-        onset, offset = on_off_grouping(self.preprocessed_data,
+        prime_implicants = []
+        essentials = get_essential_implicants(self.data,self.output_labels[0],self.levels)
+        cov_essentials = reduce_the_onset(essentials,self.data,self.output_labels[0])
+        for impl, cov in zip(essentials,cov_essentials):
+            raw_i = transform_to_raw_impl(impl, self.levels)
+        
+            prime_implicants.append(Implicant(
+                 self,
+                 minterm_to_str(raw_i,
+                                self.levels,
+                                self.labels,
+                                0,
+                                self.multi_output),
+                 raw_i,cov,essential = True))
+        reduced_indexes = set.union(*[set(x) for x in cov_essentials]) if len(cov_essentials) > 0 else set()
+        data_reduced = self.preprocessed_data.drop(reduced_indexes,
+                                                   inplace=False)        
+        onset, offset = on_off_grouping(data_reduced,
                                         self.output_labels[0],
                                         self.multi_output)
         
+        
         impl_dict = reduction(onset,offset)
-        prime_implicants = []
+        
         for impl, cov in impl_dict.items():
             raw_i = transform_to_raw_implicant(impl, self.levels)
         
@@ -1027,8 +1049,16 @@ class OptimizationContext:
         res.transpose(),
         columns=cares,
         index=[(x.implicant) for x in prime_implicants]).astype(int)
-    return self.pi_chart 
+    return self.pi_chart
     
+
+    
+ 
+ # def essential_indexes_from_pi_chart(self):
+  #    index_sum =  self.pi_chart.sum(axis = 0) 
+   #   return [i for i in index_sum.index if index_sum[i] ==1]
+
+   
   """
   Function computes all irredundat solutions for input data with 
   a single output column.
@@ -1986,11 +2016,13 @@ class Implicant:
                  raw_implicant,
                  coverage,
                  cov_score = None,
-                 incl_score = None):
+                 incl_score = None,
+                 essential = False):
       self.context=context  
-      self.implicant = implicant
+      self.implicant = "#" + str(implicant) if essential else implicant
       self.raw_implicant = raw_implicant
       self.coverage = coverage
+      self.essential = essential
       self.useless = False
       
     def __str__(self):
