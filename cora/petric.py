@@ -27,7 +27,7 @@ def find_irrendundant_sums_internal(implicants_with_coverage, partial_solution,
 
 	for i, implicant_with_coverage in enumerate(implicants_with_coverage):
 		imp, imp_coverage = implicant_with_coverage
-		if not imp_coverage.difference(coverage):
+		if len(imp_coverage.difference(coverage)) == 0:
 			continue
 		new_partial_solution = partial_solution + [implicant_with_coverage]
 		new_implicants = [implicants_with_coverage[j] 
