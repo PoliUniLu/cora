@@ -1571,7 +1571,7 @@ class Irredundant_system():
  
   def __init__(self,context,system,index):
      self.context = context
-     self.system = system
+     self.system = sorted(system, key=lambda x: x.essential, reverse=True)
      self.index = index
      self.cov_score = None
      self.incl_score = None
