@@ -622,6 +622,7 @@ class OptimizationContext:
               else:
                   dim_corrected.append([0,1])
       levels = [len(x) for x in dim_corrected]
+ 
       return levels
  
   def _prepareRows(self):
@@ -784,31 +785,44 @@ class OptimizationContext:
              )
     else:
          essential_indexes = calculate_essential_indexes(prime_implicants)
-         essential_implicants = [x for x in prime_implicants if 
-                                 set(x[1]).intersection(essential_indexes)]
-         all_essential_indexes =  set.union(*[set(x[1]) 
-                                              for x in essential_implicants])
-         useless = [x for x in prime_implicants 
-                    if x[1].issubset(all_essential_indexes) and 
-                    x not in essential_implicants] 
-         prime_implicants_new = [x for x in prime_implicants 
-                                 if x not in useless]
-         essential_tag = [ x in essential_implicants 
-                          for x in prime_implicants_new]
-         prime_implicants_fin = tuple(Implicant(
-             self,
-             minterm_to_str(x[0],
-                            self.levels,
-                            self.labels,
-                            0,
-                            self.multi_output),
-             x[0],
-             {coverage_dict[y] for y in x[1]},essential = y)
-             for x,y in zip(prime_implicants_new,essential_tag)
-             
-             )
-         
-      
+         if len (essential_indexes)>0:
+             essential_implicants = [x for x in prime_implicants if 
+                                     set(x[1]).intersection(essential_indexes)] 
+                                     
+             all_essential_indexes =  set.union(*[set(x[1]) 
+                                                  for x in essential_implicants])
+             useless = [x for x in prime_implicants 
+                        if x[1].issubset(all_essential_indexes) and 
+                        x not in essential_implicants] 
+             prime_implicants_new = [x for x in prime_implicants 
+                                     if x not in useless]
+             essential_tag = [ x in essential_implicants 
+                              for x in prime_implicants_new]
+             prime_implicants_fin = tuple(Implicant(
+                 self,
+                 minterm_to_str(x[0],
+                                self.levels,
+                                self.labels,
+                                0,
+                                self.multi_output),
+                 x[0],
+                 {coverage_dict[y] for y in x[1]},essential = y)
+                 for x,y in zip(prime_implicants_new,essential_tag)
+                 
+                 )
+         else:
+             prime_implicants_fin = tuple(Implicant(
+                 self,
+                 minterm_to_str(x[0],
+                                self.levels,
+                                self.labels,
+                                0,
+                                self.multi_output),
+                 x[0],
+                 {coverage_dict[y] for y in x[1]})
+                 for x in prime_implicants
+                 
+                 )
     return prime_implicants_fin
   
     
@@ -944,27 +958,30 @@ class OptimizationContext:
                                 self.preprocessed_data[self.output_labels[0]] == 1].index]
         
         prime_implicants = []
-        essentials = get_essential_implicants(self.data,self.output_labels[0],self.levels)
-        cov_essentials = reduce_the_onset(essentials,self.data,self.output_labels[0])
-        for impl, cov in zip(essentials,cov_essentials):
-            raw_i = transform_to_raw_impl(impl, self.levels)
-        
-            prime_implicants.append(Implicant(
-                 self,
-                 minterm_to_str(raw_i,
-                                self.levels,
-                                self.labels,
-                                0,
-                                self.multi_output),
-                 raw_i,cov,essential = True))
-        reduced_indexes = set.union(*[set(x) for x in cov_essentials]) if len(cov_essentials) > 0 else set()
-        data_reduced = self.preprocessed_data.drop(reduced_indexes,
+        essentials = get_essential_implicants(self.preprocessed_data,self.output_labels[0],self.levels)
+        if len(essentials)>0:
+            cov_essentials = reduce_the_onset(essentials,self.preprocessed_data,self.output_labels[0])
+            for impl, cov in zip(essentials,cov_essentials):
+                raw_i = transform_to_raw_impl(impl, self.levels)
+                
+                prime_implicants.append(Implicant(
+                    self,
+                    minterm_to_str(raw_i,
+                                   self.levels,
+                                   self.labels,
+                                   0,
+                                   self.multi_output),
+                    raw_i,cov,essential = True))
+                reduced_indexes = set.union(*[set(x) for x in cov_essentials]) if len(cov_essentials) > 0 else set()
+                data_reduced = self.preprocessed_data.drop(reduced_indexes,
                                                    inplace=False)        
-        onset, offset = on_off_grouping(data_reduced,
-                                        self.output_labels[0],
-                                        self.multi_output)
-        
-        
+                onset, offset = on_off_grouping(data_reduced,
+                                                self.output_labels[0],
+                                                self.multi_output)
+        else:
+                onset, offset = on_off_grouping(self.preprocessed_data,
+                                                self.output_labels[0],
+                                                self.multi_output)
         impl_dict = reduction(onset,offset)
         
         for impl, cov in impl_dict.items():
@@ -1344,7 +1361,7 @@ class Irredundant_systems_multi():
     
           
       res = ""
-      res+='---- Solution {} ----\n'.format(self.index)
+      res+='---- System {} ----\n'.format(self.index)
       for j, system in enumerate(self.system_multiple):
          if any(str(impl.implicant) == '1' for impl in system):
              res+=('{}: 1\n'.format(self.output_labels[j]))
@@ -1359,7 +1376,7 @@ class Irredundant_systems_multi():
       
   def get_descriptive_string(self,cov):
       res = ""
-      res+='---- Solution {} ----\n'.format(self.index)
+      res+='---- System {} ----\n'.format(self.index)
       for j, system in enumerate(self.system_multiple):
 
           if any(str(impl.implicant) == '1' for impl in system):
