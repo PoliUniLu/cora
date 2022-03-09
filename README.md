@@ -20,7 +20,7 @@ pip install CORA
 ```
 ## Google Colab
 
-[![Open In Colab](https://colab.research.google.com/gist/ZuzanaSebb/4457383c9ed2d46c608ce3a69b4ecb75/cora_1-0-1.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/gist/ZuzanaSebb/4457383c9ed2d46c608ce3a69b4ecb75/cora_1-0-1.ipynb)
 
 ## Citation Info
 
