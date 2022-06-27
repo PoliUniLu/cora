@@ -1,4 +1,23 @@
 from functools import reduce
+from native_petric import petric
+import sys
+
+
+def find_irredundant_sums_native(implicants_with_coverage, coverage):
+    
+    petric_input  = [x[1] for x in implicants_with_coverage]
+    #print('Petric called with {} immplicants'.format(len(petric_input)))
+    #print(petric_input)
+    #sys.exit(0)
+    _ , sums = petric(petric_input)
+   # print('Petic done, foudn {} sums'.format(len(sums)))
+    
+    res = []
+    for x in sums:
+        res.append(implicants_with_coverage[i][0] for i in x)
+    return res
+    
+    
 
 def find_irredundant_sums(implicants_with_coverage, coverage, max_depth = None):
 	if max_depth is None:
