@@ -1,5 +1,5 @@
 from functools import reduce
-from .native_petric import petric
+from native_petric import petric
 import sys
 
 
