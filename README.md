@@ -30,7 +30,7 @@ Sebechlebská, Zuzana, Lusine Mkrtchyan and Alrik Thiem. 2021. CORA: A Python pa
 
 
 ## License 
-[![Open In License](https://mirrors.creativecommons.org/presskit/buttons/88x31/svg/by-nc-sa.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/){:target="_blank" rel="noopener"}
+[![Open In License](https://mirrors.creativecommons.org/presskit/buttons/88x31/svg/by-nc-sa.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 
 ## References
