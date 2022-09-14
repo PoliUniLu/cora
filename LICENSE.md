@@ -1,3 +1,8 @@
+Attribution-NonCommercial-ShareAlike 4.0 International
+
+=======================================================================
+
+
 This license allows reusers to distribute, 
 remix, adapt, and build upon the material in any medium
 or format for noncommercial purposes only, and only so
