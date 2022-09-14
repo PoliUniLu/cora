@@ -29,9 +29,8 @@ When using CORA, please cite as follows:
 Sebechlebská, Zuzana, Lusine Mkrtchyan and Alrik Thiem. 2021. CORA: A Python package for Combinational Regularity Analysis, Version *current version number*. Available from: https://github.com/PoliUniLu/cora.
 
 
-## Licence 
-
-[![Open In License](https://mirrors.creativecommons.org/presskit/cc.srr.primary.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+## License 
+[![Open In License](https://mirrors.creativecommons.org/presskit/buttons/88x31/svg/by-nc-sa.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/){:target="_blank" rel="noopener"}
 
 
 ## References
