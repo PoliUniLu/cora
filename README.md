@@ -28,6 +28,12 @@ When using CORA, please cite as follows:
 
 Sebechlebská, Zuzana, Lusine Mkrtchyan and Alrik Thiem. 2021. CORA: A Python package for Combinational Regularity Analysis, Version *current version number*. Available from: https://github.com/PoliUniLu/cora.
 
+
+## Licence 
+
+[![Open In License](https://mirrors.creativecommons.org/presskit/cc.srr.primary.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
+
 ## References
 
 * Baumgartner, Michael. 2009. "Inferring Causal Complexity." *Sociological Methods & Research* **38** (1):71-101.
