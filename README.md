@@ -4,12 +4,9 @@ CORA is a Python library for **Combinational Regularity Analysis** (CORA).
 
 ## Description
 
-CORA belongs to the group of Configurational Comparative Methods (CCMs; Thiem *et al*. 2016), and is thus closely related to, 
-for example, Qualitative Comparative Analysis (QCA; Ragin 1987) and Coincidence Analysis (CNA; Baumgartner 2009). 
-Unlike QCA and CNA, however, CORA can analyze multi-output structures without generating redundancies. In addition, 
-CORA offers a data-mining approach to solution building that reduces model ambiguities by keeping the number of required 
-variables for finding a solution at a minimum. Lastly, CORA includes a standardized visualization module called LOGIGRAM, 
-with which logic diagrams can be produced from (systems of) Boolean functions in disjunctive normal form.
+CORA is a member of the family of Configurational Comparative Methods (CCMs; Thiem *et al*. 2016). It is thus closely related to Qualitative Comparative Analysis (QCA; Ragin 1987) and Coincidence Analysis (CNA; Baumgartner 2009; Baumgartner and Ambühl 2020). CCMs seek to detect so-called "INUS" structures in data (Thiem 2017, 2022). Such structures represent patterns of causal relations modelled in the language of propositional logic (Mackie 1965; Psillos 2009). 
+
+In contrast to QCA and CNA, however, CORA is centrally inspired by the field of switching circuit analysis, a subfield of electrical engineering. The reason is that *propositional logic* - the language of INUS causation - and *switching algebra* - the language of switching circuit analysis - are two conceptually distinct yet operationally equivalent branches of the same underlying Boolean algebra (Lewin and Protheroe 1992). As such, CORA is currently the only CCM that can analyze multi-output structures, that is, INUS structures that feature complex conjunctive effects. In addition, CORA offers a data-mining approach to solution building that reduces model ambiguities by keeping the number of required variables for finding a solution at a minimum. Lastly, CORA includes a visualization module called LOGIGRAM, with which logic diagrams can be produced from any (system of) Boolean function(s) in disjunctive normal form.
 
 ## Installation
 
@@ -26,7 +23,7 @@ pip install CORA
 
 When using CORA, please cite as follows:
 
-Sebechlebská, Zuzana, Lusine Mkrtchyan and Alrik Thiem. 2021. CORA: A Python package for Combinational Regularity Analysis, Version *current version number*. Available from: https://github.com/PoliUniLu/cora.
+Sebechlebská, Zuzana, Lusine Mkrtchyan and Alrik Thiem. 2022. CORA: A Python package for Combinational Regularity Analysis, Version *current version number*. Available from: https://github.com/PoliUniLu/cora.
 
 
 ## License 
@@ -36,5 +33,11 @@ Sebechlebská, Zuzana, Lusine Mkrtchyan and Alrik Thiem. 2021. CORA: A Python pa
 ## References
 
 * Baumgartner, Michael. 2009. "Inferring Causal Complexity." *Sociological Methods & Research* **38** (1):71-101.
+* Baumgartner, Michael, and Mathias Ambühl. 2020. "Causal modeling with multi-value and fuzzy-set Coincidence Analysis." *Political Science Research and Methods* **8** (3):526-42.
+* Lewin, Douglas, and David Protheroe. 1992. *Design of Logic Systems*. 2nd ed. London: Chapman & Hall.
+* Mackie, John L. 1965. "Causes and Conditions." *American Philosophical Quarterly* **2** (4):245-64.
+* Psillos, Stathis. 2009. "Regularity Theories." In *The Oxford Handbook of Causation*, ed. H. Beebee, C. Hitchcock and P. Menzies. Oxford: Oxford University Press, pp.131-157.
 * Ragin, Charles C. 1987. *The Comparative Method: Moving beyond Qualitative and Quantitative Strategies*. Berkeley: University of California Press.
+* Thiem, Alrik. 2017. "Conducting Configurational Comparative Research with Qualitative Comparative Analysis: A Hands-On Tutorial for Applied Evaluation Scholars and Practitioners." *American Journal of Evaluation* **38** (3):420-33.
+* Thiem, Alrik. 2022. "Qualitative Comparative Analysis (QCA)." In *Handbook of Research Methods in International Relations*, ed. R. J. Huddleston, T. Jamieson and P. James. Cheltenham: Edward Elgar, pp.607-28.
 * Thiem, Alrik, Michael Baumgartner, and Damien Bol. 2016. "Still Lost in Translation! A Correction of Three Misunderstandings Between Configurational Comparativists and Regressional Analysts." *Comparative Political Studies* **49** (6):742-74.
