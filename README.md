@@ -17,6 +17,8 @@ pip install CORA
 ```
 ## Google Colab
 
+To open CORA in Google Colab, click the button below:
+
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/gist/ZuzanaSebb/490501c7573490ebfbb841e850b573f9/-cora_1-0-3.ipynb)
 
 ## Citation Info
@@ -26,7 +28,10 @@ When using CORA, please cite as follows:
 Sebechlebská, Zuzana, Lusine Mkrtchyan and Alrik Thiem. 2022. CORA: A Python package for Combinational Regularity Analysis, Version *current version number*. Available from: https://github.com/PoliUniLu/cora.
 
 
-## License 
+## Copyright
+
+CORA is licensed under a CC BY-NC-SA 4.0 license. This license allows reusers to distribute, remix, adapt, and build upon the material in any medium or format for noncommercial purposes only, and only so long as attribution is given to the creator. If you remix, adapt, or build upon the material, you must license the modified material under identical terms. 
+
 [![Open In License](https://mirrors.creativecommons.org/presskit/buttons/88x31/svg/by-nc-sa.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 
