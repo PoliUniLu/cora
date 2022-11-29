@@ -4,7 +4,7 @@ CORA is a Python library for **Combinational Regularity Analysis** (CORA).
 
 ## Description
 
-CORA is a member of the family of Configurational Comparative Methods (CCMs; Thiem *et al*. 2016). It is thus closely related to Qualitative Comparative Analysis (QCA; Ragin 1987) and Coincidence Analysis (CNA; Baumgartner 2009; Baumgartner and Ambühl 2020). Modern CCMs seek to detect INUS structures in data (Thiem 2017, 2022). Such structures are specific cause-effect relations that can be represented in the language of propositional logic (Mackie 1965; Psillos 2009). Most importantly, these relations are marked by causal conjunctivity (*a* **AND** *b*) and causal disjunctivity (*c* **OR** *d*).
+CORA is a member of the family of Configurational Comparative Methods (CCMs; Thiem *et al*. 2016). It is thus closely related to Qualitative Comparative Analysis (QCA; Ragin 1987) and Coincidence Analysis (CNA; Baumgartner 2009; Baumgartner and Ambühl 2020). Modern CCMs seek to detect INUS structures in data (Thiem 2017, 2022). Such structures are specific cause-effect relations that can be represented in the language of propositional logic (Baumgartner 2008; Mackie 1965; Psillos 2009). Most importantly, these relations are marked by causal conjunctivity (*a* **AND** *b*) and causal disjunctivity (*c* **OR** *d*).
 
 In contrast to QCA and CNA, however, CORA is inspired by the field of switching circuit analysis, a subfield of electrical engineering. INUS structures and switching circuits have much in common because propositional logic - the language of INUS causation - and switching algebra - the language of switching circuit analysis - are two conceptually distinct yet operationally equivalent branches of the same underlying Boolean algebra (Lewin and Protheroe 1992). 
 
@@ -45,6 +45,7 @@ CORA is licensed under a CC BY-NC-SA 4.0 license. This license allows reusers to
 
 ## References
 
+* Baumgartner, Michael. 2008. "Regularity Theories Reassessed." *Philosophia* **36** (3):327-54. [Link](http://dx.doi.org/10.1007/s11406-007-9114-4)
 * Baumgartner, Michael. 2009. "Inferring Causal Complexity." *Sociological Methods & Research* **38** (1):71-101. [Link](https://doi.org/10.1177/0049124109339)
 * Baumgartner, Michael, and Mathias Ambühl. 2020. "Causal modeling with multi-value and fuzzy-set Coincidence Analysis." *Political Science Research and Methods* **8** (3):526-42. [Link](https://doi.org/10.1017/psrm.2018.45)
 * Lewin, Douglas, and David Protheroe. 1992. *Design of Logic Systems*. 2nd ed. London: Chapman & Hall.
