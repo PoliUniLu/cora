@@ -95,7 +95,7 @@ irredundant systems of Boolean functions. These functions, or any
 function in disjunctive normal form, can then also be rendered through
 `LOGIGRAM` as a logic diagram.
 
-![The structure of `CORA`.\label{fig:structure}](cora_structure.pdf)
+![The structure of `CORA`.\label{fig:structure}](cora_structure.png)
 
 The user interface of CORA’s Colab notebook is shown in
 Figure <a href="#fig:main" data-reference-type="ref" data-reference="fig:main">2</a>.
