@@ -24,7 +24,7 @@ affiliations:
  - name: University of Lucerne, Switzerland
    index: 1
 date: 22 November 2022
-bibliography: bibliography.bib
+bibliography: paper.bib
 ---
 
 # Summary 
