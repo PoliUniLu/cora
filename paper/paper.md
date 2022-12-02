@@ -170,6 +170,6 @@ References
 =======
 
 ---
-bibliography: bibliography.bib
+bibliography: paper.bib
 nocite: "@*"
 ---
