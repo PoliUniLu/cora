@@ -42,7 +42,7 @@ the Google Colab platform.
 
 Modern configurational comparative methods (CCMs) can infer
 regularity-theoretic causal structures from categorical data. The most
-sophisticated of these structures are so-called INUS structures [@mackie_1965]. INUS structures are codified as two-level
+sophisticated of these structures are so-called INUS structures [@gaia]. INUS structures are codified as two-level
 Boolean functions, such as $a\cdot b' + c' \Leftrightarrow z$, where
 $a$, $b$, $c$ and $z$ are Boolean literals, "$\;\cdot\;$" represents the
 Boolean multiplication operator, "$+$" the Boolean addition operator,
