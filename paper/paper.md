@@ -52,7 +52,7 @@ importantly, set theory, propositional logic and switching circuit
 theory [@lewin_protheroe_1992].
 
 So far, the two most sophisticated CCMs have been Qualitative
-Comparative Analysis (QCA) [@ragin_1987]} and
+Comparative Analysis (QCA) [@ragin_1987] and
 Coincidence Analysis
 (CNA) [@baumgartner_2009]. For QCA, several
 software packages exist, each with different functionality
@@ -76,8 +76,7 @@ possibility to mine configurational data. Third, CORA draws on logic
 diagrams to communicate its results. The software tool `CORA` implements
 the eponymous method.
 
-Functionality and design 
-========================
+# Functionality and design 
 
 Figure <a href="#fig:structure" data-reference-type="ref" data-reference="fig:structure">1</a>
 shows the internal structure of `CORA`. Two distinct Python packages
@@ -110,8 +109,7 @@ and finally (9) the drawing and export of logic diagrams.
 
 ![Interface of CORA's Colab notebook](cora_colab.png){#fig:main}
 
-Graphics 
-========
+# Graphics 
 
 Logic diagrams are graphical representations of Boolean-algebraic
 functions that have so far almost exclusively been used in electrical
@@ -130,8 +128,7 @@ expression](scheme_1.png){width="\\textwidth"}
 ![Logigram for multi-value causal
 expression](scheme_2.png){width="\\textwidth"}
 
-Future work
-===========
+# Future work
 
 Future work on `CORA` aims to explore several different directions. We
 list them in the order of priority:
@@ -151,21 +148,18 @@ list them in the order of priority:
 -   The `LOGIGRAM` module will receive functionality for colored gates
     and wires.
 
-Requirements
-============
+# Requirements
 
 `CORA` and `LOGIGRAM` are implemented in Python 3.7. For users who would
 like to directly run these in a Python environment, Python 3.7 or higher
 versions are required. For running `CORA` on Google Colab, a Google
 account is required.
 
-Funding 
-=======
+# Funding
 
 The Swiss National Science Foundation has generously funded this
 research under grant award number PP00P1\_202676 to AT. The funding body
 had no role in the design, writing or publication of this manuscript.
 
-References 
-=======
+# References 
 
