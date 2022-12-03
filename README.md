@@ -17,7 +17,7 @@ A detailed methodological introduction to CORA is provided in Thiem *et al*. (fo
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install CORA.
 
 ```bash
-pip install CORA
+pip install git+https://github.com/PoliUniLu/cora.git
 ```
 ## Google Colab
 
