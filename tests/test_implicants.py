@@ -1,14 +1,20 @@
- import unittest
+import unittest
 import pandas as pd
 from parameterized import parameterized
 from cora import OptimizationContext
+import os
+
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+
+def fpath(fname):
+    return os.path.join(THIS_DIR, fname)
 
 class TestPrimeImplicants(unittest.TestCase):
     
-    INPUT2 = pd.read_csv("tests/data/Multi_output/data2.csv", sep=",")
-    INPUT3 = pd.read_csv("tests/data/Multi_output/data3.csv", sep=",")
-    INPUT5 = pd.read_csv("tests/data/Multi_output/data5.csv", sep=",")
-    INPUT6 = pd.read_csv("tests/data/Multi_output/data6.csv", sep=",")
+    INPUT2 = pd.read_csv(fpath("data/Multi_output/data2.csv"), sep=",")
+    INPUT3 = pd.read_csv(fpath("data/Multi_output/data3.csv"), sep=",")
+    INPUT5 = pd.read_csv(fpath("data/Multi_output/data5.csv"), sep=",")
+    INPUT6 = pd.read_csv(fpath("data/Multi_output/data6.csv"), sep=",")
 
     @parameterized.expand([(INPUT2,('x*y*F1','y*z*F1','W*X*F1','W*y*F1',
                                     'W*X*Z','W*x*y','w*X*Z','W*y*Z','w*F1',
@@ -26,8 +32,6 @@ class TestPrimeImplicants(unittest.TestCase):
                                      'a*D','a*C','a*b','b*d'))
                             
                            ])
-    # test multi output binary
-    
     def test_prime_implicants_multiple(self,data,expected_pis):
          prime_impl = OptimizationContext(
               data,
@@ -35,48 +39,36 @@ class TestPrimeImplicants(unittest.TestCase):
               ).get_prime_implicants()
          res=tuple(str(i) for i in prime_impl)
          self.assertEqual(res,expected_pis)
-    
-    
-    INPUT1 = pd.read_csv("tests/data/One_output/data1.csv",sep=",")
-    INPUT2 = pd.read_csv("tests/data/One_output/data2.csv",sep=",")
-    INPUT3 = pd.read_csv("tests/data/One_output/data3.csv",sep=",")
-    INPUT4 = pd.read_csv("tests/data/One_output/data4.csv",sep=",")
-    INPUT5 = pd.read_csv("tests/data/One_output/data5.csv",sep=",")
 
-
-    prime_impl = OptimizationContext(
-              INPUT5,
-              output_labels = list(INPUT5.columns[-1])
-              ).get_prime_implicants()
+    INPUT1 = pd.read_csv(fpath("data/One_output/data1.csv"), sep=",")
+    INPUT2 = pd.read_csv(fpath("data/One_output/data2.csv"), sep=",")
+    INPUT3 = pd.read_csv(fpath("data/One_output/data3.csv"), sep=",")
+    INPUT4 = pd.read_csv(fpath("data/One_output/data4.csv"), sep=",")
+    INPUT5 = pd.read_csv(fpath("data/One_output/data5.csv"), sep=",")
     
-    res = []
-    for i in prime_impl:
-         res.append(str(i))
-    print(res)
-    
-    
-    @parameterized.expand([(INPUT1,('a*c*D','a*B*C','a*B*D','b*d','b*c',
-                                    'C*d')),
-                           (INPUT2,('a*b', 'C*D', 'A*D', 'b*C', 'b*D')),
-                           (INPUT3,('v*W*x*Y', 'W*X*Y*z', 'v*W*X*y','W*X*y*Z',
-                                    'V*w*x*Y', 'v*w*X*Y', 'w*x*z', 'v*z')),
-                           (INPUT4,('b*D', 'C*D', 'A*D', 'b*C')),
-                           (INPUT5,('v*w*X*Z', 'v*w*Y*Z', 'v*W*y*Z','v*w*x*Y',
-                                    'v*X*y*Z', 'W*X*Y*z', 'v*W*x*Z','v*x*Y*Z',
-                                    'V*x*z', 'V*W*z', 'w*x*z'))
-                            
-                           ])
-    
-    
-    # test single output binary
-    
+    @parameterized.expand([(INPUT1,{'a*c*D','a*B*C','a*B*D','#b*c',
+                                    '#C*d'}),
+                           (INPUT2,{'a*b', '#C*D', '#A*D', 'b*C'}),
+                           (INPUT3,{'#v*W*x*Y', '#W*X*Y*z','#W*X*y*Z',
+                                    '#V*w*x*Y', '#v*w*X*Y', '#w*x*z', '#v*z'}),
+                           (INPUT4,{'#C*D', '#A*D', '#b*C'}),
+                           (INPUT5,{'v*w*X*Z', 'v*w*Y*Z', 'v*W*y*Z','v*w*x*Y',
+                                    'v*X*y*Z', 'v*W*x*Z','v*x*Y*Z', '#V*W*z', '#w*x*z', '#W*X*Y*z'})])
     def test_prime_implicants_single(self,data,expected_pis):
-         prime_impl = OptimizationContext(
+        prime_impl_on_off = OptimizationContext(
+            data,
+            output_labels=list(data.columns[-1]),
+            algorithm='ON-OFF'
+         ).get_prime_implicants()
+        prime_impl_on_dc = OptimizationContext(
               data,
-              output_labels = list(data.columns[-1])
+              output_labels = list(data.columns[-1]),
               ).get_prime_implicants()
-         res=tuple(str(i) for i in prime_impl)
-         self.assertEqual(res,expected_pis)
+        res_on_off=set(str(i) for i in prime_impl_on_off)
+        res_on_dc=set(str(i) for i in prime_impl_on_dc)
+        self.assertEqual(res_on_dc, res_on_off)
+        self.assertEqual(expected_pis, res_on_off)
+        self.assertEqual(expected_pis, res_on_dc)
         
          
         
