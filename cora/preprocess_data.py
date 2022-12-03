@@ -14,7 +14,6 @@ def preprocess_data(df, out_cols,input_cols=None, n_cut=1, inc_score1=1,
     df_tmp=df.copy()
     if input_cols is None:
         input_cols=[x for x in list(df.columns) if (x not in out_cols) and (x!=case_col)]
-        print(input_cols)
     
     
     if(case_col is None or case_col == '-None-'):
@@ -30,7 +29,6 @@ def preprocess_data(df, out_cols,input_cols=None, n_cut=1, inc_score1=1,
     df_grouped=df_grouped[df_grouped['n_cut']>=n_cut]
     inc_columns=['inc_score_{}'.format(i) for i in out_cols]
     if(inc_score2 is None):
-        #print('cicik')
         df_grouped[out_cols]=(df_grouped[inc_columns]>=inc_score1).astype(int)
     else:
         if(U is None):
@@ -44,11 +42,8 @@ def preprocess_data(df, out_cols,input_cols=None, n_cut=1, inc_score1=1,
             
         
     res = df_grouped.reset_index()
-    
     if rename_columns:
         rename_dic = {k:v for k,v in zip(input_cols, COLUMN_LABELS[:len(input_cols)])}
         res.columns = map(lambda x: rename_dic[x] if x in rename_dic.keys() else x, res.columns)
-        print('renamed to : {}'.format(res.columns) )
-        print(rename_dic)
         
     return res 
