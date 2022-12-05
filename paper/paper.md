@@ -46,7 +46,7 @@ sophisticated of these structures are so-called INUS structures [@mackie_1965]. 
 Boolean functions, such as $a\cdot b' + c' \Leftrightarrow z$, where
 $a$, $b$, $c$ and $z$ are Boolean literals, " . " represents the
 Boolean multiplication operator, " + " the Boolean addition operator,
-" ' " the Boolean negation operator, and $"\Leftrightarrow"$ the
+" ' " the Boolean negation operator, and $\text{"}\Leftrightarrow\text{"}$ the
 Boolean implication operator. Branches of Boolean algebra include, most
 importantly, set theory, propositional logic and switching circuit
 theory [@lewin_protheroe_1992].
