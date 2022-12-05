@@ -94,13 +94,13 @@ irredundant systems of Boolean functions. These functions, or any
 function in disjunctive normal form, can then also be rendered through
 `LOGIGRAM` as a logic diagram.
 
-![The structure of `CORA`.\label{fig:structure}](cora_structure.png)
+![\label{fig:structure}](cora_structure.png)
 <p align = "center">
 Figure 1: The structure of CORA
 </p>
 
 The user interface of CORA’s Colab notebook is shown in
-Figure <a href="#fig:main" data-reference-type="ref" data-reference="fig:main">2</a>.
+Figure <a href="#fig:notebook" data-reference-type="ref" data-reference="fig:main">2</a>.
 It guides users through the analysis in nine steps, the last two of
 which are optional: (1) the initialization of the framework and (2)
 default settings, the (3) choice and (4) import of data, the (5)
@@ -110,7 +110,7 @@ of the solution, (8) the initialization of `CORA`’s visualization module
 and finally (9) the drawing and export of logic diagrams.
 
 
-![Interface of CORA's Colab notebook](cora_colab.png){#fig:main}
+![\label{fig:notebook}](cora_colab.png)
 <p align = "center">
 Figure 2: Interface of CORA's Colab notebook
 </p>
