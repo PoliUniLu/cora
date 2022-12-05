@@ -96,7 +96,7 @@ function in disjunctive normal form, can then also be rendered through
 
 ![The structure of `CORA`.\label{fig:structure}](cora_structure.png)
 <p align = "center">
-Figure: The structure of `CORA`
+Figure 1: The structure of CORA
 </p>
 
 The user interface of CORA’s Colab notebook is shown in
@@ -111,6 +111,9 @@ and finally (9) the drawing and export of logic diagrams.
 
 
 ![Interface of CORA's Colab notebook](cora_colab.png){#fig:main}
+<p align = "center">
+Figure 2: Interface of CORA's Colab notebook
+</p>
 
 # Graphics 
 
@@ -125,12 +128,15 @@ in CORA. Two examples of a logigram, including the interface through
 which they are produced, are plotted in
 Figure <a href="#fig:logigrams" data-reference-type="ref" data-reference="fig:logigrams">[fig:logigrams]</a>.
 
-![Logigram for binary causal
-expression](scheme_1.png){width="\\textwidth"}
+![Logigram for binary causal expression](scheme_1.png){width="\\textwidth"}
+<p align = "center">
+(a): Logigram for binary causal expression
+</p>
 
-![Logigram for multi-value causal
-expression](scheme_2.png){width="\\textwidth"}
-
+![Logigram for multi-value causal expression](scheme_2.png){width="\\textwidth"}
+<p align = "center">
+(b): Logigram for multi-value causal expression
+</p>
 # Future work
 
 Future work on `CORA` aims to explore several different directions. We
