@@ -96,7 +96,7 @@ function in disjunctive normal form, can then also be rendered through
 
 ![The structure of `CORA`.\label{fig:structure}](cora_structure.png)
 <p align = "center">
-Fig.1 - 4K Mountains Wallpaper
+Figure: The structure of `CORA`
 </p>
 
 The user interface of CORA’s Colab notebook is shown in
