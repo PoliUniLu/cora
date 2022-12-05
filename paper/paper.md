@@ -95,6 +95,9 @@ function in disjunctive normal form, can then also be rendered through
 `LOGIGRAM` as a logic diagram.
 
 ![The structure of `CORA`.\label{fig:structure}](cora_structure.png)
+<p align = "center">
+Fig.1 - 4K Mountains Wallpaper
+</p>
 
 The user interface of CORA’s Colab notebook is shown in
 Figure <a href="#fig:main" data-reference-type="ref" data-reference="fig:main">2</a>.
