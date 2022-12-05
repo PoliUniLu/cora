@@ -128,15 +128,19 @@ in CORA. Two examples of a logigram, including the interface through
 which they are produced, are plotted in
 Figure <a href="#fig:logigrams" data-reference-type="ref" data-reference="fig:logigrams">[fig:logigrams]</a>.
 
-![Logigram for binary causal expression](scheme_1.png){width="\\textwidth"}
+![](scheme_1.png)
 <p align = "center">
 (a): Logigram for binary causal expression
 </p>
 
-![Logigram for multi-value causal expression](scheme_2.png){width="\\textwidth"}
+![\label{fig:logigrams}](scheme_2.png)
 <p align = "center">
 (b): Logigram for multi-value causal expression
 </p>
+<p align = "center">
+Figure 3: Logigram production in CORA's Colab Notebook
+</p>
+
 # Future work
 
 Future work on `CORA` aims to explore several different directions. We
