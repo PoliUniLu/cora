@@ -23,8 +23,19 @@ authors:
 affiliations:
  - name: University of Lucerne, Switzerland
    index: 1
-date: 22 November 2022
+date: 05 December 2022
+output: 
+  pdf_document:
+    number_sections: true
+    df_print: kable
+    highlight: haddock
+    citation_package: biblatex
+    keep_tex: true
+biblio-style: "authoryear"
 bibliography: paper.bib
+link-citations: true
+linkcolor: blue
+
 ---
 
 # Summary 
