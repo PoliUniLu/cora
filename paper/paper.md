@@ -44,9 +44,9 @@ Modern configurational comparative methods (CCMs) can infer
 regularity-theoretic causal structures from categorical data. The most
 sophisticated of these structures are so-called INUS structures [@mackie_1965]. INUS structures are codified as two-level
 Boolean functions, such as $a\cdot b' + c' \Leftrightarrow z$, where
-$a$, $b$, $c$ and $z$ are Boolean literals, " . " represents the
+$a$, $b$, $c$ and $z$ are Boolean literals, $\text{"} . \text{"}$ represents the
 Boolean multiplication operator, $\text{"} + \text{"}$ the Boolean addition operator,
-" ' " the Boolean negation operator, and $\text{"}\Leftrightarrow\text{"}$ the
+$\text{"} ' \text{"}$ the Boolean negation operator, and $\text{"}\Leftrightarrow\text{"}$ the
 Boolean implication operator. Branches of Boolean algebra include, most
 importantly, set theory, propositional logic and switching circuit
 theory [@lewin_protheroe_1992].
