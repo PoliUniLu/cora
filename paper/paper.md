@@ -16,7 +16,7 @@ authors:
     equal-contrib: true
     affiliation: "1"
   - name: Alrik Thiem
-    orcid: 0000-0000-0000-0000
+    orcid: 0000-0002-4769-2185
     equal-contrib: true # 
     corresponding: true # 
     affiliation: "1"
