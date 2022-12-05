@@ -166,7 +166,7 @@ list them in the order of priority:
 `CORA` and `LOGIGRAM` are implemented in Python 3.7. For users who would
 like to directly run these in a Python environment, Python 3.7 or higher
 versions are required. For running `CORA` on Google Colab, a Google
-account is required.
+account is required. bbbbbb [@Pearson:2017]
 
 # Funding
 
