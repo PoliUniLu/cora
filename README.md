@@ -4,11 +4,11 @@ CORA is a Python library for **Combinational Regularity Analysis** (CORA).
 
 ## Description
 
-CORA is a member of the family of Configurational Comparative Methods (CCMs; Thiem *et al*. 2016). It is thus closely related to Qualitative Comparative Analysis (QCA; Ragin 1987) and Coincidence Analysis (CNA; Baumgartner 2009; Baumgartner and Ambühl 2020). Modern CCMs seek to detect INUS structures in data (Thiem 2017, 2022). Such structures are specific cause-effect relations that can be represented in the language of propositional logic (Baumgartner 2008; Mackie 1965; Psillos 2009). Most importantly, these relations are marked by causal conjunctivity (*a* **AND** *b*) and causal disjunctivity (*c* **OR** *d*).
+CORA is a member of the family of Configurational Comparative Methods (CCMs; Thiem *et al*. 2016). It is thus closely related to Qualitative Comparative Analysis (QCA; Ragin 1987) and Coincidence Analysis (CNA; Baumgartner 2009; Baumgartner and Ambühl 2020). Modern CCMs seek to detect INUS structures in data (Thiem 2017, 2022). Such structures are specific cause-effect relations that can be represented in the language of propositional logic (Baumgartner 2008; Mackie 1965; Psillos 2009). Most importantly, these relations are marked by causal conjunctivity (*a* **and** **not** *b* **and** *c*) and causal disjunctivity (*d* **or** *e* **or** *f*).
 
 In contrast to QCA and CNA, however, CORA is inspired by the field of switching circuit analysis, a subfield of electrical engineering. INUS structures and switching circuits have much in common because propositional logic - the language of INUS causation - and switching algebra - the language of switching circuit analysis - are two conceptually distinct yet operationally equivalent branches of the same underlying Boolean algebra (Lewin and Protheroe 1992). 
 
-CORA is currently the only CCM able to analyze INUS structures that simultaneously feature simple as well as corresponding conjunctive effects (e.g., *y*, *z*, *y* AND *z*). In addition, CORA offers a configurational version of Occam's Razor: a data-mining approach to solution building that reduces model ambiguities by keeping the number of required variables for finding a solution at a minimum. Lastly, CORA includes a lean yet powerful visualization module called LOGIGRAM, with which two-level logic diagrams can be produced from any (system of) Boolean function(s) in disjunctive normal form.
+CORA is currently the only CCM able to analyze INUS structures that simultaneously feature simple as well as conjunctively complex effects (e.g., *y* **and** **not** *z*, *z* **and** **not** *y*, *y* **and** *z*). In addition, CORA offers a configurational version of Occam's Razor: a data-mining approach to solution building that reduces model ambiguities by keeping the number of required variables for finding a solution at a minimum. Lastly, CORA includes a lean yet powerful visualization module called LOGIGRAM, with which two-level logic diagrams can be produced from any (system of) Boolean function(s) in disjunctive normal form.
 
 A detailed methodological introduction to CORA is provided in Thiem *et al*. (forthcoming).
 
@@ -33,7 +33,7 @@ When using CORA (method and software), please cite it as follows:
 Thiem, Alrik, Lusine Mkrtchyan, and Zuzana Sebechlebská. forthcoming. "Combinational Regularity Analysis (CORA): A New Method for Uncovering Complex Causation in Medical and Health Research." *BMC Medical Research Methodology*.
 
 **Software:**
-Sebechlebská, Zuzana, Lusine Mkrtchyan and Alrik Thiem. 2022. CORA: A Python package for Combinational Regularity Analysis, Version *current version number*. Available from: https://github.com/PoliUniLu/cora.
+Sebechlebská, Zuzana, Lusine Mkrtchyan and Alrik Thiem. 2022. CORA: A Python package for Combinational Regularity Analysis, Version <*current version number*>. Available from: https://github.com/PoliUniLu/cora.
 
 
 ## Copyright
