@@ -121,15 +121,15 @@ disciplines have begun to discover the utility of logic diagrams
 The `LOGIGRAM` package in `CORA` is an interactive tool for the
 standardized production of two-level logic diagrams, called "logigrams"
 in CORA. Two examples of a logigram, including the interface through
-which they are produced, are plotted in
-Figure <a href="#fig:logigrams" data-reference-type="ref" data-reference="fig:logigrams">3</a>.
+which they are produced, are plotted in 
+Figure <a href="#fig:logigrams1" data-reference-type="ref" data-reference="fig:logigrams1">3</a> and 
+Figure <a href="#fig:logigrams2" data-reference-type="ref" data-reference="fig:logigrams2">4</a> for binary 
+and multi-value causal expressions, respectively.
 
-![](scheme_1.png)
-<p align = "left">
-(a): Logigram for binary causal expression
-</p>
+![Logigram for binary causal expression.\label{fig:logigrams1}](scheme_1.png)
+![Logigram for multi-value causal expression.\label{fig:logigrams2}](scheme_2.png)
 
-![Logigram production in CORA's Colab Notebook.\label{fig:logigrams}](scheme_2.png)
+
 
 # Future work
 
