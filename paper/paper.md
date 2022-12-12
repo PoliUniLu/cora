@@ -1,5 +1,5 @@
 ---
-title: 'CORA: A Python Package for Combinational Regularity Analysis'
+title: '`CORA`: A Python Package for Combinational Regularity Analysis'
 tags:
   - Python
   - configurational comparative method
@@ -56,7 +56,7 @@ Comparative Analysis (QCA) [@ragin_1987] and
 Coincidence Analysis
 (CNA) [@baumgartner_2009]. For QCA, several
 software packages exist, each with different functionality
-[@cronqvist_2019; @dusa_2021, @ragin_davey_2019, @thiem_2018].
+[@cronqvist_2019, @dusa_2021, @ragin_davey_2019, @thiem_2018].
 However, since there is no harmonization on procedures in QCA, different
 software packages often generate different results
 [@thiem_dusa_2013]. For CNA, the `cna` package is
