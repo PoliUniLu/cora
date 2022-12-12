@@ -127,6 +127,7 @@ Figure <a href="#fig:logigrams2" data-reference-type="ref" data-reference="fig:l
 and multi-value causal expressions, respectively.
 
 ![Logigram for binary causal expression.\label{fig:logigrams1}](scheme_1.png)
+
 ![Logigram for multi-value causal expression.\label{fig:logigrams2}](scheme_2.png)
 
 
