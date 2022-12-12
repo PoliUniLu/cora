@@ -94,10 +94,8 @@ irredundant systems of Boolean functions. These functions, or any
 function in disjunctive normal form, can then also be rendered through
 `LOGIGRAM` as a logic diagram.
 
-![\label{fig:structure}](cora_structure.png)
-<p align = "center">
-Figure 1: The structure of CORA
-</p>
+![The structure of CORA.\label{fig:structure}](cora_structure.png)
+
 
 The user interface of CORA’s Colab notebook is shown in
 Figure <a href="#fig:notebook" data-reference-type="ref" data-reference="fig:main">2</a>.
@@ -110,10 +108,8 @@ of the solution, (8) the initialization of `CORA`’s visualization module
 and finally (9) the drawing and export of logic diagrams.
 
 
-![\label{fig:notebook}](cora_colab.png)
-<p align = "center">
-Figure 2: Interface of CORA's Colab notebook
-</p>
+![Interface of CORA's Colab notebook.\label{fig:notebook}](cora_colab.png)
+
 
 # Graphics 
 
@@ -133,13 +129,7 @@ Figure <a href="#fig:logigrams" data-reference-type="ref" data-reference="fig:l
 (a): Logigram for binary causal expression
 </p>
 
-![\label{fig:logigrams}](scheme_2.png)
-<p align = "left">
-(b): Logigram for multi-value causal expression
-</p>
-<p align = "center">
-Figure 3: Logigram production in CORA's Colab Notebook
-</p>
+![Logigram production in CORA's Colab Notebook.\label{fig:logigrams}](scheme_2.png)
 
 # Future work
 
