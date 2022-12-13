@@ -54,11 +54,9 @@ The user interface of CORA's Colab notebook is shown in Figure <a href="#fig:no
 
 # Graphics 
 
-Logic diagrams are graphical representations of Boolean-algebraic functions that have so far almost exclusively been used in electrical engineering. Over the last 10 years, however, scientists from other disciplines have begun to discover the utility of logic diagrams [@delorenzo_schmidt_2018; @pearl_2009; @thiem_et_al_2020]. The `LOGIGRAM` package in `CORA` is an interactive tool for the standardized production of two-level logic diagrams, called "logigrams" in CORA. Two examples of a logigram, including the interface through which they are produced, are plotted in Figure <a href="#fig:logigrams1" data-reference-type="ref" data-reference="fig:logigrams1">3</a> and Figure <a href="#fig:logigrams2" data-reference-type="ref" data-reference="fig:logigrams2">4</a> for a binary and a multi-value system, respectively.
+Logic diagrams are graphical representations of Boolean-algebraic functions that have so far almost exclusively been used in electrical engineering. Over the last 10 years, however, scientists from other disciplines have begun to discover the utility of logic diagrams [@delorenzo_schmidt_2018; @pearl_2009; @thiem_et_al_2020]. The `LOGIGRAM` package in `CORA` is an interactive tool for the standardized production of two-level logic diagrams, called "logigrams" in CORA. Two examples of a logigram, including the interface through which they are produced, are plotted in Figure <a href="#fig:logigrams" data-reference-type="ref" data-reference="fig:logigrams">3</a> for a binary (left) and a multi-value system (right), respectively.
 
-![Logigram for binary system.\label{fig:logigrams1}](scheme_1.png)
-
-![Logigram for multi-value system.\label{fig:logigrams2}](scheme_2.png)
+![Logigram for binary system.\label{fig:logigrams}](schemes.png)
 
 
 
