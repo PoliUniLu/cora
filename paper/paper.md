@@ -56,7 +56,7 @@ The user interface of CORA's Colab notebook is shown in Figure <a href="#fig:no
 
 Logic diagrams are graphical representations of Boolean-algebraic functions that have so far almost exclusively been used in electrical engineering. Over the last 10 years, however, scientists from other disciplines have begun to discover the utility of logic diagrams [@delorenzo_schmidt_2018; @pearl_2009; @thiem_et_al_2020]. The `LOGIGRAM` package in `CORA` is an interactive tool for the standardized production of two-level logic diagrams, called "logigrams" in CORA. Two examples of a logigram, including the interface through which they are produced, are plotted in Figure <a href="#fig:logigrams" data-reference-type="ref" data-reference="fig:logigrams">3</a> for a binary (left) and a multi-value system (right), respectively.
 
-![Logigram for binary system.\label{fig:logigrams}](schemes.png)
+![Logigrams for system of binary (left panel) and multi-valued functions (right panel).\label{fig:logigrams}](schemes.png)
 
 
 
