@@ -23,7 +23,7 @@ pip install git+https://github.com/PoliUniLu/cora.git
 
 To open CORA in Google Colab, click the button below:
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/gist/ZuzanaSebb/490501c7573490ebfbb841e850b573f9/-cora_1-0-3.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/gist/ZuzanaSebb/87499b8048d4839e51746ebc319c604d/visualisation-1-0-5.ipynb?authuser=1)
 
 ## Citation Info
 
