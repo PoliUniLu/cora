@@ -29,7 +29,7 @@ bibliography: paper.bib
 
 # Summary 
 
-Combinational Regularity Analysis (CORA) [@thiem_et_al_forth] is a new member of the family of configurational comparative methods (CCMs). The most sophisticated CCMs infer INUS structures from sets of configurational data [@thiem_2022a]. CORA generalizes the capabilities of existing CCMs. By means of Boolean optimization algorithms for multi-output data, CORA can infer INUS structures that include complex conjunctive effects. The accompanying and eponymous package `CORA` is an open-source Python tool, hosted on GitHub and deployed on the Google Colab platform, with which such structures can be identified.
+Combinational Regularity Analysis (CORA) [@thiem_et_al_2022] is a new member of the family of configurational comparative methods (CCMs). The most sophisticated CCMs infer INUS structures from sets of configurational data [@thiem_2022a]. CORA generalizes the capabilities of existing CCMs. By means of Boolean optimization algorithms for multi-output data, CORA can infer INUS structures that include complex conjunctive effects. The accompanying and eponymous package `CORA` is an open-source Python tool, hosted on GitHub and deployed on the Google Colab platform, with which such structures can be identified.
 
 # Statement of need
 
