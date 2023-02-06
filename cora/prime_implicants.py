@@ -1285,12 +1285,12 @@ class OptimizationContext:
             df = pd.DataFrame(data, range(n_rows),
                               [i.implicant for i in prime_implicants])
 
-            out_strings = ["Out" + str(i + 1) for i in range(l)]
-            df["Out_index"] = out_strings * len(solutions)
+            out_strings = [str(i + 1) for i in range(l)]
+            df["Output"] = out_strings * len(solutions)
             tmp = []
             for i in range(len(solutions)):
-                tmp.extend(["Sol" + str(i + 1)] * l)
-            df["Sol_index"] = tmp
+                tmp.extend([str(i + 1)] * l)
+            df["System"] = tmp
             return df
 
     def get_network_representation(self):
