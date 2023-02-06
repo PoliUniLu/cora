@@ -63,7 +63,7 @@ data : dataframe
 output_labels : an array of strings
     The names of the outcome columns from the data frame.
     
-len_of_tupple : int
+len_of_tuple : int
     Number indicating how many variables from the original data 
     are used in the computation.
 
