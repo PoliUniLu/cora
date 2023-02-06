@@ -94,7 +94,7 @@ result : dataframe
 
 def data_mining(data,
                 out_col,
-                len_of_tupple,
+                len_of_tuple,
                 case_col=None,
                 temp_cols=None,
                 cut=1,
@@ -109,8 +109,8 @@ def data_mining(data,
                                                     if (x not in out_col and
                                                     
                                                         x!=case_col)
-                                                    ], 
-                                                   len_of_tupple)):
+                                                    ],
+                                                       len_of_tuple)):
        
             cols = list(x[1] for x in comb)
             tmp_temp = [x for x in temp_cols if any(x.startswith(y+'{') for y in cols)]
@@ -167,8 +167,8 @@ def data_mining(data,
         for i,comb in enumerate(itertools.combinations([x for x in data.columns 
    
                                                     if (x not in out_col and
-                                                        x!=case_col)], 
-                                                           len_of_tupple)):
+                                                        x!=case_col)],
+                                                       len_of_tuple)):
             cols = list(comb)
             data_object = cora.OptimizationContext(data,
                                                    out_col,
