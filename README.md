@@ -38,6 +38,15 @@ Sebechlebská, Zuzana, Lusine Mkrtchyan and Alrik Thiem. 2022. CORA: A Python pa
 
 CORA is licensed under a GNU GPLv3. 
 
+## Contribution 
+
+We welcome contributions from the community.
+We encourage and recommend that feedback, bug reports, and feature requests should first be documented as an [Issue](https://github.com/PoliUniLu/cora/issues) on GitHub.
+
+### Pull requests
+
+Pull requests are welcome. Note that although the current codebase doesn't have entirely 
+consistent code style the new code should be PEP-8 compliant.
 
 ## References
 
