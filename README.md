@@ -12,11 +12,14 @@ CORA is currently the only CCM able to analyze INUS structures that simultaneous
 
 ## Installation
 
-Use the package manager [pip](https://pip.pypa.io/en/stable/) to install CORA.
+CORA requires Python>3.7 and uses Poetry for dependendecy management. Use the package manager [pip](https://pip.pypa.io/en/stable/) to install CORA including all dependencies.
 
 ```bash
 pip install git+https://github.com/PoliUniLu/cora.git
 ```
+
+It's recommended to install the package into dedicated virtual environment.
+
 ## Google Colab
 
 To open CORA in Google Colab, click the button below:
