@@ -292,49 +292,6 @@ def calculate_essential_indexes(prime_implicants):
     return set(essentials)
 
 
-"""
-Optimization Context contains the data and information to preform the 
-computation.
-
-Parameters
-
-----------
-
-data : dataframe
-    
-output_labels : an array of strings
-    The names of the outcome columns from the data frame. If the columns 
-    contain values requiring to map to the boolean range, the set 
-    of the values can be added at the end of the name string.
-
-input_labels : array of strings
-    The names of the input columns from the data frame
-
-case_col : string
-    The name of the column from the data frame containing the case ids
-
-n_cut : int
-    The minimum number of cases under which a truth table row is declared as a
-    don't care.
-        
-inc_score1 : float
-    The minimum sufficiency inclusion score for an output function value of "1".
-    
-inc_score2 : float
-    The maximum sufficiency inclusion score for an output function value of "0".
-
-U : int
-    The U number is either 0 or 1.
-
-rename_columns : boolean 
-    If true, the column names are renamed as single letters in alphabetic
-    order.
-
-algorithm : string
-    The name of the optimization algorithm.    
-"""
-
-
 class OptimizationContext:
     """
     Optimization Context contains the data and information to preform the
@@ -564,7 +521,7 @@ class OptimizationContext:
 
 
         >>> df = pd.DataFrame([[1,0,0,1],[0,1,0,1],[1,1,1,0],[1,1,1,1],[1,1,1,1]],
-                          columns = ["A","B","C","O"])
+        ...                  columns = ["A","B","C","O"])
         >>> context = OptimizationContext(df,["O"],inc_score1=0.5)
         >>> context.get_preprocessed_data()
             A  B  C  O
