@@ -56,7 +56,7 @@ class OptimizationContext_tests(unittest.TestCase):
                 "n": [1, 2, 2],
                 "Cases": ["3", "1,5", "2,4"],
                 "Inc_O": [1.0, 0.5, 0.5],
-                "Inc_P": [0, 1, 1],
+                "Inc_P": [0.0, 1.0, 1.0],
                 "O": [1, 1, 1],
                 "P": [0, 1, 1]
 

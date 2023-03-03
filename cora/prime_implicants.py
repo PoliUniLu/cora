@@ -31,7 +31,7 @@ def concatenate_strings(arr):
 
 
 def inclusion_score(arr):
-    return round(sum(arr) / len(arr), 2)
+    return float(round(sum(arr) / len(arr), 2))
 
 
 def count_non_zeros(minterm):

@@ -1,4 +1,7 @@
 # CORA
+[![Tests](https://github.com/PoliUniLu/cora/workflows/Cora/badge.svg)](https://github.com/PoliUniLu/cora/actions?workflow=Cora)
+[![codecov](https://codecov.io/github/PoliUniLu/cora/branch/master/graph/badge.svg?token=36V7QBSJI3)](https://codecov.io/github/PoliUniLu/cora)
+
 
 CORA is a Python library for **Combinational Regularity Analysis** (CORA). 
 
