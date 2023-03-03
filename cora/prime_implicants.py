@@ -70,20 +70,20 @@ def is_minterm_subset(m1, m2):
     return True
 
 
-# Funtion which groups minterms according to the number of nonzero digets
+# Funtion which groups minterms according to the number of non-zero digets
 
 # Paramters: table - the truth table
-#            column_number - defines the number of possible nonzero digits
-#            cares - indexes which correspond to original minterms
-#            output_columns - binary output columns from the original data
+#            column_number - defines the number of possible non-zero digits
+#            cares - indexes of the positive mintermsin in the data
+#            output_columns - binary output columns from the data
 #            multi_output - a boolean variable
 # Output: (a) an array res of objects from classes Multi_value_item or
 #             Multiple_output_minterm
 #         (b) the i-th element of an array consisting of
-#              objects whose minterms have exactly i nonzero digits
+#              objects whose minterms have exactly i non-zero digits
 
 # Definition: a minterm of n variables is a product of the variables
-# 	      in which each appears exactly once in true or complemented form.
+# 	      in which each one appears exactly once in true or complemented form.
 
 def create_groups(table, column_number, cares, outputcolumns, multi_output):
     res = []
@@ -117,12 +117,12 @@ def create_groups(table, column_number, cares, outputcolumns, multi_output):
         return res
 
 
-# Function preforming 1 step elimination of 2 minterms
+# Function performing 1 step elimination of 2 minterms
 
 # Function eliminates minterms first in adjacent groups, second in
 # between the group. In both cases minterms differ in only one sigle digit.
 # In addition, the function collects implicants, which can't be further
-# eliminated to an array- final implicants.
+# eliminated to an array- the prime implicants.
 
 # Parameters: groups - an array returned by fun create_groups
 #             n - the number of rows in the truth table
