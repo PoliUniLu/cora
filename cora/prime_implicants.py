@@ -305,7 +305,7 @@ class OptimizationContext:
 
     output_labels : an array of strings
         The names of the outcome columns from the data frame. If the columns
-        contain values requiring to map to the boolean range, the set
+        contain values requiring to map to a boolean range, the set
         of the values can be added at the end of the name string.
 
     input_labels : array of strings
@@ -335,8 +335,8 @@ class OptimizationContext:
         The name of the optimization algorithm.
         (a): ON-DC, the classical Quine-McCluskey algorithm operating on
                     positive (ON) and don't care (DC) terms.
-        (b): ON-OFF, the modified version of McCluskey's algorithm operating on
-                    positive and negative (OFF) terms (default).
+        (b): ON-OFF (default), the modified version of McCluskey's algorithm operating on
+                    positive and negative (OFF) terms.
 
     """
 
@@ -878,12 +878,12 @@ class OptimizationContext:
 
         a) a positive literal is printed in upper case,
         b) a negative literal is printed in lower case, and
-        c) an essential prime implicant is prefixed with a hash (#).
+        c) an essential prime implicant is prefixed with a hash tag (#).
 
         II.) Multi-value case:
-        a) all literals are coded with upper case letter
-        b) the literal value is written in curly ({}) brackets.
-        c) c) an essential prime implicant is prefixed with a hash (#).
+        a) all literals are coded with upper case letters
+        b) the value of the literal is written in curly ({}) brackets.
+        c) an essential prime implicant is prefixed with a hash tag (#).
 
         Examples
         --------
@@ -936,7 +936,7 @@ class OptimizationContext:
         columns: The labels of the columns correspond to the truth table rows
                  with positive outputs.
         rows: prime implicants
-        If a prime implicant covers a positive row of the truth table,it
+        If a prime implicant covers a positive row of the truth table, it
         receives a 1 entry in the corresponding position; an entry 0 otherwise.
 
         Example
@@ -984,7 +984,7 @@ class OptimizationContext:
 
     def get_irredundant_sums(self, max_depth=None):
         """
-        Function computes all the irredundat sums.
+        Function computes all irredundat sums.
 
         Parameters
         ----------
@@ -1004,7 +1004,7 @@ class OptimizationContext:
         ------
         Note that the number of all irredundant sums can grow exponentially.
         Requesting all irredundant sums for a large prime implicant chart
-        might thus consume a lot of memory and lead to out-of-memory crashes.
+        might consume a lot of memory and lead to out-of-memory crashes.
 
         Examples
         --------
@@ -1047,14 +1047,14 @@ class OptimizationContext:
 
     def system_details(self):
         """
-        Function gives a statistical overview of a solution system.
+        Function gives the statistical overview of a solution system.
 
         Returns
         -------
 
         df_final : dataframe
         (a) system unique identification label
-        (b) systems string representation (for single output systems only)
+        (b) systems' string representation (for one-output systems only)
         (c) the coverage and the inclusion score of the system
 
         Examples
@@ -1093,7 +1093,7 @@ class OptimizationContext:
 
     def pi_details(self):
         """
-        Function gives a statistical overview of all prime implicants.
+        Function gives the statistical overview of all prime implicants.
 
         Returns
         -------
@@ -1173,7 +1173,7 @@ class OptimizationContext:
 
         Note
         ------
-        Individual functions need not be irredundant,
+        Individual functions inside one system may not be irredundant,
         but the entire system is always irredundant.
 
         Example
@@ -1346,15 +1346,15 @@ class OptimizationContext:
 
 
 """
- Class represents a single irredundant system, a solution of multi-output
-  minimization. 
- The complete solution space of multi-output minimization is the set of 
- all systems.
+ Class represents a single irredundant system.
+ 
+The complete solution space of multi-output minimization is the set of 
+all systems.
  
 Parameters
 ----------
 system : array of strings
-         An array of implicants forming the solution.  
+         An array of prime implicants forming the solution.  
 index : int
         An index of the solution.
 cov_score : float
@@ -1694,8 +1694,8 @@ class IrredundantSystem():
 #              correponds to one row from the data.
 
 #    coverage : Set of the indexes of all the rows which are covered by the
-#               minterm. At the beggining of the  minimalization coverage
-#               contains just a single number - an index of a row represented
+#               minterm. At the beggining of the  minimalization coverage, it
+#               contains just a single number - the index of a row represented
 #               by the minterm.
 
 #    is_reduced : True when at least one reduction was performed.
@@ -1779,7 +1779,7 @@ class MultipleOutputMinterm:
 
 #    coverage : Set of the indexes of all the rows which are covered by the
 #               minterm. At the beginning of the minimalization the coverage
-#               contains just a single number - an index of a row represented
+#               contains just a single number - the index of a row represented
 #               by the minterm.           
 
 #    is_reduced : True when at least one reduction was performed.
@@ -1843,8 +1843,9 @@ class MultiValueMinterm:
 
 """
 Class which refers to the prime implicant generated from 
-multi output data and its properties and relations to the outputs.
- Parameters 
+multi-output data and its properties and relations to the outputs.
+
+Parameters 
  ----------
  
  context : object
