@@ -614,8 +614,7 @@ class OptimizationContext:
         if len(self.input_labels) == 1:
             dim_corrected = [inputs.iloc[:, 0].values]
         else:
-            dim = inputs.apply(lambda x: pd.unique(x).tolist(), axis=0,
-                               result_type='reduce').array
+            dim = [inputs[col].unique() for col in inputs]
 
             dim_corrected = []
             for ar in dim:
