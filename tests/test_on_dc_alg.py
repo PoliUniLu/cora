@@ -242,9 +242,9 @@ class OptimizationContext_tests(unittest.TestCase):
                                    [ 1, 0, 1, 1]],
                              columns=["A", "B",
                                       "C", "O"]),
-                ["O"],
+                ["O"])
 
-            result = opt_context.get_pi_chart())
+            result = opt_context.get_pi_chart()
             expected_cols = {
                 "A": [0, 1, 1],
                 "B": [1, 0, 1],
