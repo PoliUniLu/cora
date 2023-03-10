@@ -31,7 +31,7 @@ To open CORA in Google Colab, click the button below:
 ## Usage
 The main features of the package are part of the `OptimizationContext` class, including functions:
 - `get_prime_implicants`,
-- `pi_chart`,
+- `prime_implicant_chart`,
 - `get_irredundant_systems`,
 - `get_irredundat_solutions`.
 
