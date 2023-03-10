@@ -22,7 +22,7 @@ class OptimizationContext_tests(unittest.TestCase):
                                           ["O"],
                                           case_col="ID",
                                           inc_score1=0.5)
-        opt_context._preprocess_data()
+        opt_context.preprocess_data()
         result = opt_context.preprocessed_data_raw
         expected_cols = {
             "A": [0, 1, 1],
@@ -47,7 +47,7 @@ class OptimizationContext_tests(unittest.TestCase):
                 ["O","P"],
                 case_col="ID",
                 inc_score1=0.5)
-        opt_context._preprocess_data()
+        opt_context.preprocess_data()
         result = opt_context.preprocessed_data_raw
         expected_cols = {
                 "A": [0, 1, 1],
@@ -74,7 +74,7 @@ class OptimizationContext_tests(unittest.TestCase):
                                           ["O"],
                                           case_col="ID",
                                           inc_score1=0.6)
-        opt_context._preprocess_data()
+        opt_context.preprocess_data()
         result = opt_context.preprocessed_data_raw
         expected_cols = {
             "A": [0, 1, 1],
@@ -96,7 +96,7 @@ class OptimizationContext_tests(unittest.TestCase):
                                                        columns=["A", "B", "C",
                                                                 "O"]),
                                           ["O"])
-        opt_context._preprocess_data()
+        opt_context.preprocess_data()
         result = opt_context.get_levels()
         self.assertEqual(result, ([2, 2, 2]))
 
@@ -106,7 +106,7 @@ class OptimizationContext_tests(unittest.TestCase):
                                                        columns=["A", "B", "C",
                                                                 "O","P"]),
                                           ["O","P"])
-        opt_context._preprocess_data()
+        opt_context.preprocess_data()
         result = opt_context.get_levels()
         self.assertEqual(result, ([2, 2, 3]))
 
@@ -117,7 +117,7 @@ class OptimizationContext_tests(unittest.TestCase):
                                                        columns=["A", "B", "C",
                                                                 "O"]),
                                           ["O"])
-        opt_context._preprocess_data()
+        opt_context.preprocess_data()
         result = opt_context.get_levels()
         self.assertEqual(result, ([3, 2, 2]))
 
@@ -128,7 +128,7 @@ class OptimizationContext_tests(unittest.TestCase):
                                                        columns=["A", "B", "C",
                                                                 "O"]),
                                           ["O"])
-        opt_context._prepareRows()
+        opt_context.prepareRows()
         result = opt_context.table
         expected_result = np.array([[0, 0, 0],
                                     [0, 0, 1],
