@@ -5,7 +5,7 @@ from collections import defaultdict
 
 from .multiply import bool_multiply
 
-class Multi_value_minterm_on:
+class MultiValueMintermOn:
     
     def __init__(self, minterm, coverage):
         self.minterm = tuple(x for x in minterm)
@@ -52,8 +52,8 @@ class Multi_value_minterm_on:
                 new_minterm.append(self.minterm[i])
             else:
                 new_minterm.append( int(-1))
-        return Multi_value_minterm_on(new_minterm, 
-                       self.coverage.union(other.coverage))
+        return MultiValueMintermOn(new_minterm,
+                                   self.coverage.union(other.coverage))
 
         
     
@@ -71,13 +71,13 @@ class Multi_value_minterm_on:
                     new_minterm.append( self.minterm[i])
                 else:
                     new_minterm.append(int(-1))
-            res.append(Multi_value_minterm_on(new_minterm, 
-                       self.coverage))
+            res.append(MultiValueMintermOn(new_minterm,
+                                           self.coverage))
 
         return res
 
 
-class On_off_reduction_matrix:
+class OnOffReductionMatrix:
     
     def __init__(self,matrix):
         self.matrix = matrix
@@ -119,7 +119,7 @@ class On_off_reduction_matrix:
          
         
 
-class Multi_value_off_matrix:
+class MultiValueOffMatrix:
     
     def __init__(self, data):
         self.data = data
@@ -163,9 +163,9 @@ def on_off_grouping(table, output, multi_output = False):
     
     data_off = np.array(data_negative[inputs])
     
-    onset = [Multi_value_minterm_on(row,{ind}) for row,ind in
+    onset = [MultiValueMintermOn(row, {ind}) for row,ind in
              zip(data_on,ind_on)]
-    offset = Multi_value_off_matrix(data_off)
+    offset = MultiValueOffMatrix(data_off)
       
     return onset, offset
 
@@ -180,7 +180,7 @@ def prepare_m_for_bool_multiply(m_in):
 def reduction(onset, offset):
     on_off_matrixes = []
     for minterm in onset:
-        on_off_matrixes.append(On_off_reduction_matrix(
+        on_off_matrixes.append(OnOffReductionMatrix(
     
                                     minterm.reduce_with_off_set(offset)))        
     

@@ -91,7 +91,7 @@ def create_groups(table, column_number, cares, outputcolumns, multi_output):
     if not multi_output:
         for row in table:
             non_zeros = count_non_zeros(row)
-            res[non_zeros].append(Multi_value_minterm(row, set([index])
+            res[non_zeros].append(MultiValueMinterm(row, set([index])
             if index in cares else set()))
             index = index + 1
         return res
@@ -109,7 +109,7 @@ def create_groups(table, column_number, cares, outputcolumns, multi_output):
             if len(tag) == 0:
                 index = index + 1
                 continue
-            res[non_zeros].append(Multiple_output_minterm(row, set([index])
+            res[non_zeros].append(MultipleOutputMinterm(row, set([index])
             if index in cares else set(), tag))
             index = index + 1
         return res
@@ -435,7 +435,7 @@ class OptimizationContext:
 
         self.validation = True
 
-    def _preprocess_data(self):
+    def preprocess_data(self):
 
         if not self.validation:
             self.data_validation()
@@ -492,7 +492,7 @@ class OptimizationContext:
 
     def get_preprocessed_data(self, raw=False):
         if not self.preprocessing:
-            self._preprocess_data()
+            self.preprocess_data()
         if raw:
             return self.preprocessed_data_raw
         else:
@@ -516,9 +516,9 @@ class OptimizationContext:
 
         return levels
 
-    def _prepareRows(self):
+    def prepareRows(self):
         if not self.preprocessing:
-            self._preprocess_data()
+            self.preprocess_data()
         mask1 = self.preprocessed_data[self.output_labels]
         nr_rows = len(self.preprocessed_data.index)
         n = len(mask1.columns)
@@ -599,7 +599,7 @@ class OptimizationContext:
     def get_prime_implicants_1_DC(self):
 
         if not self.prepare_rows_called:
-            self._prepareRows()
+            self.prepareRows()
         if len(self.table) == 0:
             prime_implicants = tuple()
             return prime_implicants
@@ -632,7 +632,7 @@ class OptimizationContext:
 
         if self.multi_output:
 
-            prime_implicants_fin = tuple(Implicant_multi_output(
+            prime_implicants_fin = tuple(ImplicantMultiOutput(
                 self,
                 minterm_to_str(x[0],
                                self.levels,
@@ -726,7 +726,7 @@ class OptimizationContext:
     def get_prime_implicants_on_off(self):
 
         if not self.preprocessing:
-            self._preprocess_data()
+            self.preprocess_data()
         #  constant outputs
         outputs = self.preprocessed_data[self.output_labels]
 
@@ -760,16 +760,16 @@ class OptimizationContext:
                                                              zip(row, raw_im)),
                                              axis=1)].index])
 
-                    tmp_res.append(Implicant_multi_output(self,
-                                                          minterm_to_str(raw_im,
+                    tmp_res.append(ImplicantMultiOutput(self,
+                                                        minterm_to_str(raw_im,
                                                                          self.levels,
                                                                          self.labels,
                                                                          0,
                                                                          self.multi_output),
-                                                          raw_im,
-                                                          cov,
-                                                          o_tag,
-                                                          self.output_labels))
+                                                        raw_im,
+                                                        cov,
+                                                        o_tag,
+                                                        self.output_labels))
             res = []
             for i in tmp_res:
                 add_to_res = True
@@ -944,7 +944,7 @@ class OptimizationContext:
                                               )
         irredundant_objects = []
         for i, system in enumerate(result):
-            irredundant_objects.append(Irredundant_system(
+            irredundant_objects.append(IrredundantSystem(
                 self, system, i + 1))
 
         self.irredundat_sums = irredundant_objects
@@ -1046,7 +1046,7 @@ class OptimizationContext:
         if not self.multi_output:
             raise RuntimeError("irredudant systems are not supported in single\
                            output mode. Use get_irredundant_sums")
-        res, l = self._single_ir_systems_for_multi_output()
+        res, l = self.single_ir_systems_for_multi_output()
 
         mult_input = [set(frozenset(imp for imp in irs) for irs in f) for f in
                       res]
@@ -1059,13 +1059,13 @@ class OptimizationContext:
             for j in range(l):
                 single_res.append([prime_implicants[i] for i in r if j + 1 in
                                    prime_implicants[i].outputs])
-            res.append(Irredundant_systems_multi(self, single_res,
-                                                 index
-                                                 ))
+            res.append(IrredundantSystemsMulti(self, single_res,
+                                               index
+                                               ))
         self.irredundant_systems = res
         return self.irredundant_systems
 
-    def _single_ir_systems_for_multi_output(self):
+    def single_ir_systems_for_multi_output(self):
         prime_implicants = self.get_prime_implicants()
         l = len(self.output_labels)
         imp_per_output = []
@@ -1083,10 +1083,10 @@ class OptimizationContext:
                                                   coverage)
             irredundant_objects = []
             for i, system in enumerate(result):
-                irredundant_objects.append(Irredundant_system(self,
-                                                              system,
-                                                              i + 1
-                                                              ))
+                irredundant_objects.append(IrredundantSystem(self,
+                                                             system,
+                                                             i + 1
+                                                             ))
 
             for i in irredundant_objects:
                 res.append([i.system for i in irredundant_objects])
@@ -1183,7 +1183,7 @@ incl_score : float
 """
 
 
-class Irredundant_systems_multi():
+class IrredundantSystemsMulti():
     # Class where self represents just one single system
     # the whole solution is composed of these systems
 
@@ -1409,7 +1409,7 @@ incl_score : float
 """
 
 
-class Irredundant_system():
+class IrredundantSystem():
 
     def __init__(self, context, system, index):
         self.context = context
@@ -1538,7 +1538,7 @@ class Irredundant_system():
 #    tag : An arrbitrary number, representing the outputs.
 
 
-class Multiple_output_minterm:
+class MultipleOutputMinterm:
 
     def __init__(self, minterm, coverage, tag):
         self.minterm = tuple(x for x in minterm)
@@ -1597,9 +1597,9 @@ class Multiple_output_minterm:
                 new_minterm[i] = self.minterm[i]
             else:
                 new_minterm[i] = self.minterm[i].union(other.minterm[i])
-        return Multiple_output_minterm(new_minterm,
-                                       self.coverage.union(other.coverage),
-                                       new_tag)
+        return MultipleOutputMinterm(new_minterm,
+                                     self.coverage.union(other.coverage),
+                                     new_tag)
 
 
 # Class which defines a multi-value minterm/item and describes its properties 
@@ -1619,7 +1619,7 @@ class Multiple_output_minterm:
 #    is_reduced : True when at least one reduction was performed.
 
 
-class Multi_value_minterm:
+class MultiValueMinterm:
 
     def __init__(self, minterm, coverage):
         self.minterm = tuple(x for x in minterm)
@@ -1671,8 +1671,8 @@ class Multi_value_minterm:
                 new_minterm[i] = self.minterm[i]
             else:
                 new_minterm[i] = self.minterm[i].union(other.minterm[i])
-        return Multi_value_minterm(new_minterm,
-                                   self.coverage.union(other.coverage))
+        return MultiValueMinterm(new_minterm,
+                                 self.coverage.union(other.coverage))
 
 
 """
@@ -1718,7 +1718,7 @@ multi output data and its properties and relations to the outputs.
 """
 
 
-class Implicant_multi_output:
+class ImplicantMultiOutput:
 
     def __init__(self,
                  context,

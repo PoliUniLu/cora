@@ -2,11 +2,11 @@ from collections import defaultdict
 import pandas as pd
 import numpy as np
 
-from .on_off_alg import Multi_value_minterm_on, On_off_reduction_matrix, bool_multiply
+from .on_off_alg import MultiValueMintermOn, OnOffReductionMatrix, bool_multiply
 from .multiply import transform_to_raw_implicant
 
     
-class MultiValueMintermOnMo(Multi_value_minterm_on):
+class MultiValueMintermOnMo(MultiValueMintermOn):
     
     def __init__(self, minterm, coverage, tag):
         super().__init__(minterm, coverage)
@@ -81,7 +81,7 @@ class MultiValueOffMatrixMo:
     def __repr__(self):
         return str(self)
     
-class OnOffReductionMatrixMo(On_off_reduction_matrix):
+class OnOffReductionMatrixMo(OnOffReductionMatrix):
     
     def __init__(self, matrix):
         super().__init__(matrix)
