@@ -1,8 +1,5 @@
 
-
 import pandas as pd
-import numpy as np
-
 
 class ValuedVariable:
     
@@ -52,12 +49,11 @@ def initialze_minterms(levels):
             res.append(tmp)
 
     return res
-#combination - tuple (-1, 1,-1,-1)
-              
+
 def is_an_impicant(data,output,inputs,combination):
-     tmp_onset =data[data[output] == 1]
+     tmp_onset = data[data[output[0]] == 1]
      onset = tmp_onset[inputs]
-     tmp_offset = data[data[output] == 0]
+     tmp_offset = data[data[output[0]] == 0]
      offset = tmp_offset[inputs]
 
      return (any(onset.apply(
@@ -75,9 +71,8 @@ def is_an_impicant(data,output,inputs,combination):
 
 
             )
+
 from collections import deque
-
-
 def minterm_value(m1):
     s1 = 0
     for ind,el in enumerate(m1):
@@ -99,7 +94,6 @@ def merge_minterms(m1,m2):
 
 def extend_minterm(m1,levels):
     res = []
-    # Find last defined variable (!= -1)
     ldv = max(i for i,v in enumerate(m1) if v > -1)
     # We need to switch variables starting from ldv+1 
     l = len(m1)
@@ -110,9 +104,6 @@ def extend_minterm(m1,levels):
         for j in range(levels[i]):
             extended_minterm = m1[0:i] + [int(j)] + m1[i+1:l] 
             extentions.append(extended_minterm)
-        #m_positive = m1[0:i] + [1] + m1[i+1:l]
-        #m_negative = m1[0:i] + [0] + m1[i+1:l]
-        #res.extend([m_positive, m_negative])
         res.extend(extentions)
     return res
         
@@ -122,12 +113,12 @@ def find_implicants_cubes(data,outputs,inputs):
     q = deque(minterms_inputs)
     res = []
     while len(q) >  0:
+
         x = q.popleft()
         if any(implicant_includes(imp,x) for imp in res):
-            
             continue
         elif is_an_impicant(data,outputs,inputs,x):
-            res.append(x)       
+            res.append(x)
         else:
             q.extend(extend_minterm(x,levels))
 
