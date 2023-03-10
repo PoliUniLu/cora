@@ -2,7 +2,6 @@
 This module contains the implementation of Boolean minimization algorithms.
 
 """
-
 import numpy as np
 import pandas as pd
 import itertools
@@ -23,7 +22,6 @@ COLUMN_LABELS = list(string.ascii_uppercase) + ["AA", "BB", "CC", "DD",
                                                 "EE", "FF"]
 OUTPUT_PATTERN = re.compile("^([a-zA-Z0-9]+)\{([0-9]+(,[0-9]+)*)\}$")
 REGULAR_OUTPUT = re.compile("^([a-zA-Z0-9]+)")
-TEMPORAL_COL_PATTERN = re.compile("^([a-zA-Z0-9-\_]+)\{([0-9]+(,[0-9]+)*)\}$")
 
 
 def concatenate_strings(arr):
@@ -250,23 +248,6 @@ def eliminate_minterms(table, elements, levels, multi_output):
     return [x for we, x in zip(was_eliminated, decomposed) if not we]
 
 
-def eliminate_useless_temp_implicants(impl_str, temporal_labels, input_labels):
-    implicant_parts = [i.lower() for i in impl_str.split('*')]
-    tmp_t_labels = {m.group(1): m.group(2)
-                    for m in [TEMPORAL_COL_PATTERN.match(i)
-                              for i in temporal_labels]}
-
-    t_labels = tmp_t_labels.keys()
-    for label in t_labels:
-        if label.lower() in implicant_parts:
-            indx = [int(x) - 1 for x in tmp_t_labels[label].split(",")]
-            for possible_literal in [input_labels[i] for i in indx]:
-                if possible_literal.lower() not in implicant_parts:
-                    return False
-
-    return True
-
-
 def find_index2(arr, x):
     return np.where((arr == x).all(axis=1))[0]
 
@@ -345,13 +326,7 @@ U : int
 rename_columns: boolean 
     If true, the column names are renamed as single letters in alphabetic
     order.
-    
-generateMissing: boolean
-    If false, the conservative solution is calculated.
-    Rows corresponding to the 'don't care' combinations are not
-    taken into the calculation.
-
-        
+  
 
 """
 
@@ -363,13 +338,11 @@ class OptimizationContext:
                  output_labels,
                  input_labels=None,
                  case_col=None,
-                 temporal_labels=None,
                  n_cut=1,
                  inc_score1=1,
                  inc_score2=None,
                  U=None,
                  rename_columns=False,
-                 generateMissing=True,
                  algorithm="ON-DC"
                  ):
         self.data = data.copy()
@@ -383,8 +356,6 @@ class OptimizationContext:
         self.rename_columns = rename_columns
         self.case_col = case_col
         self.output_labels = output_labels
-        self.temporal_labels = temporal_labels
-        self.generate_missing = generateMissing
         self.prime_implicants = None
         self.irredundat_sums = None
         self.irredundant_systems = None
@@ -407,88 +378,16 @@ class OptimizationContext:
         class InvalidDataException(Exception):
             pass
 
-        # temporal columns
-        # auxiliary, indicator columns
+        if self.input_labels is None:
 
-        if self.temporal_labels is not None:
-            if any(TEMPORAL_COL_PATTERN.match(i) is None for i in
-                   self.temporal_labels):
-                raise RuntimeError("Unsupported temp columns entered!")
-
-            # valid data
-            tmp_t_labels = {m.group(1): m.group(2)
-                            for m in [TEMPORAL_COL_PATTERN.match(i)
-                                      for i in self.temporal_labels]}
-
-            t_labels = tmp_t_labels.keys()
-            if (not all(self.data[t_labels].apply(
-                    lambda row_series: all((pd.isna(x)
-                                            or int(x) == 1
-                                            or int(x) == 0)
-                                           for x in row_series), axis=0))):
-                raise InvalidDataException("Invalid data input!")
-
-            inp_data = [x for x in
-                        filter(lambda x: x not in t_labels, self.data)
-                        if x != self.case_col]
-
-            if (not all(self.data[inp_data].apply(
-                    lambda row_series: all(isinstance(x, int)
-                                           for x in row_series), axis=0))):
-                raise InvalidDataException("Invalid data input!")
-
-            tmp_idx = [list(int(x) for x in i.split(","))
-                       for i in tmp_t_labels.values()]
-            for i in tmp_idx:
-                if (len(i) != 2
-                        or (max(i) > len(self.data.columns) -
-                            len(self.output_labels) - len(
-                                    self.temporal_labels) + 1)
-                        or min(i) < 1
-                        or max(i) == min(i)):
-                    raise RuntimeError("Temporal index out of range!")
-
-            for i in tmp_t_labels.keys():
-                index = list(int(x) - 1 for x in tmp_t_labels[i].split(','))
-                positive_temporal_col_data = self.data[self.data.apply(
-                    lambda row_series: all(x == 1
-                                           or x == 0 for x in row_series),
-                    axis=1)]
-                if not positive_temporal_col_data.iloc[:, index].all(axis=None):
-                    raise RuntimeError("Incorrect values in auxiliary column!")
-                reference_data = self.data.iloc[:, index]
-                positive_reference_data = self.data[reference_data.apply
-                (lambda row_series:
-                 all(x == 1
-                     for x in row_series), axis=1)]
-                if any(pd.isna(positive_reference_data[i])):
-                    raise RuntimeError("Incorrect values in auxiliary column!")
-
-            tmp = self.data[t_labels].apply(
-                lambda row_series: [[int(x)] if not pd.isna(x)
-                                    else [0, 1] for x in row_series],
-                axis=0)
-
-            for i, label in enumerate(t_labels):
-                self.data[label] = tmp.iloc[:, i]
-                data_tmp = self.data.explode(label)
-                self.data = data_tmp
-
-
-
-
-        else:
-
-            if self.input_labels is None:
-
-                inputs = list(x for x in list(self.data.columns)
+            inputs = list(x for x in list(self.data.columns)
                               if x != self.case_col)
-            else:
-                inputs = self.input_labels
-            if (not all(self.data[inputs].apply(
-                    lambda row_series: all(isinstance(x, int)
-                                           for x in row_series), axis=0))):
-                raise InvalidDataException("Invalid data input!")
+        else:
+            inputs = self.input_labels
+        if (not all(self.data[inputs].apply(
+                lambda row_series: all(isinstance(x, int)
+                                        for x in row_series), axis=0))):
+            raise InvalidDataException("Invalid data input!")
 
         # outputs 
 
@@ -524,15 +423,7 @@ class OptimizationContext:
                                  (x not in self.output_labels)
                                  and (x != self.case_col)]
 
-            input_data = self.data[self.input_labels]
-
-        elif self.input_labels is not None and self.temporal_labels is not None:
-
-            input_data = self.data[self.input_labels + [x for x in t_labels]]
-
-        elif self.input_labels is not None and self.temporal_labels is None:
-
-            input_data = self.data[self.input_labels]
+        input_data = self.data[self.input_labels]
 
         if self.input_data is None:
             self.input_data = input_data
@@ -608,7 +499,6 @@ class OptimizationContext:
             return self.preprocessed_data
 
     # Function to derive the truth table from a data frame
-    # if generate_missing then don't cares are added
     def get_levels(self):
         inputs = self.preprocessed_data.drop(self.output_labels, axis=1)
         if len(self.input_labels) == 1:
@@ -657,49 +547,39 @@ class OptimizationContext:
         levels = [len(x) for x in dim_corrected]
         cares_indexes = list()
 
-        if (self.generate_missing):
-            allInputs = pd.DataFrame(itertools.product(*dim_corrected))
-            zero_output = [0] * n
-            multi_mask_zero = self.preprocessed_data[
-                self.output_labels].isin(zero_output)
-            mask_zero = multi_mask_zero.aggregate(all, axis=1)
-            negativeRows = self.preprocessed_data[mask_zero]
-            negativeInputs = negativeRows[columns]
-            indexes = list()
-            for x in negativeInputs.values:
-                ind = find_index2(allInputs, x)
-                indexes.append(ind[0])
+        allInputs = pd.DataFrame(itertools.product(*dim_corrected))
+        zero_output = [0] * n
+        multi_mask_zero = self.preprocessed_data[
+        self.output_labels].isin(zero_output)
+        mask_zero = multi_mask_zero.aggregate(all, axis=1)
+        negativeRows = self.preprocessed_data[mask_zero]
+        negativeInputs = negativeRows[columns]
+        indexes = list()
+        for x in negativeInputs.values:
+            ind = find_index2(allInputs, x)
+            indexes.append(ind[0])
 
-            allInputs_table = allInputs.drop(indexes)
-            allInputs_table.columns = columns
+        allInputs_table = allInputs.drop(indexes)
+        allInputs_table.columns = columns
 
-            for x in positiveInputs.values:
-                ind = find_index2(allInputs_table, x)
-                cares_indexes.append(ind[0])
+        for x in positiveInputs.values:
+            ind = find_index2(allInputs_table, x)
+            cares_indexes.append(ind[0])
 
-            if self.multi_output:
-                outcols_merge = pd.merge(allInputs_table, positiveRows,
+        if self.multi_output:
+            outcols_merge = pd.merge(allInputs_table, positiveRows,
                                          how='inner', on=columns)
-                outcols = outcols_merge[self.output_labels]
-                self.outputcolumns = outcols.transpose().to_numpy()
-            else:
-                self.outputcolumns = [1] * nr_rows
-
-            self.levels = levels
-            self.cares = cares_indexes
-            self.table = allInputs_table.to_numpy()
-            self.labels = columns
-            self.positive_cares = positiveInputs_rownames
+            outcols = outcols_merge[self.output_labels]
+            self.outputcolumns = outcols.transpose().to_numpy()
         else:
-            cares_indexes = [x for x in
-                             range(0, len(positiveInputs.to_numpy()))]
-            self.levels = levels
-            self.cares = cares_indexes
-            self.table = positiveInputs.to_numpy()
-            self.outputcolumns = positiveRows[
-                self.output_labels].transpose().to_numpy()
-            self.labels = columns
-            self.positive_cares = positiveInputs_rownames
+            self.outputcolumns = [1] * nr_rows
+
+        self.levels = levels
+        self.cares = cares_indexes
+        self.table = allInputs_table.to_numpy()
+        self.labels = columns
+        self.positive_cares = positiveInputs_rownames
+
         self.prepare_rows_called = True
 
     """
@@ -749,17 +629,6 @@ class OptimizationContext:
                                               self.multi_output)
         coverage_dict = create_care_translation_dict(self.cares,
                                                      self.positive_cares)
-        if self.temporal_labels is not None:
-            prime_implicants = filter(lambda x:
-                                      eliminate_useless_temp_implicants(
-                                          minterm_to_str(x[0],
-                                                         self.levels,
-                                                         self.labels,
-                                                         0,
-                                                         self.multi_output),
-                                          self.temporal_labels,
-                                          self.input_labels),
-                                      prime_implicants)
 
         if self.multi_output:
 
@@ -914,19 +783,9 @@ class OptimizationContext:
 
             for x in res:
                 x.outputs = list(x.outputs)
+            return res
 
-            if self.temporal_labels is None:
-                return res
 
-            else:
-                prime_implicants_fin = tuple(x for x in filter(lambda x:
-                                                               eliminate_useless_temp_implicants(
-                                                                   x.implicant,
-                                                                   self.temporal_labels,
-                                                                   self.input_labels),
-                                                               res))
-
-                return prime_implicants_fin
 
         else:
             if all(self.preprocessed_data[self.output_labels[0]]):
@@ -983,18 +842,8 @@ class OptimizationContext:
                                    0,
                                    self.multi_output),
                     raw_i, cov))
-            if self.temporal_labels is None:
-                return prime_implicants
+            return prime_implicants
 
-            else:
-                prime_implicants_fin = tuple(x for x in filter(lambda x:
-                                                               eliminate_useless_temp_implicants(
-                                                                   x.implicant,
-                                                                   self.temporal_labels,
-                                                                   self.input_labels),
-                                                               prime_implicants))
-
-                return prime_implicants_fin
 
     def get_prime_implicants(self):
         if self.prime_implicants is not None:

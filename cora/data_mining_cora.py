@@ -1,9 +1,7 @@
 import itertools
 import pandas as pd
 import cora
-import re
 
-TEMPORAL_COL_PATTERN = re.compile("^([a-zA-Z0-9-\_]+)\{([0-9]+(,[0-9]+)*)\}$")                                              
 
 
 class TupleResult:
@@ -29,29 +27,6 @@ class TupleResult:
             self.cov_score = cov_score
             self.score = score
 
-#valid_comb: ((1, 'PUBLIC'), (2, 'ELITE')) , ['E_BEFORE_A{2,3}']
-
-def valid_combination(combination,temp_cols):
-    #combination_cols  = set(x[1] for x in combination) 
-    #temp_cols_string = {m.group(1) 
-     #                   for m in [TEMPORAL_COL_PATTERN.match(i)
-     #                   for i in temp_cols]}
-    if len(temp_cols)<1: 
-       return True
- 
-    else:
-        cols_indexes = set(x[0] for x in combination)
-        tmp_t_labels = {m.group(2) 
-                        for m in [TEMPORAL_COL_PATTERN.match(i)
-                        for i in temp_cols]}
-        temp_index_tmp = [x.split(",") for x in tmp_t_labels]
-        temp_index = {int(x) for y in temp_index_tmp for x in y}
-        
-        return temp_index.issubset(cols_indexes)
- 
-
-    
-    
 """
 
 Parameters
@@ -99,112 +74,51 @@ def data_mining(data,
                 output_labels,
                 len_of_tuple,
                 case_col=None,
-                temp_cols=None,
                 n_cut=1,
                 inc_score1=1,
                 inc_score2=None,
                 Uvalue=None,
                 algorithm="ON-DC"):
     res = []
-    if temp_cols is not None:
-        for i,comb in enumerate(itertools.combinations([(ind+1,x) for ind,x in 
-                                                    enumerate(data.columns) 
-                                                    if (x not in output_labels and
-                                                    
-                                                        x!=case_col)
-                                                    ],
-                                                       len_of_tuple)):
-       
-            cols = list(x[1] for x in comb)
-            tmp_temp = [x for x in temp_cols if any(x.startswith(y+'{') for y in cols)]
-            input_cols = [x for x in cols if all(not y.startswith(x+'{') for y in tmp_temp)]
-            if valid_combination(comb,tmp_temp):
-            
-            
-                if len(tmp_temp) >= 1 :
-                    temp_labels = tmp_temp
-                else:
-                    temp_labels = None
-      
-            
-            
-                data_object = cora.OptimizationContext(data,
-                                                   output_labels,
-                                                   input_cols,
-                                                   case_col=case_col,
-                                                   temporal_labels= temp_labels,
-                                                   n_cut=n_cut,
-                                                   inc_score1=inc_score1,
-                                                   inc_score2=inc_score2,
-                                                   U=Uvalue,
-                                                   algorithm=algorithm)
-                
-                
-                if len(output_labels) == 1:
-                    ir_sys = data_object.get_irredundant_sums()
-                else:
-                    ir_sys = data_object.get_irredundant_systems()
-                
-                if len(ir_sys) > 0:
-                    inc_score = round(max(x.inclusion_score() for x in ir_sys),3)
-                    cov_score = round(max(x.coverage_score() for x in ir_sys),3)
-                    score = round(max(x.inclusion_score()*x.coverage_score() 
-                                                           for x  in ir_sys),3)
-                    tr = TupleResult(cols,
-                                     len(output_labels),
-                                     ir_sys,
-                                     inc_score,
-                                     cov_score,
-                                     score)
-                    res.append(tr)
+
         
-                else:
-                   res.append(TupleResult(cols, len(output_labels), ir_sys, 0, 0, 0))
-            
-                
-                
-                
-                
-    else:
-        
-        for i,comb in enumerate(itertools.combinations([x for x in data.columns 
+    for i,comb in enumerate(itertools.combinations([x for x in data.columns
    
-                                                    if (x not in output_labels and
+                                                if (x not in output_labels and
                                                         x!=case_col)],
                                                        len_of_tuple)):
-            cols = list(comb)
-            data_object = cora.OptimizationContext(data,
-                                                   output_labels,
-                                                   cols,
-                                                   case_col=case_col,
-                                                   temporal_labels= None,
-                                                   n_cut=n_cut,
-                                                   inc_score1=inc_score1,
-                                                   inc_score2=inc_score2,
-                                                   U=Uvalue,
-                                                   algorithm=algorithm)
+        cols = list(comb)
+        data_object = cora.OptimizationContext(data,
+                                               output_labels,
+                                                cols,
+                                                case_col=case_col,
+                                                n_cut=n_cut,
+                                                inc_score1=inc_score1,
+                                                inc_score2=inc_score2,
+                                                U=Uvalue,
+                                                algorithm=algorithm)
             
-            if len(output_labels) == 1:
-                ir_sys = data_object.get_irredundant_sums()
-            else:
-                ir_sys = data_object.get_irredundant_systems()
+        if len(output_labels) == 1:
+            ir_sys = data_object.get_irredundant_sums()
+        else:
+            ir_sys = data_object.get_irredundant_systems()
             
     
-            if len(ir_sys) > 0:
-                    inc_score = round(max(x.inclusion_score() for x in ir_sys),3)
-                    cov_score = round(max(x.coverage_score() for x in ir_sys),3)
-                    score = round(max(x.inclusion_score()*x.coverage_score() 
+        if len(ir_sys) > 0:
+                inc_score = round(max(x.inclusion_score() for x in ir_sys),3)
+                cov_score = round(max(x.coverage_score() for x in ir_sys),3)
+                score = round(max(x.inclusion_score()*x.coverage_score()
                                                            for x  in ir_sys),3)
-                    tr = TupleResult(cols,
-                                     len(output_labels),
-                                     ir_sys,
-                                     inc_score,
-                                     cov_score,
-                                     score)
-                    res.append(tr)
+                tr = TupleResult(cols,
+                                 len(output_labels),
+                                 ir_sys,
+                                 inc_score,
+                                 cov_score,
+                                 score)
+                res.append(tr)
         
-            else:
-                 res.append(TupleResult(cols, len(output_labels), ir_sys, 0, 0, 0))
+        else:
+                res.append(TupleResult(cols, len(output_labels), ir_sys, 0, 0, 0))
             
         
     rows = [(x.combination,
@@ -213,13 +127,16 @@ def data_mining(data,
                  x.cov_score,
                  x.score) for x in res]
     result = pd.DataFrame(rows,
-                              columns = ['Combination',
-                                         'Nr_of_systems',
-                                         'Inc_score',
-                                         'Cov_score',
-                                         'Score'])
+                          columns = ['Combination',
+                                     'Nr_of_systems',
+                                     'Inc_score',
+                                     'Cov_score',
+                                     'Score'])
           
     return result
 
 
-    
+if __name__ == '__main__':
+    df = pd.DataFrame([[1,1,0,1,1,1],[0,1,1,1,0,1],[0,0,1,0,0,1],[1,0,1,1,0,1]],
+                      columns = ["A","B","C","D","Z","P"])
+    print(data_mining(df,['Z','P'],2))
