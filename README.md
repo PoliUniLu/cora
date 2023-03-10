@@ -28,6 +28,56 @@ It's recommended to install the package into dedicated virtual environment.
 To open CORA in Google Colab, click the button below:
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/gist/ZuzanaSebb/5bb6e29772dea02c0c562979f52fd27a/cora-1-0-6.ipynb?authuser=1)
+## Usage
+The main features of the package are part of the `OptimizationContext` class, including functions:
+- `get_prime_implicants`,
+- `pi_chart`,
+- `get_irredundant_systems`,
+- `get_irredundat_solutions`.
+
+***Note:***
+Use `help` function to access the documentation of the cora package.
+
+**Example:**
+```python
+import pandas as pd
+from cora import OptimizationContext
+
+df = pd.DataFrame([[1,1,0,1],
+                   [0,0,1,1],
+                   [1,0,1,0],
+                   [0,1,0,1]], columns=["A","B","C","OUT"])
+
+context = OptimizationContext(data = df, output_labels = ["OUT"])
+PIs = context.get_prime_implicants() #result: (B, c, #a)
+irredundant_solutions =  context.get_irredundant_sums() # result: [M1: #a + B, M2: #a + c]
+```
+Data mining approach in searching for solutions represent another unique feature of the package.
+**Example:**
+```python
+import pandas as pd
+import cora
+
+df = pd.DataFrame([[1,2,0,1,1],
+                   [1,1,1,0,1],
+                   [0,2,1,0,0],
+                   [0,2,2,0,1],], columns=["A","B","C","D","OUT"])
+result = cora.data_mining(df, ["OUT"], len_of_tuple= 2, inc_score1= 0.5, n_cut =1 )
+result # print(result.to_markdown())
+
+|    | Combination   |   Nr_of_systems |   Inc_score |   Cov_score |   Score |
+|---:|:--------------|----------------:|------------:|------------:|--------:|
+|  0 | ['A', 'B']    |               1 |        0.75 |           1 |    0.75 |
+|  1 | ['A', 'C']    |               1 |        1    |           1 |    1    |
+|  2 | ['A', 'D']    |               1 |        0.75 |           1 |    0.75 |
+|  3 | ['B', 'C']    |               1 |        1    |           1 |    1    |
+|  4 | ['B', 'D']    |               1 |        0.75 |           1 |    0.75 |
+|  5 | ['C', 'D']    |               1 |        0.75 |           1 |    0.75 |
+
+```
+To access more examples see `/examples` folder or follow [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/PoliUniLu/cora/blob/master/cora_package.ipynb)
+
+
 
 ## Citation Info
 
@@ -50,7 +100,15 @@ We welcome contributions from the community.
 We encourage and recommend that feedback, bug reports, and feature requests should first be documented as an [Issue](https://github.com/PoliUniLu/cora/issues) on GitHub.
 
 ### Pull requests
-
+To set up a development environment, use [Poetry](https://python-poetry.org/).
+```console
+pip install poetry
+poetry install
+```
+Test the code by running
+```console
+poetry run pytest
+```
 Pull requests are welcome. Note that although the current codebase doesn't have entirely 
 consistent code style the new code should be PEP-8 compliant.
 
