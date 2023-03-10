@@ -1,7 +1,7 @@
 """
 This module contains the implementation of Boolean minimization algorithms.
-
 """
+
 import numpy as np
 import pandas as pd
 import itertools
@@ -29,7 +29,7 @@ def concatenate_strings(arr):
 
 
 def inclusion_score(arr):
-    return float(round(sum(arr) / len(arr), 2))
+    return round(sum(arr) / len(arr), 2)
 
 
 def count_non_zeros(minterm):
@@ -69,19 +69,20 @@ def is_minterm_subset(m1, m2):
     return True
 
 
-# Funtion which groups minterms according to the number of nonzero digets
+# Funtion which groups minterms according to the number of non-zero digets
 
-# Paramters: truth table, 
-#            column_number - defines the number of possible nonzero digits
-#            cares - indexes which correspond to original minterms
-#            outputcolumns - binary output columns from the original data
-#            multi_output - a bolean variable
-# Output: an array res of objects from classes Multi_value_item or
-#         Multiple_output_minterm, the i-th element of an array consist of 
-#         objects whose minterms have exactly i nonzero digits
+# Paramters: table - the truth table
+#            column_number - defines the number of possible non-zero digits
+#            cares - indexes of the positive mintermsin in the data
+#            output_columns - binary output columns from the data
+#            multi_output - a boolean variable
+# Output: (a) an array res of objects from classes Multi_value_item or
+#             Multiple_output_minterm
+#         (b) the i-th element of an array consisting of
+#              objects whose minterms have exactly i non-zero digits
 
 # Definition: a minterm of n variables is a product of the variables
-# 	      in which each appears exactly once in true or complemented form. 
+# 	      in which each one appears exactly once in true or complemented form.
 
 def create_groups(table, column_number, cares, outputcolumns, multi_output):
     res = []
@@ -115,21 +116,21 @@ def create_groups(table, column_number, cares, outputcolumns, multi_output):
         return res
 
 
-# Function preforming 1 step elimination of 2 minterms
+# Function performing 1 step elimination of 2 minterms
 
-# Function eliminates minterms first in adjacting groups, second in
-# between the group. In both cases minterms differ only in one sigle digit.
-# In addition, the function collects implicants, which can't be further 
-# eliminated to an array- final implicants.
+# Function eliminates minterms first in adjacent groups, second in
+# between the group. In both cases minterms differ in only one sigle digit.
+# In addition, the function collects implicants, which can't be further
+# eliminated to an array- the prime implicants.
 
 # Parameters: groups - an array returned by fun create_groups
 #             n - the number of rows in the truth table
 #             multi_output - a boolean variable
 
-# Output: dictionary, which contains 
-# 	  (a) new groups of minterms after the elimination, 
-#         (b) implicants   
-#         (c) information if any reduction was performed in this single 
+# Output: dictionary, which contains
+# 	  (a) new groups of minterms after the elimination
+#         (b) implicants
+#         (c) information if any reduction was performed in this single
 #             elimination
 
 def reduction_step(groups, n, multi_output):
@@ -174,7 +175,7 @@ def reduction_step(groups, n, multi_output):
              'reduction': was_any_reduction})
 
 
-# Next set of 3 functions perform an extra elimination step 
+# Next set of 3 functions perform an extra elimination step
 
 
 def extend_with_first(first, arr, multi_output):
@@ -248,6 +249,7 @@ def eliminate_minterms(table, elements, levels, multi_output):
     return [x for we, x in zip(was_eliminated, decomposed) if not we]
 
 
+
 def find_index2(arr, x):
     return np.where((arr == x).all(axis=1))[0]
 
@@ -289,49 +291,40 @@ def calculate_essential_indexes(prime_implicants):
     return set(essentials)
 
 
-"""
-Optimization Context contains the data and information to preform the 
-computation.
-
-Parameters
-
-----------
-
-data : dataframe
-    
-output_labels : an array of strings
-    The names of the outcome columns from the data frame. If the columns 
-    contain values requiring to map to the boolean range, the set 
-    of the values can be added at the end of the name string.
-
-input_lables : array of strings
-    The names of the input columns from the data frame
-
-case_col : string
-    The name of the column from the data frame containing the case ids
-
-n_cut : int
-    The minimum number of cases under which a truth table row is declared as a
-    remainder
-        
-inc_score1 : float
-	The minimum sufficiency inclusion score for an output function value of "1"
-    
-inc_score2 : float
-	The maximum sufficiency inclusion score for an output function value of "0"
-
-U : int
-    The U number is either 0 or 1.
-
-rename_columns: boolean 
-    If true, the column names are renamed as single letters in alphabetic
-    order.
-  
-
-"""
-
-
 class OptimizationContext:
+    """
+    Optimization Context contains the data and information to preform the
+    computation.
+    Parameters
+    ----------
+    data : dataframe
+    output_labels : an array of strings
+        The names of the outcome columns from the data frame. If the columns
+        contain values requiring to map to a boolean range, the set
+        of the values can be added at the end of the name string.
+    input_labels : array of strings
+        The names of the input columns from the data frame
+    case_col : string
+        The name of the column from the data frame containing the case ids
+    n_cut : int
+        The minimum number of cases under which a truth table row is declared as a
+        don't care.
+    inc_score1 : float
+        The minimum sufficiency inclusion score for an output function value of "1".
+    inc_score2 : float
+        The maximum sufficiency inclusion score for an output function value of "0".
+    U : int
+        The U number is either 0 or 1.
+    rename_columns : boolean
+        If true, the column names are renamed as single letters in alphabetic
+        order.
+    algorithm : string
+        The name of the optimization algorithm.
+        (a): ON-DC, the classical Quine-McCluskey algorithm operating on
+                    positive (ON) and don't care (DC) terms.
+        (b): ON-OFF (default), the modified version of McCluskey's algorithm operating on
+                    positive and negative (OFF) terms.
+    """
 
     def __init__(self,
                  data,
@@ -370,7 +363,7 @@ class OptimizationContext:
         self.algorithm = algorithm
         self.solution_dataframe = None
 
-    # Function to clean and aggregate data. Removes duplicities and 
+    # Function to clean and aggregate data. Removes duplicities and
     # inconsistencies.
 
     def data_validation(self):
@@ -380,16 +373,16 @@ class OptimizationContext:
 
         if self.input_labels is None:
 
-            inputs = list(x for x in list(self.data.columns)
+                inputs = list(x for x in list(self.data.columns)
                               if x != self.case_col)
         else:
-            inputs = self.input_labels
+                inputs = self.input_labels
         if (not all(self.data[inputs].apply(
-                lambda row_series: all(isinstance(x, int)
-                                        for x in row_series), axis=0))):
-            raise InvalidDataException("Invalid data input!")
+                    lambda row_series: all(isinstance(x, int)
+                                           for x in row_series), axis=0))):
+                raise InvalidDataException("Invalid data input!")
 
-        # outputs 
+        # outputs
 
         if all(OUTPUT_PATTERN.match(i) is not None for i in self.output_labels):
             self.multivalue_output = True
@@ -407,16 +400,22 @@ class OptimizationContext:
 
             for k in outcols_value_map.keys():
                 self.data[k] = self.data[k].apply(lambda x: 1 if x in
-                                                                 outcols_value_map[
+                                                            outcols_value_map[
                                                                      k] else 0)
                 self.output_labels = [str(k) for k in outcols_value_map.keys()]
 
             self.output_labels_final = [str(k) + str(set(outcols_value_map[k]))
                                         for k in outcols_value_map.keys()]
         else:
-            self.output_labels_final = self.output_labels
+            output_values = pd.unique(self.data[self.output_labels].values.ravel('K'))
+            if not np.isin(output_values, [0,1]).all():
+                raise RuntimeError("Unsupported output entered!"
+                                   "\Please specify the analysing"
+                                   "\ output values. )")
 
-        # inputs
+
+
+            self.output_labels_final = self.output_labels
 
         if self.input_labels is None:
             self.input_labels = [x for x in list(self.data.columns) if
@@ -491,6 +490,24 @@ class OptimizationContext:
         self.preprocessing = True
 
     def get_preprocessed_data(self, raw=False):
+        '''
+        Function to derive the truth table with the provided parameters
+        in OptimizationContext.
+        Returns
+        -------
+        preprocessed_data = dataframe
+                  Truth table derived from the data.
+        Examples
+        --------
+        >>> df = pd.DataFrame([[1,0,0,1],[0,1,0,1],[1,1,1,0],[1,1,1,1],[1,1,1,1]],
+        ...                  columns = ["A","B","C","O"])
+        >>> context = OptimizationContext(df,["O"],inc_score1=0.5)
+        >>> context.get_preprocessed_data()
+            A  B  C  O
+        0   0  1  0  1
+        1   1  0  0  1
+        2   1  1  1  1
+        '''
         if not self.preprocessing:
             self.preprocess_data()
         if raw:
@@ -515,6 +532,7 @@ class OptimizationContext:
         levels = [len(x) for x in dim_corrected]
 
         return levels
+
 
     def prepareRows(self):
         if not self.preprocessing:
@@ -550,14 +568,14 @@ class OptimizationContext:
         allInputs = pd.DataFrame(itertools.product(*dim_corrected))
         zero_output = [0] * n
         multi_mask_zero = self.preprocessed_data[
-        self.output_labels].isin(zero_output)
+                self.output_labels].isin(zero_output)
         mask_zero = multi_mask_zero.aggregate(all, axis=1)
         negativeRows = self.preprocessed_data[mask_zero]
         negativeInputs = negativeRows[columns]
         indexes = list()
         for x in negativeInputs.values:
-            ind = find_index2(allInputs, x)
-            indexes.append(ind[0])
+                ind = find_index2(allInputs, x)
+                indexes.append(ind[0])
 
         allInputs_table = allInputs.drop(indexes)
         allInputs_table.columns = columns
@@ -582,21 +600,8 @@ class OptimizationContext:
 
         self.prepare_rows_called = True
 
-    """
-    Function computes the prime implicants. Calculation is based on the 
-    classical Mc-Clussky algorithm.
-    
-    Returns
-    
-    -------
-    
-    prime_implicants = array
-    Function return an array of the objects prime_implicants.
-          
-       
-    """
 
-    def get_prime_implicants_1_DC(self):
+    def get_prime_implicants_ON_DC(self):
 
         if not self.prepare_rows_called:
             self.prepareRows()
@@ -629,6 +634,7 @@ class OptimizationContext:
                                               self.multi_output)
         coverage_dict = create_care_translation_dict(self.cares,
                                                      self.positive_cares)
+
 
         if self.multi_output:
 
@@ -693,29 +699,12 @@ class OptimizationContext:
                                              )
         return prime_implicants_fin
 
-    """
-    Function computes the prime implicants. Calculation is based on the on-off
-    algorithm.
-    
-    Returns
-    
-    -------
-    
-    prime_implicants = array
-    Function return an array of the objects prime_implicants.
-          
-       
-    """
 
     def output_coverage_of_pi(self, raw_implicant):
         data = self.preprocessed_data
-        # input_columns = self.input_data.columns
-
         outputs = self.output_labels
         res = set()
         for ind, out in enumerate(outputs):
-            # tmp_data = data[data[out]==1][input_columns]
-
             if all(data[out][data.apply(
                     lambda row_series: all(x in y for x, y in
                                            zip(row_series.values,
@@ -732,7 +721,7 @@ class OptimizationContext:
 
         if (all(outputs.apply(lambda col: True if len(col.unique()) == 1
         else False, axis=0))):
-            return self.get_prime_implicants_1_DC()
+            return self.get_prime_implicants_ON_DC()
 
         if len(self.output_labels) > 1:
             self.levels = self.get_levels()
@@ -762,10 +751,10 @@ class OptimizationContext:
 
                     tmp_res.append(ImplicantMultiOutput(self,
                                                         minterm_to_str(raw_im,
-                                                                         self.levels,
-                                                                         self.labels,
-                                                                         0,
-                                                                         self.multi_output),
+                                                                    self.levels,
+                                                                    self.labels,
+                                                                    0,
+                                                               self.multi_output),
                                                         raw_im,
                                                         cov,
                                                         o_tag,
@@ -783,13 +772,14 @@ class OptimizationContext:
 
             for x in res:
                 x.outputs = list(x.outputs)
+
             return res
 
 
 
         else:
             if all(self.preprocessed_data[self.output_labels[0]]):
-                return self.get_prime_implicants_1_DC()
+                return self.get_prime_implicants_ON_DC()
             self.levels = self.get_levels()
 
             self.labels = [col for col in self.preprocessed_data.columns if
@@ -842,17 +832,57 @@ class OptimizationContext:
                                    0,
                                    self.multi_output),
                     raw_i, cov))
+
             return prime_implicants
 
 
     def get_prime_implicants(self):
+        """
+        Function computes the prime implicants.
+        Returns
+        -------
+        prime_implicants = tuple
+        A tuple of prime implicant objects.
+        Notes
+        -------
+        The string representation of a prime implicant object is such that:
+        I.) Binary case:
+        a) a positive literal is printed in upper case,
+        b) a negative literal is printed in lower case, and
+        c) an essential prime implicant is prefixed with a hash tag (#).
+        II.) Multi-value case:
+        a) all literals are coded with upper case letters
+        b) the value of the literal is written in curly ({}) brackets.
+        c) an essential prime implicant is prefixed with a hash tag (#).
+        Examples
+        --------
+        >>> df = pd.DataFrame([[1,1,0,1],[0,0,1,1],[1,0,1,0],[0,1,0,1]],
+        ...                   columns=["A","B","C","OUT"])
+        >>> context = cora.OptimizationContext(data = df,
+        ...                                    output_labels = ["OUT"])
+        >>> context.get_prime_implicants()
+        (B, c, #a)
+        >>> df = pd.DataFrame([[1,2,0,1,1,2,1],
+        ...                   [1,1,1,0,2,0,0],
+        ...                   [0,2,1,0,0,1,2],
+        ...                   [0,2,2,0,1,1,1],],
+        ...                  columns=["A","B","C","D","OUT1","OUT2","OUT3"])
+        >>> context = cora.OptimizationContext(data = df,
+        ...                                    output_labels =["OUT1{1,2}",
+        ...                                                    "OUT2{1}",
+        ...                                                     "OUT3{1,0}"],
+        ...                                     algorithm = 'ON-OFF')
+        >>> context.get_prime_implicants()
+        [C{2}, A{1}, B{1}, D{1}, C{0}, B{2}*C{1}, A{0}, B{2}*D{0}]
+        """
+
         if self.prime_implicants is not None:
             return self.prime_implicants
 
         if self.algorithm == "Cubes":
             self.prime_implicants = self.get_prime_implicants_cubes()
         elif self.algorithm == "ON-DC":
-            self.prime_implicants = self.get_prime_implicants_1_DC()
+            self.prime_implicants = self.get_prime_implicants_ON_DC()
         elif self.algorithm == "ON-OFF":
             self.prime_implicants = self.get_prime_implicants_on_off()
         else:
@@ -861,20 +891,33 @@ class OptimizationContext:
 
         return self.prime_implicants
 
-    """
-    Function creates a prime implicant chart.
-      
-    Returns
-    
-    -------
-    
-    dataframe:
-    columns: indexes of columns from original data
-    rows: prime implicants
-      
-    """
 
     def prime_implicant_chart(self):
+        """
+        Function creates a prime implicant chart (coverage matrix).
+        Returns
+        -------
+        dataframe
+        columns: The labels of the columns correspond to the truth table rows
+                 with positive outputs.
+        rows: prime implicants
+        If a prime implicant covers a positive row of the truth table, it
+        receives a 1 entry in the corresponding position; an entry 0 otherwise.
+        Example
+        -------
+        >>> df = pd.DataFrame([[1,1,0,1],
+        ...           [0,0,1,1],
+        ...           [1,0,1,0],
+        ...           [0,1,0,1]],
+        ...           columns=["A","B","C","OUT"])
+        >>> context = cora.OptimizationContext(data = df,
+        ...                                    output_labels = ["OUT"])
+        >>> context.prime_implicant_chart()
+            0  1  3
+        B   0  1  1
+        c   0  1  1
+        #a  1  1  0
+        """
         if self.pi_chart is not None:
             return self.pi_chart
         prime_implicants = self.get_prime_implicants()
@@ -891,42 +934,45 @@ class OptimizationContext:
                 res[column_nr, row_nr] = True
         if self.multi_output:
             return pd.DataFrame(res.transpose(),
-                                columns=cares,
-                                index=['{}, {}'.format(x.implicant, x.outputs)
+                                columns = cares,
+                                index = ['{}, {}'.format(x.implicant, x.outputs)
                                        for x in prime_implicants]).astype(int)
         self.pi_chart = pd.DataFrame(
             res.transpose(),
-            columns=cares,
-            index=[(x.implicant) for x in prime_implicants]).astype(int)
+            columns = cares,
+            index = [(x.implicant) for x in prime_implicants]).astype(int)
         return self.pi_chart
 
-    # def essential_indexes_from_pi_chart(self):
-    #    index_sum =  self.pi_chart.sum(axis = 0) 
-    #   return [i for i in index_sum.index if index_sum[i] ==1]
-
-    """
-    Function computes all irredundat solutions for input data with 
-    a single output column.
-    
-    Parameters
-    
-    ----------
-    
-    max_depth : int
-    A positive integer denoting max number of prime implicants in the solution.
-    
-    Returns
-    
-    -------
-    
-    irredundat_objects : array of objects
-    The final array contains all of the irredundant solutions with respect to 
-    the max_depth condition.
-    
-    
-    """
-
     def get_irredundant_sums(self, max_depth=None):
+        """
+        Function computes all irredundat sums.
+        Parameters
+        ----------
+        max_depth : int
+                   A positive integer denoting max number of prime implicants
+                   in the solution.
+        Returns
+        -------
+        irredundat_objects : array of objects
+        The final array containing all irredundant sums
+        with respect to the max_depth condition.
+        Notes
+        ------
+        Note that the number of all irredundant sums can grow exponentially.
+        Requesting all irredundant sums for a large prime implicant chart
+        might consume a lot of memory and lead to out-of-memory crashes.
+        Examples
+        --------
+        >>> df = pd.DataFrame([[1,1,0,1],
+        ...           [0,0,1,1],
+        ...           [1,0,1,0],
+        ...           [0,1,0,1]],
+        ...           columns=["A","B","C","OUT"])
+        >>> context = cora.OptimizationContext(data = df,
+        ...                                    output_labels = ["OUT"])
+        >>> context.get_irredundant_sums()
+        [M1: #a + B, M2: #a + c]
+        """
         if self.irredundat_sums is not None:
             return self.irredundat_sums
         prime_implicants = self.get_prime_implicants()
@@ -934,8 +980,8 @@ class OptimizationContext:
             return []
 
         if self.multi_output:
-            raise RuntimeError("irredudant sums are not supported in multi output\
-                          mode. Use get_irredundant_systems")
+            raise RuntimeError("irredudant sums are not supported in multi\
+                         output mode. Use get_irredundant_systems")
 
         result = find_irredundant_sums_native(([(i, i.coverage)
                                                 for i in prime_implicants]),
@@ -950,19 +996,31 @@ class OptimizationContext:
         self.irredundat_sums = irredundant_objects
         return self.irredundat_sums
 
-    """
-    Function gives a statistical overview of a solution system.
-    
-    Returns
-    -------
-    
-    df_final : dataframe
-    Dataframe collects system label, systems string representation (for single 
-    output systems only),a coverage and an inclusion score of the system.
-    
-    """
+
+
 
     def system_details(self):
+        """
+        Function gives the statistical overview of a solution system.
+        Returns
+        -------
+        df_final : dataframe
+        (a) system unique identification label
+        (b) systems' string representation (for one-output systems only)
+        (c) the coverage and the inclusion score of the system
+        Examples
+        --------
+        >>> df = pd.DataFrame([[1,1,0,1],
+        ...           [0,0,1,1],
+        ...           [1,0,1,0],
+        ...           [0,1,0,1]],
+        ...           columns=["A","B","C","OUT"])
+        >>> context = cora.OptimizationContext(data = df,
+        ...                                    output_labels = ["OUT"])
+        >>> context.system_detials()
+                          Cov.  Inc.
+        Solution details   1.0   1.0
+        """
         if self.sol_details is not None:
             return self.sol_details
         if not self.multi_output:
@@ -980,18 +1038,39 @@ class OptimizationContext:
 
         return self.sol_details
 
-    """
-    Function gives a statistical overview of all prime implicants.
-    
-    Returns
-    -------
-    
-    df_implicant : dataframe
-    Dataframe collects all statistical values of an implicant. 
-    
-    """
+
 
     def pi_details(self):
+        """
+        Function gives the statistical overview of all prime implicants.
+        Returns
+        -------
+        df_implicant : dataframe
+        Dataframe collects all statistical values of an implicant.
+        Note
+        ------
+       a) The inclusion score of a prime implicant is the ratio between the
+       number of cases that are covered by this prime implicant and show the
+       analyzed outcome, and the number of cases that are covered by this
+       prime implicant.
+       b) The coverage score of a prime implicant is the ratio between the
+       number of cases that are covered by this prime implicant and show the
+       analyzed outcome, and the number of cases that show the analyzed outcome.
+        Examples
+        --------
+        >>> df = pd.DataFrame([[1,1,0,1],
+        ...           [0,0,1,1],
+        ...           [1,0,1,0],
+        ...           [0,1,0,1]],
+        ...           columns=["A","B","C","OUT"])
+        >>> context = cora.OptimizationContext(data = df,
+        ...                                    output_labels = ["OUT"])
+        >>> context.pi_detials()
+           PI  Cov.r  Inc.    M1    M2
+        0   B   0.67   1.0  0.33   NaN
+        1   c   0.67   1.0   NaN  0.33
+        2  #a   0.67   1.0  0.33  0.33
+        """
         if self.details is not None:
             return self.details
         prime_implicants = self.get_prime_implicants()
@@ -1013,31 +1092,49 @@ class OptimizationContext:
         df_implicant = pd.DataFrame(cov_x, columns=['PI', 'Cov.r', 'Inc.'])
         for f_cov_per_impl, f_label in zip(cov_per_impl, new_cols):
             tmp = [round(f_cov_per_impl[x.implicant], 2) if x.implicant
-                                                            in f_cov_per_impl.keys() else None
+                                            in f_cov_per_impl.keys() else None
                    for x in prime_implicants]
             df_implicant[f_label] = tmp
 
         self.details = df_implicant
         return self.details
 
-    """
-  
-    Function computes all irredundat solutions for input data with 
-    multiple output columns.
-    
-    
-    Returns
-    
-    -------
-    
-    res : array of objects
-    The final array contains all of the irredundant system objects, containing
-    the solutions corresponding to multiple outputs.
-    
-    
-    """
 
     def get_irredundant_systems(self):
+        """
+        Function computes all irredundat systems for input data with
+        multiple output columns.
+        Returns
+        -------
+        res : array of objects
+        (a) unique identification label of the irredundant system object,
+        (b) solution systems containing solution string per output.
+        Note
+        ------
+        Individual functions inside one system may not be irredundant,
+        but the entire system is always irredundant.
+        Example
+        --------
+        >>> df = pd.DataFrame([[1,2,0,1,1,2,1],
+        ...                    [1,1,1,0,2,0,0],
+        ...                    [0,2,1,0,0,1,2],
+        ...                    [0,2,2,0,1,1,1],],
+        ...                    columns=["A","B","C","D","OUT1","OUT2","OUT3"])
+        >>> context = cora.OptimizationContext(df, ["OUT1{1,2}",
+        ...                                         "OUT2{1}",
+        ...                                         "OUT3{1,0}"],
+        ...                                          algorithm = 'ON-OFF')
+        >>> context.get_irredundant_systems()
+        [---- System 1 ----
+        OUT1{1, 2}: B{1}
+        OUT2{1}: B{2}*D{0}
+        OUT3{0, 1}: B{1}
+        , ---- System 2 ----
+        OUT1{1, 2}: A{1}
+        OUT2{1}: B{2}*D{0}
+        OUT3{0, 1}: A{1}
+        ]
+        """
         if self.irredundant_systems is not None:
             return self.irredundant_systems
 
@@ -1094,6 +1191,32 @@ class OptimizationContext:
         return res, l
 
     def get_solution_dataframe(self):
+        """
+        Return
+        ------
+        dataframe :
+        The summary dataframe separately specifies an occurence
+        of a prime implicant inside each output within a system.
+        Example
+        --------
+        >>> df = pd.DataFrame([[1,2,0,1,1,2,1],
+        ...                    [1,1,1,0,2,0,0],
+        ...                    [0,2,1,0,0,1,2],
+        ...                    [0,2,2,0,1,1,1],],
+        ...                    columns=["A","B","C","D","OUT1","OUT2","OUT3"])
+        >>> context = cora.OptimizationContext(df, ["OUT1{1,2}",
+        ...                                         "OUT2{1}",
+        ...                                         "OUT3{1,0}"],
+        ...                                          algorithm = 'ON-OFF')
+        >>> context.get_solution_dataframe()
+           C{2}  A{1}  B{1}  D{1}  C{0}  B{2}*C{1}  A{0}  B{2}*D{0} Output System
+        0     0     0     1     0     0          0     0          0      1      1
+        1     0     0     0     0     0          0     0          1      2      1
+        2     0     0     1     0     0          0     0          0      3      1
+        3     0     1     0     0     0          0     0          0      1      2
+        4     0     0     0     0     0          0     0          1      2      2
+        5     0     1     0     0     0          0     0          0      3      2
+        """
         prime_implicants = self.get_prime_implicants()
         if not self.multi_output:
 
@@ -1120,7 +1243,6 @@ class OptimizationContext:
             n_rows = len(solutions) * l
             n_cols = len(prime_implicants)
             data = np.zeros(shape=(n_rows, n_cols), dtype=int)
-            # data_indexes = pd.DataFrame(columns = ["Sol_index","Out_index"])
             for i, solution in enumerate(solutions):
 
                 for out, single_output_solution in enumerate(
@@ -1147,8 +1269,6 @@ class OptimizationContext:
 
         n = self.solution_dataframe.shape[0]
         res = pd.DataFrame(np.zeros((50, 50)), dtype=int)
-
-        # res = pd.zeros(n,n,dtype=int)
         for i in range(0, 50):
             for j in range(i + 1, 50):
                 x = self.solution_dataframe.iloc[[i, j]].astype(bool).apply(
@@ -1159,30 +1279,23 @@ class OptimizationContext:
 
 
 """
- Class represents a single irredundant system, a solution of multi output 
- minimization. The complete solution of such minimization is composed out of 
- these systems.
+ Class represents a single irredundant system.
  
-
+The complete solution space of multi-output minimization is the set of 
+all systems.
+ 
 Parameters
-
 ----------
-
 system : array of strings
-         An array of implicants which form the solution.  
-
+         An array of prime implicants forming the solution.  
 index : int
         An index of the solution.
-
 cov_score : float
             statistical value
-
 incl_score : float
              statistical value
  
 """
-
-
 class IrredundantSystemsMulti():
     # Class where self represents just one single system
     # the whole solution is composed of these systems
@@ -1278,15 +1391,6 @@ class IrredundantSystemsMulti():
                       and set(imp1.outputs) == set(imp2.outputs)
                       and imp1 != imp2):
                     res[imp1].append(imp2)
-            # if imp1 not in  res.keys():
-            #     res[imp1].append([])                       
-
-        # outputs_combinations = set(tuple(x.outputs) for x in implicants)
-        # res = defaultdict(list)
-        # for implicant in implicants:
-        #     for key in outputs_combinations:
-        #         if set(key).issubset(set(implicant.outputs)):
-        #             res[key].append(implicant)
         print("Res:{}".format(res))
         return res
 
@@ -1317,7 +1421,7 @@ class IrredundantSystemsMulti():
             tmp = tmp_positive_data.apply(
                 lambda row_series: row_series.name if all(x in y for x, y in
                                                           zip(row_series.values,
-                                                              impl.raw_implicant))
+                                                            impl.raw_implicant))
                 else np.NAN, axis=1)
             s_in = set(x for x in tmp.values if not np.isnan(x))
             print("S_in:{}".format(s_in))
@@ -1339,7 +1443,7 @@ class IrredundantSystemsMulti():
         return {str(impl_i.implicant): coverage
                 for impl_i, coverage in zip(implicants, unique_cov)}
 
-        # coverage of the system    
+        # coverage of the system
 
     def coverage_score(self):
         if self.cov_score is None:
@@ -1362,7 +1466,7 @@ class IrredundantSystemsMulti():
                 else 0.0, axis=1).mean()
         return self.cov_score
 
-    # inclusion of the system    
+    # inclusion of the system
     def inclusion_score(self):
         if self.incl_score is None:
             data = self.context.data
@@ -1389,20 +1493,14 @@ class IrredundantSystemsMulti():
 """
  Class represents a solution of a minimization problem with a single output -
  called irredundant system.
-
 Parameters
-
 ----------
-
 system : array of strings
          An array of implicants which form the solution.  
-
 index : int
         An index of the solution.
-
 cov_score : float
             statistical value
-
 incl_score : float
              statistical value
  
@@ -1470,8 +1568,8 @@ class IrredundantSystem():
 
             tmp = tmp_positive_data.apply(
                 lambda row_series: row_series.name if all(x in y for x, y in
-                                                          zip(row_series.values,
-                                                              impl_i.raw_implicant))
+                                                        zip(row_series.values,
+                                                        impl_i.raw_implicant))
                 else None, axis=1)
             s = set(x for x in tmp.values if not np.isnan(x))
             impl_cov.append(s)
@@ -1519,23 +1617,24 @@ class IrredundantSystem():
         return self.incl_score
 
 
-# Class which defines a multi-output minterm/item and describes its properties 
+# Class which defines a multi-output minterm/item and describes its properties
 # (coverage, is_reduced, tag) over the reduction process.
-# 
+#
 # Parameters
 # ----------
 #
-#    minterm : A tupple of numbers. In the first itteration, every tupple 
-#              correponds to one row from the data. 
+#    minterm : A tuple of numbers. In the first iteration, every tuple
+#              correponds to one row from the data.
 
-#    coverage : Set of the indexes of all the rows which are covered by the 
-#               minterm. At the beggining of the  minimalization coverage
-#               contains just a single number - an index of a row represented
-#               by the minterm.           
+#    coverage : Set of the indexes of all the rows which are covered by the
+#               minterm. At the beggining of the  minimalization coverage, it
+#               contains just a single number - the index of a row represented
+#               by the minterm.
 
 #    is_reduced : True when at least one reduction was performed.
-#    
-#    tag : An arrbitrary number, representing the outputs.
+#
+#    tag : An arbitrary number, representing the outputs.
+
 
 
 class MultipleOutputMinterm:
@@ -1602,19 +1701,19 @@ class MultipleOutputMinterm:
                                      new_tag)
 
 
-# Class which defines a multi-value minterm/item and describes its properties 
+# Class which defines a multi-value minterm/item and describes its properties
 # (coverage, is_reduced) over the reduction process.
-# 
+#
 # Parameters
 # ----------
 #
-#    minterm : A tupple of numbers. In the first itteration, every tupple 
-#              correponds to one row from the data. 
+#    minterm : A tuple of numbers. In the first itteration, every tuple
+#              correponds to one row from the data.
 
-#    coverage : Set of the indexes of all the rows which are covered by the 
-#               minterm. At the beggining of the  minimalization coverage
-#               contains just a single number - an index of a row represented
-#               by the minterm.           
+#    coverage : Set of the indexes of all the rows which are covered by the
+#               minterm. At the beginning of the minimalization the coverage
+#               contains just a single number - the index of a row represented
+#               by the minterm.
 
 #    is_reduced : True when at least one reduction was performed.
 
@@ -1676,27 +1775,23 @@ class MultiValueMinterm:
 
 
 """
-A class Implicant_multi_output reffers to a prime implicant generated from 
-multi output data and its properties and relations to the outputs.
-
-
- Parameters 
+Class which refers to the prime implicant generated from 
+multi-output data and its properties and relations to the outputs.
+Parameters 
  ----------
  
  context : object
            An object from the original OptimizationContext class 
-           to which the implacant referes.
+           to which the implacant refers.
            It contains the original data, output_lables, 
            input_labels etc...
               
- implicant : array of sets
-            An array of sets of numbers. Each set corresponds to a one 
-            of the input variabels. 
-
+ implicant : array of sets of numbers
+            Each set corresponds to one input variabel. 
                 
- raw_implicant  : an array of sets of number
+ raw_implicant  : an array of sets of numbers
                   An arrbitrary representation of an implicant containing 
-                  some redundat information.
+                  some additional information.
   
  coverage : set of numbers
             The set  of the indexes of the rows from the original data, 
@@ -1714,7 +1809,6 @@ multi output data and its properties and relations to the outputs.
  incl_score : float
       statistical value   
                      
-
 """
 
 
@@ -1726,9 +1820,7 @@ class ImplicantMultiOutput:
                  raw_implicant,
                  coverage,
                  outputs,
-                 output_labels,
-                 cov_score=None,
-                 incl_score=None):
+                 output_labels):
         self.context = context
         self.implicant = implicant
         self.raw_implicant = raw_implicant
@@ -1738,10 +1830,6 @@ class ImplicantMultiOutput:
         self.output_labels = output_labels
 
     def __str__(self):
-        # return('{0}:{1},{2},{3}'.format(self.implicant,
-        #                                self.coverage,
-        #                                self.outputs,
-        #                                self.output_labels))
         return ('{}'.format(self.implicant))
 
     def __repr__(self):
@@ -1824,26 +1912,22 @@ class ImplicantMultiOutput:
 
 
 """
-A class Implicant reffers to a prime implicant and its properties.
-
-
+A class which refers to a prime implicant and its properties.
  Parameters 
  ----------
  
  context : object
            An object from the original OptimizationContext class 
-           to which the implacant referes.
-           It contains the original data, output_lables, 
+           to which the implacant refers.
+           It contains the original data, output_labels, 
            input_labels etc...
               
- implicant : array of sets
-            An array of sets of numbers. Each set corresponds to a one 
-            of the input variabels. 
-
+ implicant : array of sets of numbers
+            Each set corresponds to one input variabels. 
                 
   raw_implicant  : an array of sets of number
                    An arrbitrary representation of an implicant containing 
-                   some redundat information.
+                   some additional information.
                   
   
   
@@ -1857,7 +1941,6 @@ A class Implicant reffers to a prime implicant and its properties.
   incl_score : float
       statistical value   
                      
-
 """
 
 
@@ -1868,9 +1951,7 @@ class Implicant:
                  implicant,
                  raw_implicant,
                  coverage,
-                 cov_score=None,
-                 incl_score=None,
-                 essential=False):
+                 essential = False):
         self.context = context
         self.implicant = "#" + str(implicant) if essential else implicant
         self.raw_implicant = raw_implicant
@@ -1896,10 +1977,9 @@ class Implicant:
                                      len(self.raw_implicant)))
         tmp_data = data[data[output_column] == 1][input_columns]
         self.cov_score = tmp_data.apply(
-            lambda row_series: 1.0 if all(x in y for x, y in
-                                          zip(row_series.values,
-                                              self.raw_implicant))
-            else 0.0, axis=1).mean()
+                            lambda row_series: 1.0 if all(x in y for x, y in
+                                zip(row_series.values,self.raw_implicant))
+                                                else 0.0, axis=1).mean()
         return self.cov_score
 
     def inclusion_score(self):

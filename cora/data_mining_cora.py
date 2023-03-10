@@ -27,49 +27,6 @@ class TupleResult:
             self.cov_score = cov_score
             self.score = score
 
-"""
-
-Parameters
-
-----------
-
-data : dataframe
-
-output_labels : an array of strings
-    The names of the outcome columns from the data frame.
-    
-len_of_tuple : int
-    Number indicating how many variables from the original data 
-    are used in the computation.
-
-case_col : string
-    The name of the column from the data frame containing the case ids.
-
-n_cut : int
-    The minimum number of cases under which a truth table row is declared as a
-    remainder
-        
-inc_score1 : float
-	The minimum sufficiency inclusion score for an output function value of "1"
-    
-inc_score2 : float
-	The maximum sufficiency inclusion score for an output function value of "0"
-
-U : int
-    The U number is either 0 or 1.
-
-algorithm : string
-            ON-DC or ON-OFF
-        
-
-Returns
--------
-
-result : dataframe
-    
-    
-"""   
-
 def data_mining(data,
                 output_labels,
                 len_of_tuple,
@@ -77,8 +34,59 @@ def data_mining(data,
                 n_cut=1,
                 inc_score1=1,
                 inc_score2=None,
-                Uvalue=None,
+                U=None,
                 algorithm="ON-DC"):
+    '''
+      Function performing data mining on a subset of input variables.
+
+      Parameters
+      ----------
+      data : dataframe
+
+      output_labels : an array of strings
+      The names of the outcome columns from the data frame.
+
+      len_of_tuple : int
+      Number indicating how many input variables from the original data
+      are used in the computation.
+
+      case_col : string
+      The name of the column from the data frame containing the case ids.
+
+      n_cut : int
+      The minimum number of cases under which a truth table row is declared as a
+      don't care.
+
+      inc_score1 : float
+      The minimum sufficiency inclusion score for an output function value of "1".
+
+      inc_score2 : float
+      The maximum sufficiency inclusion score for an output function value of "0".
+
+      U : int
+      The U number is either 0 or 1.
+
+      algorithm : string
+      The name of the optimization algorithm
+
+      Returns
+      -------
+      result : dataframe
+
+      Example
+      -------
+      >>> data = pd.DataFrame([[1,0,1,0],
+      ...                     [1,1,1,1],
+      ...                     [1,0,0,0],
+      ...                     [0,1,0,1]],
+      ...                     columns=["A","B","C","O"])
+      >>> data_mining(data,["O"],2))
+
+          Combination  Nr_of_systems  Inc_score  Cov_score  Score
+      0      [A, B]              1        1.0        1.0    1.0
+      1      [A, C]              1        1.0        0.5    0.5
+      2      [B, C]              1        1.0        1.0    1.0
+    '''
     res = []
 
         
@@ -90,13 +98,13 @@ def data_mining(data,
         cols = list(comb)
         data_object = cora.OptimizationContext(data,
                                                output_labels,
-                                                cols,
-                                                case_col=case_col,
-                                                n_cut=n_cut,
-                                                inc_score1=inc_score1,
-                                                inc_score2=inc_score2,
-                                                U=Uvalue,
-                                                algorithm=algorithm)
+                                               cols,
+                                               case_col=case_col,
+                                               n_cut=n_cut,
+                                               inc_score1=inc_score1,
+                                               inc_score2=inc_score2,
+                                               U=U,
+                                               algorithm=algorithm)
             
         if len(output_labels) == 1:
             ir_sys = data_object.get_irredundant_sums()

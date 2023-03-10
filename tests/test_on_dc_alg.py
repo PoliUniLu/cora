@@ -150,7 +150,7 @@ class OptimizationContext_tests(unittest.TestCase):
                                                        columns=["A", "B", "C",
                                                                 "O"]),
                                           ["O"])
-        result = opt_context.get_prime_implicants_1_DC()
+        result = opt_context.get_prime_implicants_ON_DC()
 
         self.assertEqual(len(result), 3)
         self.assertEqual(set(str(impl) for impl in result), {'a', 'C', 'B'})
@@ -162,7 +162,7 @@ class OptimizationContext_tests(unittest.TestCase):
                                                                 "D",
                                                                 "O"]),
                                           ["O"])
-        result = opt_context.get_prime_implicants_1_DC()
+        result = opt_context.get_prime_implicants_ON_DC()
 
         self.assertEqual(len(result), 4)
         self.assertEqual(set(str(impl) for impl in result),
@@ -175,7 +175,7 @@ class OptimizationContext_tests(unittest.TestCase):
                                                                 "D",
                                                                 "O"]),
                                           ["O"])
-        result = opt_context.get_prime_implicants_1_DC()
+        result = opt_context.get_prime_implicants_ON_DC()
 
         self.assertEqual(len(result), 6)
         self.assertEqual(set(str(impl) for impl in result),
@@ -194,7 +194,7 @@ class OptimizationContext_tests(unittest.TestCase):
                                                                 "D",
                                                                 "O"]),
                                           ["O"])
-        result = opt_context.get_prime_implicants_1_DC()
+        result = opt_context.get_prime_implicants_ON_DC()
 
         self.assertEqual(len(result), 2)
         self.assertEqual(set(str(impl) for impl in result),
@@ -213,7 +213,7 @@ class OptimizationContext_tests(unittest.TestCase):
                                                                 "D",
                                                                 "O","P"]),
                                           ["O","P"])
-        result = opt_context.get_prime_implicants_1_DC()
+        result = opt_context.get_prime_implicants_ON_DC()
 
         self.assertEqual(len(result), 9)
         self.assertEqual(set(str(impl) for impl in result),
@@ -227,7 +227,7 @@ class OptimizationContext_tests(unittest.TestCase):
                                                                 "D",
                                                                 "O", "P"]),
                                           ["O", "P"])
-        result = opt_context.get_prime_implicants_1_DC()
+        result = opt_context.get_prime_implicants_ON_DC()
 
         self.assertEqual(len(result), 5)
         self.assertEqual(set(str(impl) for impl in result),
@@ -244,7 +244,7 @@ class OptimizationContext_tests(unittest.TestCase):
                                       "C", "O"]),
                 ["O"])
 
-            result = opt_context.get_pi_chart()
+            result = opt_context.prime_implicant_chart()
             expected_cols = {
                 "A": [0, 1, 1],
                 "B": [1, 0, 1],
