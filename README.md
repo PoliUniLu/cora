@@ -27,7 +27,8 @@ It is recommended to install the package into a dedicated virtual environment.
 
 To open CORA with a graphical interface in Google Colab, click the button below:
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/gist/ZuzanaSebb/5bb6e29772dea02c0c562979f52fd27a/cora-1-0-6.ipynb?authuser=1)
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/gist/ZuzanaSebb/5bb6e29772dea02c0c562979f52fd27a/cora-1-0-6.ipynb?authuser=1)
+
 ## Usage
 The main features of the package are part of the `OptimizationContext` class, including functions:
 - `get_prime_implicants`,
@@ -36,7 +37,7 @@ The main features of the package are part of the `OptimizationContext` class, in
 - `get_irredundat_solutions`.
 
 ***Note:***
-Use `help` function to access the documentation of the cora package.
+Use the `help` function to access the documentation of CORA.
 
 **Example:**
 ```python
@@ -52,7 +53,8 @@ context = OptimizationContext(data = df, output_labels = ["OUT"])
 PIs = context.get_prime_implicants() #result: (B, c, #a)
 irredundant_solutions =  context.get_irredundant_sums() # result: [M1: #a + B, M2: #a + c]
 ```
-Data mining approach in searching for solutions represent another unique feature of the package.
+The data-mining approach in searching for solutions is another feature of the package.
+
 **Example:**
 ```python
 import pandas as pd
@@ -75,7 +77,7 @@ result # print(result.to_markdown())
 |  5 | ['C', 'D']    |               1 |        0.75 |           1 |    0.75 |
 
 ```
-To access more examples see `/examples` folder or follow [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/PoliUniLu/cora/blob/master/examples/cora_examples_notebook.ipynb)
+To access more examples see the `/examples` folder or follow [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/PoliUniLu/cora/blob/master/examples/cora_examples_notebook.ipynb)
 
 
 
