@@ -112,7 +112,7 @@ Pull requests are welcome. Note that, although the current codebase does not hav
 
 ## References
 
-* Baumgartner, Michael. 2008. "Regularity Theories Reassessed." *Philosophia* **36** (3):327-54. <a href="http://dx.doi.org/10.1007/s11406-007-9114-4" target="_blank">Link</a>
+* Baumgartner, Michael. 2008. "Regularity Theories Reassessed." *Philosophia* **36** (3):327-54. [Link](https://doi.org/10.1177/0049124109339)
 * Baumgartner, Michael. 2009. "Inferring Causal Complexity." *Sociological Methods & Research* **38** (1):71-101. [Link](https://doi.org/10.1177/0049124109339)
 * Baumgartner, Michael, and Mathias Ambühl. 2020. "Causal modeling with multi-value and fuzzy-set Coincidence Analysis." *Political Science Research and Methods* **8** (3):526-42. [Link](https://doi.org/10.1017/psrm.2018.45)
 * Lewin, Douglas, and David Protheroe. 1992. *Design of Logic Systems*. 2nd ed. London: Chapman & Hall.
