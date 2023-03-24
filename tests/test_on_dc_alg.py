@@ -22,7 +22,7 @@ class OptimizationContext_tests(unittest.TestCase):
                                           ["O"],
                                           case_col="ID",
                                           inc_score1=0.5)
-        opt_context.preprocess_data()
+        opt_context._preprocess_data()
         result = opt_context.preprocessed_data_raw
         expected_cols = {
             "A": [0, 1, 1],
@@ -34,6 +34,7 @@ class OptimizationContext_tests(unittest.TestCase):
             "O": [1, 1, 1]
         }
         expected_result = pd.DataFrame.from_dict(expected_cols)
+        expected_result.astype({'Inc_O': 'float64','O':'int64'})
         pd.testing.assert_frame_equal(result, expected_result)
 
         opt_context = OptimizationContext(
@@ -47,7 +48,7 @@ class OptimizationContext_tests(unittest.TestCase):
                 ["O","P"],
                 case_col="ID",
                 inc_score1=0.5)
-        opt_context.preprocess_data()
+        opt_context._preprocess_data()
         result = opt_context.preprocessed_data_raw
         expected_cols = {
                 "A": [0, 1, 1],
@@ -62,6 +63,8 @@ class OptimizationContext_tests(unittest.TestCase):
 
             }
         expected_result = pd.DataFrame.from_dict(expected_cols)
+        expected_result.astype({'Inc_O': 'float64','Inc_P': 'float64',''
+                                'O':'int64','P':'int64'})
         pd.testing.assert_frame_equal(result, expected_result)
 
         opt_context = OptimizationContext(pd.DataFrame(data=[["1", 1, 0, 1, 0],
@@ -74,7 +77,7 @@ class OptimizationContext_tests(unittest.TestCase):
                                           ["O"],
                                           case_col="ID",
                                           inc_score1=0.6)
-        opt_context.preprocess_data()
+        opt_context._preprocess_data()
         result = opt_context.preprocessed_data_raw
         expected_cols = {
             "A": [0, 1, 1],
@@ -86,6 +89,7 @@ class OptimizationContext_tests(unittest.TestCase):
             "O": [1, 0, 0]
         }
         expected_result = pd.DataFrame.from_dict(expected_cols)
+        expected_result.astype({'Inc_O': 'float64','O':'int64'})
         pd.testing.assert_frame_equal(result, expected_result)
 
 
@@ -96,8 +100,8 @@ class OptimizationContext_tests(unittest.TestCase):
                                                        columns=["A", "B", "C",
                                                                 "O"]),
                                           ["O"])
-        opt_context.preprocess_data()
-        result = opt_context.get_levels()
+        opt_context._preprocess_data()
+        result = opt_context._get_levels()
         self.assertEqual(result, ([2, 2, 2]))
 
         opt_context = OptimizationContext(pd.DataFrame(data=[[1, 3, 6, 1, 1],
@@ -106,8 +110,8 @@ class OptimizationContext_tests(unittest.TestCase):
                                                        columns=["A", "B", "C",
                                                                 "O","P"]),
                                           ["O","P"])
-        opt_context.preprocess_data()
-        result = opt_context.get_levels()
+        opt_context._preprocess_data()
+        result = opt_context._get_levels()
         self.assertEqual(result, ([2, 2, 3]))
 
 
@@ -117,8 +121,8 @@ class OptimizationContext_tests(unittest.TestCase):
                                                        columns=["A", "B", "C",
                                                                 "O"]),
                                           ["O"])
-        opt_context.preprocess_data()
-        result = opt_context.get_levels()
+        opt_context._preprocess_data()
+        result = opt_context._get_levels()
         self.assertEqual(result, ([3, 2, 2]))
 
     def test_prepare_rows(self):
@@ -128,7 +132,7 @@ class OptimizationContext_tests(unittest.TestCase):
                                                        columns=["A", "B", "C",
                                                                 "O"]),
                                           ["O"])
-        opt_context.prepareRows()
+        opt_context._prepareRows()
         result = opt_context.table
         expected_result = np.array([[0, 0, 0],
                                     [0, 0, 1],
@@ -150,7 +154,7 @@ class OptimizationContext_tests(unittest.TestCase):
                                                        columns=["A", "B", "C",
                                                                 "O"]),
                                           ["O"])
-        result = opt_context.get_prime_implicants_ON_DC()
+        result = opt_context._get_prime_implicants_ON_DC()
 
         self.assertEqual(len(result), 3)
         self.assertEqual(set(str(impl) for impl in result), {'a', 'C', 'B'})
@@ -162,7 +166,7 @@ class OptimizationContext_tests(unittest.TestCase):
                                                                 "D",
                                                                 "O"]),
                                           ["O"])
-        result = opt_context.get_prime_implicants_ON_DC()
+        result = opt_context._get_prime_implicants_ON_DC()
 
         self.assertEqual(len(result), 4)
         self.assertEqual(set(str(impl) for impl in result),
@@ -175,7 +179,7 @@ class OptimizationContext_tests(unittest.TestCase):
                                                                 "D",
                                                                 "O"]),
                                           ["O"])
-        result = opt_context.get_prime_implicants_ON_DC()
+        result = opt_context._get_prime_implicants_ON_DC()
 
         self.assertEqual(len(result), 6)
         self.assertEqual(set(str(impl) for impl in result),
@@ -194,7 +198,7 @@ class OptimizationContext_tests(unittest.TestCase):
                                                                 "D",
                                                                 "O"]),
                                           ["O"])
-        result = opt_context.get_prime_implicants_ON_DC()
+        result = opt_context._get_prime_implicants_ON_DC()
 
         self.assertEqual(len(result), 2)
         self.assertEqual(set(str(impl) for impl in result),
@@ -213,7 +217,7 @@ class OptimizationContext_tests(unittest.TestCase):
                                                                 "D",
                                                                 "O","P"]),
                                           ["O","P"])
-        result = opt_context.get_prime_implicants_ON_DC()
+        result = opt_context._get_prime_implicants_ON_DC()
 
         self.assertEqual(len(result), 9)
         self.assertEqual(set(str(impl) for impl in result),
@@ -227,7 +231,7 @@ class OptimizationContext_tests(unittest.TestCase):
                                                                 "D",
                                                                 "O", "P"]),
                                           ["O", "P"])
-        result = opt_context.get_prime_implicants_ON_DC()
+        result = opt_context._get_prime_implicants_ON_DC()
 
         self.assertEqual(len(result), 5)
         self.assertEqual(set(str(impl) for impl in result),
