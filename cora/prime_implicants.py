@@ -1409,6 +1409,14 @@ class IrredundantSystemsMulti():
         return res
 
     def impl_cov_score(self):
+        
+        '''
+        Return:
+        Float value, representing the proportion of instantiations of the implicant among
+        all instantiations of the (corresponding) outcomes, combinations of outcomes, respectively, 
+        unique to the implicant.
+        '''
+            
         data = self.context.data
         input_columns = self.context.input_data.columns
         output_columns = self.context.output_labels
@@ -1460,6 +1468,13 @@ class IrredundantSystemsMulti():
         # coverage of the system
 
     def coverage_score(self):
+        
+        '''
+        Return:
+        Float value, representing the proportion of instantiations of the implicant among
+        all instantiations of the (corresponding) outcomes, combinations of outcomes, respectively.
+        '''
+        
         if self.cov_score is None:
             data = self.context.data
             input_columns = self.context.input_data.columns
@@ -1482,6 +1497,11 @@ class IrredundantSystemsMulti():
 
     # inclusion of the system
     def inclusion_score(self):
+        '''
+        Return:
+        Float value, representing the proportion of instantiations of the disjunction of implicants
+        in conjunction with the outcomes among all instantiations of the disjunction of implicants.
+        '''
         if self.incl_score is None:
             data = self.context.data
             input_columns = self.context.input_data.columns
@@ -1505,8 +1525,8 @@ class IrredundantSystemsMulti():
 
 class IrredundantSystem():
     """
-     Class represents a solution of a minimization problem with a single output -
-     called irredundant system.
+    Class represents an irredundant system of an optimization problem with a single outcome.
+     
     Parameters
     ----------
     system : array of strings
@@ -1566,6 +1586,13 @@ class IrredundantSystem():
             return "Warning!"
 
     def impl_cov_score(self):
+        
+        '''
+        Return:
+        Float value, representing the proportion of instantiations of the implicant among
+        all instantiations of the outcome unique to the implicant.
+        '''
+            
         data = self.context.data
         input_columns = self.context.input_data.columns
         output_column = self.context.output_labels[0]
@@ -1601,6 +1628,13 @@ class IrredundantSystem():
         return len(self.system)
 
     def coverage_score(self):
+        
+        '''
+        Return:
+        Float value, representing the proportion of instantiations of the implicant among
+        all instantiations of the outcome.
+        '''
+        
         data = self.context.data
         input_columns = self.context.input_data.columns
         output_column = self.context.output_labels[0]
@@ -1615,6 +1649,13 @@ class IrredundantSystem():
         return self.cov_score
 
     def inclusion_score(self):
+    
+        '''
+        Return:
+        Float value, representing the proportion of instantiations of the disjunction of implicants
+        in conjunction with the outcome among all instantiations of the disjunction of implicants.
+        '''
+        
         data = self.context.data
         input_columns = self.context.input_data.columns
         output_column = self.context.output_labels[0]
@@ -1844,6 +1885,13 @@ class ImplicantMultiOutput:
         return str(self)
 
     def coverage_score(self):
+        
+        '''
+        Return:
+        Float value, representing the proportion of instantiations of the implicant among
+        all instantiations of the outcomes.
+        '''
+        
         data = self.context.data
         input_columns = self.context.input_data.columns
 
@@ -1877,6 +1925,11 @@ class ImplicantMultiOutput:
         return self.cov_score
 
     def inclusion_score(self):
+        '''
+        Return:
+        Float value, representing the proportion of instantiations of the implicant
+        in conjunction with the outcomes among all instantiations of the implicant.
+        '''
         data = self.context.data
         input_columns = self.context.input_data.columns
 
@@ -1970,8 +2023,8 @@ class Implicant:
     def coverage_score(self):
         '''
         Return:
-            Float value, representing the proportion of positive minterms
-            covered by the implicant.
+        Float value, representing the proportion of instantiations of the implicant among
+        all instantiations of the outcome.
         '''
         data = self.context.data
         input_columns = self.context.input_data.columns
@@ -1992,8 +2045,8 @@ class Implicant:
     def inclusion_score(self):
         '''
         Return:
-        Float value, representing the proportion of  positive minterms
-        covered by the implicant to the all minterms covered by the implicant.
+        Float value, representing the proportion of instantiations of the implicant
+        in conjunction with the outcome among all instantiations of the implicant.
         '''
         data = self.context.data
         input_columns = self.context.input_data.columns
