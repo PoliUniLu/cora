@@ -17,22 +17,22 @@ from .multiply import transform_to_raw_implicant
 from .draft_cubes import find_implicants_cubes, transform_to_raw_imp
 from .essential import get_essential_implicants, transform_to_raw_impl, \
     reduce_the_onset
-
+from .boom_1 import best_literals
 COLUMN_LABELS = list(string.ascii_uppercase) + ["AA", "BB", "CC", "DD",
                                                 "EE", "FF"]
 OUTPUT_PATTERN = re.compile("^([a-zA-Z0-9]+)\{([0-9]+(,[0-9]+)*)\}$")
 REGULAR_OUTPUT = re.compile("^([a-zA-Z0-9]+)")
 
 
-def concatenate_strings(arr):
+def _concatenate_strings(arr):
     return ','.join([str(x) for x in arr])
 
 
-def inclusion_score(arr):
+def _inclusion_score(arr):
     return round(sum(arr) / len(arr), 2)
 
 
-def count_non_zeros(minterm):
+def _count_non_zeros(minterm):
     n = len(minterm)
     non_zeros = 0
     for i in range(0, n):
@@ -43,26 +43,26 @@ def count_non_zeros(minterm):
     return non_zeros
 
 
-def vector_to_minterm(v):
+def _vector_to_minterm(v):
     return tuple(frozenset({x}) for x in v)
 
 
-def preprocess_input(table):
-    return [vector_to_minterm(x) for x in table]
+def _preprocess_input(table):
+    return [_vector_to_minterm(x) for x in table]
 
 
-def create_care_translation_dict(cares, labels):
+def _create_care_translation_dict(cares, labels):
     return {k: v for k, v in zip(cares, labels)}
 
 
-def check_element_coverage(row, element):
+def _check_element_coverage(row, element):
     for r, e in zip(row, element[0]):
         if r not in e:
             return False
     return True
 
 
-def is_minterm_subset(m1, m2):
+def _is_minterm_subset(m1, m2):
     for x, y in zip(m1[0], m2[0]):
         if not x.issubset(y):
             return False
@@ -84,14 +84,14 @@ def is_minterm_subset(m1, m2):
 # Definition: a minterm of n variables is a product of the variables
 # 	      in which each one appears exactly once in true or complemented form.
 
-def create_groups(table, column_number, cares, outputcolumns, multi_output):
+def _create_groups(table, column_number, cares, outputcolumns, multi_output):
     res = []
     for i in range(0, column_number + 1):
         res.append([])
     index = 0
     if not multi_output:
         for row in table:
-            non_zeros = count_non_zeros(row)
+            non_zeros = _count_non_zeros(row)
             res[non_zeros].append(MultiValueMinterm(row, set([index])
             if index in cares else set()))
             index = index + 1
@@ -100,7 +100,7 @@ def create_groups(table, column_number, cares, outputcolumns, multi_output):
         nr_of_outputs = len(outputcolumns)
         care_index = 0
         for row in table:
-            non_zeros = count_non_zeros(row)
+            non_zeros = _count_non_zeros(row)
             if index in cares:
                 tag = {i for i in range(1, nr_of_outputs + 1)
                        if outputcolumns[i - 1][care_index] == 1}
@@ -133,7 +133,7 @@ def create_groups(table, column_number, cares, outputcolumns, multi_output):
 #         (c) information if any reduction was performed in this single
 #             elimination
 
-def reduction_step(groups, n, multi_output):
+def _reduction_step(groups, n, multi_output):
     was_any_reduction = False
     new_groups = []
     for i in range(n + 1):
@@ -178,36 +178,36 @@ def reduction_step(groups, n, multi_output):
 # Next set of 3 functions perform an extra elimination step
 
 
-def extend_with_first(first, arr, multi_output):
+def _extend_with_first(first, arr, multi_output):
     if multi_output:
         return [(tuple([first]) + x[0], x[1], x[2]) for x in arr]
     return [(tuple([first]) + x[0], x[1]) for x in arr]
 
 
-def decomposition(element, levels, multi_output):
+def _decomposition(element, levels, multi_output):
     if len(element[0]) == 0:
         return [element]
     if multi_output:
-        tmp = decomposition((element[0][1:], element[1], element[2]),
+        tmp = _decomposition((element[0][1:], element[1], element[2]),
                             levels[1:], multi_output)
     else:
-        tmp = decomposition((element[0][1:], element[1]),
+        tmp = _decomposition((element[0][1:], element[1]),
                             levels[1:], multi_output)
 
     if len(element[0][0]) == 1 or len(element[0][0]) == levels[0]:
-        return extend_with_first(element[0][0], tmp, multi_output)
+        return _extend_with_first(element[0][0], tmp, multi_output)
     else:
         res = []
         for x in element[0][0]:
-            res.extend(extend_with_first({x}, tmp, multi_output))
+            res.extend(_extend_with_first({x}, tmp, multi_output))
         return res
 
 
-def fix_coverage_after_decomposition(table, elements, multi_output):
+def _fix_coverage_after_decomposition(table, elements, multi_output):
     new_elements = []
     for e in elements:
         new_coverage = frozenset([x for x in e[1] if
-                                  check_element_coverage(table[x], e)])
+                                  _check_element_coverage(table[x], e)])
 
         if len(new_coverage) > 0:
             if multi_output:
@@ -218,23 +218,23 @@ def fix_coverage_after_decomposition(table, elements, multi_output):
     return new_elements
 
 
-def eliminate_minterms(table, elements, levels, multi_output):
+def _eliminate_minterms(table, elements, levels, multi_output):
     decomposed = []
     for x in elements:
-        decomposed.extend(decomposition(x, levels, multi_output))
+        decomposed.extend(_decomposition(x, levels, multi_output))
 
-    decomposed = fix_coverage_after_decomposition(table,
-                                                  decomposed,
-                                                  multi_output)
+    decomposed = _fix_coverage_after_decomposition(table,
+                                                   decomposed,
+                                                   multi_output)
     n = len(decomposed)
     was_eliminated = [False] * n
     if multi_output:
         for i in range(n):
             for j in range(i + 1, n):
-                if is_minterm_subset(decomposed[i], decomposed[j]) \
+                if _is_minterm_subset(decomposed[i], decomposed[j]) \
                         and (decomposed[i][2]).issubset(decomposed[j][2]):
                     was_eliminated[i] = True
-                elif is_minterm_subset(decomposed[j], decomposed[i]) \
+                elif _is_minterm_subset(decomposed[j], decomposed[i]) \
                         and (decomposed[j][2]).issubset(decomposed[i][2]):
                     was_eliminated[j] = True
         return [x for we, x in zip(was_eliminated, decomposed) if not we]
@@ -242,19 +242,19 @@ def eliminate_minterms(table, elements, levels, multi_output):
     for i in range(n):
         for j in range(i + 1, n):
 
-            if is_minterm_subset(decomposed[i], decomposed[j]):
+            if _is_minterm_subset(decomposed[i], decomposed[j]):
                 was_eliminated[i] = True
-            elif is_minterm_subset(decomposed[j], decomposed[i]):
+            elif _is_minterm_subset(decomposed[j], decomposed[i]):
                 was_eliminated[j] = True
     return [x for we, x in zip(was_eliminated, decomposed) if not we]
 
 
 
-def find_index2(arr, x):
+def _find_index2(arr, x):
     return np.where((arr == x).all(axis=1))[0]
 
 
-def set_to_str(s, levels, label, is_multi_level):
+def _set_to_str(s, levels, label, is_multi_level):
     if len(s) == levels:
         return ''
 
@@ -268,16 +268,16 @@ def set_to_str(s, levels, label, is_multi_level):
     return '{}{{{}}}'.format(label, ','.join(str(x) for x in s))
 
 
-def minterm_to_str(minterm, levels, labels, tag, multi_output):
+def _minterm_to_str(minterm, levels, labels, tag, multi_output):
     is_multi_level = any(x > 2 for x in levels)
-    tmp = [set_to_str(x, y, z, is_multi_level) for x, y, z in
+    tmp = [_set_to_str(x, y, z, is_multi_level) for x, y, z in
            zip(minterm, levels, labels)]
     res = '{}'.format('*'.join(x for x in tmp if x != ''))
 
     return res if res != '' else '1'
 
 
-def calculate_essential_indexes(prime_implicants):
+def _calculate_essential_indexes(prime_implicants):
     essentials = []
 
     essentials_histogram = defaultdict(lambda: 0)
@@ -366,7 +366,7 @@ class OptimizationContext:
     # Function to clean and aggregate data. Removes duplicities and
     # inconsistencies.
 
-    def data_validation(self):
+    def _data_validation(self):
 
         class InvalidDataException(Exception):
             pass
@@ -434,24 +434,24 @@ class OptimizationContext:
 
         self.validation = True
 
-    def preprocess_data(self):
+    def _preprocess_data(self):
 
         if not self.validation:
-            self.data_validation()
+            self._data_validation()
 
         data_tmp = self.data.copy()
         if (self.case_col is None or self.case_col == '-None-'):
             data_tmp['case_col'] = data_tmp.index.values
             self.case_col = 'case_col'
         # inclusion_score is a function for the data aggregation
-        params = {'Inc_{}'.format(c): (c, inclusion_score)
+        params = {'Inc_{}'.format(c) : (c, _inclusion_score)
                   for c in self.output_labels
                   }
 
         data_grouped = data_tmp.groupby(
             [x for x in self.input_data.columns]).agg(
             n=(self.case_col, 'count'),
-            Cases=(self.case_col, concatenate_strings),
+            Cases=(self.case_col, _concatenate_strings),
             **params)
         data_grouped = data_grouped[data_grouped['n'] >= self.n_cut]
         inc_columns = ['Inc_{}'.format(i) for i in self.output_labels]
@@ -483,8 +483,13 @@ class OptimizationContext:
             else x, res.columns)
             l = len(self.input_labels)
             self.input_labels = COLUMN_LABELS[:l]
+        convert_dict = dict()
+        for col in inc_columns:
+            convert_dict[col]='float64'
+        for col in self.output_labels:
+            convert_dict[col]='int64'
         self.preprocessed_data_raw = res
-
+        self.preprocessed_data_raw.astype(convert_dict)
         self.preprocessed_data = res[[x for x in self.input_labels]
                                      + self.output_labels]
         self.preprocessing = True
@@ -509,14 +514,14 @@ class OptimizationContext:
         2   1  1  1  1
         '''
         if not self.preprocessing:
-            self.preprocess_data()
+            self._preprocess_data()
         if raw:
             return self.preprocessed_data_raw
         else:
             return self.preprocessed_data
 
     # Function to derive the truth table from a data frame
-    def get_levels(self):
+    def _get_levels(self):
         inputs = self.preprocessed_data.drop(self.output_labels, axis=1)
         if len(self.input_labels) == 1:
             dim_corrected = [inputs.iloc[:, 0].values]
@@ -534,9 +539,9 @@ class OptimizationContext:
         return levels
 
 
-    def prepareRows(self):
+    def _prepareRows(self):
         if not self.preprocessing:
-            self.preprocess_data()
+            self._preprocess_data()
         mask1 = self.preprocessed_data[self.output_labels]
         nr_rows = len(self.preprocessed_data.index)
         n = len(mask1.columns)
@@ -574,14 +579,14 @@ class OptimizationContext:
         negativeInputs = negativeRows[columns]
         indexes = list()
         for x in negativeInputs.values:
-                ind = find_index2(allInputs, x)
+                ind = _find_index2(allInputs, x)
                 indexes.append(ind[0])
 
         allInputs_table = allInputs.drop(indexes)
         allInputs_table.columns = columns
 
         for x in positiveInputs.values:
-            ind = find_index2(allInputs_table, x)
+            ind = _find_index2(allInputs_table, x)
             cares_indexes.append(ind[0])
 
         if self.multi_output:
@@ -601,25 +606,25 @@ class OptimizationContext:
         self.prepare_rows_called = True
 
 
-    def get_prime_implicants_ON_DC(self):
+    def _get_prime_implicants_ON_DC(self):
 
         if not self.prepare_rows_called:
-            self.prepareRows()
+            self._prepareRows()
         if len(self.table) == 0:
             prime_implicants = tuple()
             return prime_implicants
 
         table = self.table.astype(int).tolist()
         column_number = len(table[0])
-        preprocessed_table = preprocess_input(table)
+        preprocessed_table = _preprocess_input(table)
         prime_implicants = []
-        groups = create_groups(preprocessed_table, column_number,
-                               self.cares, self.outputcolumns,
-                               self.multi_output)
+        groups = _create_groups(preprocessed_table, column_number,
+                                self.cares, self.outputcolumns,
+                                self.multi_output)
         reduction_nr = 0
         while (True):
-            reduction_res = reduction_step(groups, column_number,
-                                           self.multi_output)
+            reduction_res = _reduction_step(groups, column_number,
+                                            self.multi_output)
             if ((reduction_res)['implicants']):
                 for i in reduction_res['implicants']:
                     prime_implicants.append(i)
@@ -628,24 +633,24 @@ class OptimizationContext:
             groups = reduction_res['groups']
             reduction_nr += 1
 
-        prime_implicants = eliminate_minterms(table,
-                                              prime_implicants,
-                                              self.levels,
-                                              self.multi_output)
-        coverage_dict = create_care_translation_dict(self.cares,
-                                                     self.positive_cares)
+        prime_implicants = _eliminate_minterms(table,
+                                               prime_implicants,
+                                               self.levels,
+                                               self.multi_output)
+        coverage_dict = _create_care_translation_dict(self.cares,
+                                                      self.positive_cares)
 
 
         if self.multi_output:
 
             prime_implicants_fin = tuple(ImplicantMultiOutput(
                 self,
-                minterm_to_str(x[0],
-                               self.levels,
-                               self.labels,
-                               0,
-                               self.multi_output
-                               ),
+                _minterm_to_str(x[0],
+                                self.levels,
+                                self.labels,
+                                0,
+                                self.multi_output
+                                ),
                 x[0],
                 {coverage_dict[y] for y in x[1]},
                 outputs=list(x for x in x[2]),
@@ -654,7 +659,7 @@ class OptimizationContext:
                                          for x in prime_implicants
                                          )
         else:
-            essential_indexes = calculate_essential_indexes(prime_implicants)
+            essential_indexes = _calculate_essential_indexes(prime_implicants)
             if len(essential_indexes) > 0:
                 essential_implicants = [x for x in prime_implicants if
                                         set(x[1]).intersection(
@@ -672,11 +677,11 @@ class OptimizationContext:
                                  for x in prime_implicants_new]
                 prime_implicants_fin = tuple(Implicant(
                     self,
-                    minterm_to_str(x[0],
-                                   self.levels,
-                                   self.labels,
-                                   0,
-                                   self.multi_output),
+                    _minterm_to_str(x[0],
+                                    self.levels,
+                                    self.labels,
+                                    0,
+                                    self.multi_output),
                     x[0],
                     {coverage_dict[y] for y in x[1]}, essential=y)
                                              for x, y in
@@ -687,11 +692,11 @@ class OptimizationContext:
             else:
                 prime_implicants_fin = tuple(Implicant(
                     self,
-                    minterm_to_str(x[0],
-                                   self.levels,
-                                   self.labels,
-                                   0,
-                                   self.multi_output),
+                    _minterm_to_str(x[0],
+                                    self.levels,
+                                    self.labels,
+                                    0,
+                                    self.multi_output),
                     x[0],
                     {coverage_dict[y] for y in x[1]})
                                              for x in prime_implicants
@@ -700,7 +705,7 @@ class OptimizationContext:
         return prime_implicants_fin
 
 
-    def output_coverage_of_pi(self, raw_implicant):
+    def _output_coverage_of_pi(self, raw_implicant):
         data = self.preprocessed_data
         outputs = self.output_labels
         res = set()
@@ -712,19 +717,19 @@ class OptimizationContext:
                 res.add(ind + 1)
         return res
 
-    def get_prime_implicants_on_off(self):
+    def _get_prime_implicants_on_off(self):
 
         if not self.preprocessing:
-            self.preprocess_data()
+            self._preprocess_data()
         #  constant outputs
         outputs = self.preprocessed_data[self.output_labels]
 
         if (all(outputs.apply(lambda col: True if len(col.unique()) == 1
         else False, axis=0))):
-            return self.get_prime_implicants_ON_DC()
+            return self._get_prime_implicants_ON_DC()
 
         if len(self.output_labels) > 1:
-            self.levels = self.get_levels()
+            self.levels = self._get_levels()
             self.labels = [col for col in self.preprocessed_data.columns if
                            col not in self.output_labels]
             self.cares = [int(x) for x in
@@ -740,7 +745,7 @@ class OptimizationContext:
 
                 for im in implicants:
                     raw_im = transform_to_raw_implicant(im, self.levels)
-                    o_tag = self.output_coverage_of_pi(raw_im)
+                    o_tag = self._output_coverage_of_pi(raw_im)
 
                     cov = frozenset([int(x) for x in
                                      self.preprocessed_data[
@@ -750,11 +755,11 @@ class OptimizationContext:
                                              axis=1)].index])
 
                     tmp_res.append(ImplicantMultiOutput(self,
-                                                        minterm_to_str(raw_im,
-                                                                    self.levels,
-                                                                    self.labels,
-                                                                    0,
-                                                               self.multi_output),
+                                                        _minterm_to_str(raw_im,
+                                                                        self.levels,
+                                                                        self.labels,
+                                                                        0,
+                                                                        self.multi_output),
                                                         raw_im,
                                                         cov,
                                                         o_tag,
@@ -779,8 +784,8 @@ class OptimizationContext:
 
         else:
             if all(self.preprocessed_data[self.output_labels[0]]):
-                return self.get_prime_implicants_ON_DC()
-            self.levels = self.get_levels()
+                return self._get_prime_implicants_ON_DC()
+            self.levels = self._get_levels()
 
             self.labels = [col for col in self.preprocessed_data.columns if
                            col not in self.output_labels]
@@ -801,11 +806,11 @@ class OptimizationContext:
 
                     prime_implicants.append(Implicant(
                         self,
-                        minterm_to_str(raw_i,
-                                       self.levels,
-                                       self.labels,
-                                       0,
-                                       self.multi_output),
+                        _minterm_to_str(raw_i,
+                                        self.levels,
+                                        self.labels,
+                                        0,
+                                        self.multi_output),
                         raw_i, cov, essential=True))
                     reduced_indexes = set.union(
                         *[set(x) for x in cov_essentials]) if len(
@@ -826,14 +831,23 @@ class OptimizationContext:
 
                 prime_implicants.append(Implicant(
                     self,
-                    minterm_to_str(raw_i,
-                                   self.levels,
-                                   self.labels,
-                                   0,
-                                   self.multi_output),
+                    _minterm_to_str(raw_i,
+                                    self.levels,
+                                    self.labels,
+                                    0,
+                                    self.multi_output),
                     raw_i, cov))
 
             return prime_implicants
+    def _get_prime_implicants_boom(self):
+        if not self.preprocessing:
+            self._preprocess_data()
+        pass
+        #while(100):
+         #  candidates =  best_literals(self.preprocessed_data,
+          #                            self.output_labels,
+           #                           self.case_col)
+
 
 
     def get_prime_implicants(self):
@@ -879,12 +893,12 @@ class OptimizationContext:
         if self.prime_implicants is not None:
             return self.prime_implicants
 
-        if self.algorithm == "Cubes":
-            self.prime_implicants = self.get_prime_implicants_cubes()
+        if self.algorithm == "Boom":
+            self.prime_implicants = self._get_prime_implicants_boom()
         elif self.algorithm == "ON-DC":
-            self.prime_implicants = self.get_prime_implicants_ON_DC()
+            self.prime_implicants = self._get_prime_implicants_ON_DC()
         elif self.algorithm == "ON-OFF":
-            self.prime_implicants = self.get_prime_implicants_on_off()
+            self.prime_implicants = self._get_prime_implicants_on_off()
         else:
             raise AttributeError(
                 'Unknown algorithm "{}"?'.format(self.algorithm))
@@ -1143,7 +1157,7 @@ class OptimizationContext:
         if not self.multi_output:
             raise RuntimeError("irredudant systems are not supported in single\
                            output mode. Use get_irredundant_sums")
-        res, l = self.single_ir_systems_for_multi_output()
+        res, l = self._single_ir_systems_for_multi_output()
 
         mult_input = [set(frozenset(imp for imp in irs) for irs in f) for f in
                       res]
@@ -1162,7 +1176,7 @@ class OptimizationContext:
         self.irredundant_systems = res
         return self.irredundant_systems
 
-    def single_ir_systems_for_multi_output(self):
+    def _single_ir_systems_for_multi_output(self):
         prime_implicants = self.get_prime_implicants()
         l = len(self.output_labels)
         imp_per_output = []
@@ -1263,7 +1277,7 @@ class OptimizationContext:
             df["System"] = tmp
             return df
 
-    def get_network_representation(self):
+    def _get_network_representation(self):
         if self.solution_dataframe is None:
             self.get_solution_dataframe()
 
@@ -1489,25 +1503,22 @@ class IrredundantSystemsMulti():
             self.incl_score = data.loc[mask, "new_output"].mean()
         return self.incl_score
 
-
-"""
- Class represents a solution of a minimization problem with a single output -
- called irredundant system.
-Parameters
-----------
-system : array of strings
-         An array of implicants which form the solution.  
-index : int
-        An index of the solution.
-cov_score : float
-            statistical value
-incl_score : float
-             statistical value
- 
-"""
-
-
 class IrredundantSystem():
+    """
+     Class represents a solution of a minimization problem with a single output -
+     called irredundant system.
+    Parameters
+    ----------
+    system : array of strings
+             An array of implicants which form the solution.
+    index : int
+            An index of the solution.
+    cov_score : float
+                statistical value
+    incl_score : float
+                 statistical value
+
+    """
 
     def __init__(self, context, system, index):
         self.context = context
@@ -1774,45 +1785,42 @@ class MultiValueMinterm:
                                  self.coverage.union(other.coverage))
 
 
-"""
-Class which refers to the prime implicant generated from 
-multi-output data and its properties and relations to the outputs.
-Parameters 
- ----------
- 
- context : object
-           An object from the original OptimizationContext class 
-           to which the implacant refers.
-           It contains the original data, output_lables, 
-           input_labels etc...
-              
- implicant : array of sets of numbers
-            Each set corresponds to one input variabel. 
-                
- raw_implicant  : an array of sets of numbers
-                  An arrbitrary representation of an implicant containing 
-                  some additional information.
-  
- coverage : set of numbers
-            The set  of the indexes of the rows from the original data, 
-            which are covered by the implicant.
- 
- outputs : array of integers
-           The numbers represent the indexes of the corresponding outputs.  
-     
- output_labels : array of strings
-                 The array contains the output labels.
-  
- cov_u : float
-      statistic value
-  
- incl_score : float
-      statistical value   
-                     
-"""
-
-
 class ImplicantMultiOutput:
+    """
+    Class which refers to the prime implicant generated from
+    multi-output data and its properties and relations to the outputs.
+    Parameters
+     ----------
+     context : object
+               An object of the OptimizationContext class
+               to which the implacant refers.
+               It contains the original data, output_lables,
+               input_labels etc...
+
+     implicant : array of sets of numbers
+                Each set corresponds to one input variable.
+
+     raw_implicant : an array of sets of numbers
+                      An arrbitrary representation of an implicant containing
+                      some additional information.
+
+     coverage : set of numbers
+                The set  of the indexes of the original data,
+                which are covered by the implicant.
+
+     outputs : array of integers
+               The numbers represent the indexes of the corresponding outputs.
+
+     output_labels : array of strings
+                     The array contains the output labels.
+
+     cov_u : float
+          statistical value
+
+     incl_score : float
+          statistical value
+
+    """
 
     def __init__(self,
                  context,
@@ -1910,41 +1918,35 @@ class ImplicantMultiOutput:
                 else 0.0, axis=1).sum()
         return self.incl_score
 
-
-"""
-A class which refers to a prime implicant and its properties.
- Parameters 
- ----------
- 
- context : object
-           An object from the original OptimizationContext class 
-           to which the implacant refers.
-           It contains the original data, output_labels, 
-           input_labels etc...
-              
- implicant : array of sets of numbers
-            Each set corresponds to one input variabels. 
-                
-  raw_implicant  : an array of sets of number
-                   An arrbitrary representation of an implicant containing 
-                   some additional information.
-                  
-  
-  
-  coverage : set of numbers
-             The set  of the indexes of the rows from the original data, 
-             which are covered by the implicant.
-  
-  cov_u : float
-      statistic value
-  
-  incl_score : float
-      statistical value   
-                     
-"""
-
-
 class Implicant:
+    """
+     Class Implicant  refers to a prime implicant and its properties.
+     Parameters
+     ----------
+     context : object
+               An object of the  OptimizationContext class
+               to which the implacant refers.
+               It contains the original data, output_labels,
+               input_labels etc...
+
+     implicant : array of sets of numbers
+                Each set corresponds to one input variabels.
+
+      raw_implicant  : an array of sets of number
+                       An arrbitrary representation of an implicant containing
+                       some additional information.
+
+      coverage : set of numbers
+                 The set  of the indexes of the original data,
+                 which are covered by the implicant.
+
+      cov_u : float
+          statistical value
+
+      incl_score : float
+          statistical value
+
+    """
 
     def __init__(self,
                  context,
@@ -1966,6 +1968,11 @@ class Implicant:
         return str(self)
 
     def coverage_score(self):
+        '''
+        Return:
+            Float value, representing the proportion of positive minterms
+            covered by the implicant.
+        '''
         data = self.context.data
         input_columns = self.context.input_data.columns
         output_column = self.context.output_labels[0]
@@ -1983,6 +1990,11 @@ class Implicant:
         return self.cov_score
 
     def inclusion_score(self):
+        '''
+        Return:
+        Float value, representing the proportion of  positive minterms
+        covered by the implicant to the all minterms covered by the implicant.
+        '''
         data = self.context.data
         input_columns = self.context.input_data.columns
         output_column = self.context.output_labels[0]
