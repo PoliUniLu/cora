@@ -1,5 +1,5 @@
 ---
-title: '`CORA`: A Python Package for Combinational Regularity Analysis'
+title: '`CORA` and `LOGIGRAM`: Python Packages for Combinational Regularity Analysis (CORA)'
 tags:
   - Python
   - configurational comparative method
