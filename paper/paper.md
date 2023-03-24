@@ -29,7 +29,7 @@ bibliography: paper.bib
 
 # Summary 
 
-Combinational Regularity Analysis (CORA) [@thiem_et_al_2022] is a new member of the family of configurational comparative methods (CCMs). The most sophisticated CCMs infer INUS structures from sets of configurational data [@thiem_2022a]. CORA generalizes the capabilities of existing CCMs. By means of Boolean optimization algorithms for multi-output data, CORA can infer INUS structures that include complex conjunctive effects. The accompanying and eponymous package `CORA` is an open-source Python tool, hosted on GitHub and deployed on the Google Colab platform, with which such structures can be identified.
+Combinational Regularity Analysis (CORA) [@thiem_et_al_2022] is a new member of the family of configurational comparative methods (CCMs). The most sophisticated CCMs infer INUS structures from configurational data [@thiem_2022a]. CORA generalizes the capabilities of existing CCMs. By means of Boolean optimization algorithms for multi-output data, CORA can infer INUS structures that include complex conjunctive effects. The eponymous package `CORA` is an open-source Python tool, hosted on GitHub and deployed on the Google Colab platform, with which such structures can be identified. In addition, the `LOGIGRAM` package provides functionality for generating logic diagrams to `CORA`.
 
 # Statement of need
 
@@ -37,7 +37,7 @@ Modern CCMs can infer regularity-theoretic causal structures from categorical da
 
 So far, the two most sophisticated CCMs have been Qualitative Comparative Analysis (QCA) [@ragin_1987] and Coincidence Analysis (CNA) [@baumgartner_2009]. For QCA, several software packages exist, each with different functionality [@cronqvist_2019; @dusa_2022; @ragin_davey_2019; @thiem_2018]. However, since there is no harmonization of procedures in QCA, different software packages often generate very different results despite identical data input and parameter settings [@thiem_dusa_2013]. For CNA, the `cna` package is available [@ambuhl_baumgartner_2022].
 
-QCA and CNA can analyze single outputs only. Although CNA has been built for analyses with multiple outputs, its algorithm has to process each output one after another. Many scientific research problems, however, require the simultaneous analysis of multiple effects, such as analyses of multimorbidity [@suls_green_2019]. CORA offers a solution. It generalizes QCA and CNA by allowing the simultaneous analyses of multiple outputs, and can therefore discover more complex INUS structures. To this end, CORA implements adaptations of optimization algorithms originally developed for the design of multi-output switching circuits. In addition, CORA offers a systematic possibility to mine configurational data. Last, but not least, with CORA, researchers can draw on logic diagrams to communicate their results. The software tool `CORA` implements the eponymous method and all aforementioned features.
+QCA and CNA can analyze single outputs only. Although CNA has been built for analyses with multiple outputs, its algorithm has to process each output one after another. Many scientific research problems, however, require the simultaneous analysis of multiple effects, such as analyses of multimorbidity [@suls_green_2019]. CORA offers a solution. It generalizes QCA and CNA by allowing the simultaneous analyses of multiple outputs, even for multi-value data [@mkrtchyan_et_al_2023], and can therefore discover more complex INUS structures. To this end, CORA implements adaptations of optimization algorithms originally developed for the design of multi-output switching circuits. In addition, CORA offers a systematic possibility to mine configurational data. Last, but not least, with CORA, researchers can draw on logic diagrams to communicate their results. The software tool `CORA`, together with the `LOGIGRAM` module, implement the eponymous method and all aforementioned features.
 
 # Functionality and design 
 
@@ -55,7 +55,7 @@ The user interface of CORA's Colab notebook is shown in Figure <a href="#fig:no
 
 # Graphics 
 
-Logic diagrams are graphical representations of Boolean-algebraic functions that have so far almost exclusively been used in electrical engineering. Over the last 10 years, however, scientists from other disciplines have begun to discover the utility of logic diagrams [@delorenzo_schmidt_2018; @pearl_2009; @thiem_et_al_2020]. The `LOGIGRAM` package in `CORA` is an interactive tool for the standardized production of two-level logic diagrams, called "logigrams" in CORA. Two examples of a logigram, including the interface through which they are produced, are plotted in Figure <a href="#fig:logigrams" data-reference-type="ref" data-reference="fig:logigrams">3</a> for a binary (left) and a multi-value system (right), respectively.
+Logic diagrams are graphical representations of Boolean-algebraic functions that have so far almost exclusively been used in electrical engineering [@thiem_et_al_2023]. Over the last 10 years, however, scientists from other disciplines have begun to discover the utility of logic diagrams [@delorenzo_schmidt_2018; @pearl_2009; @thiem_et_al_2020]. The `LOGIGRAM` package in `CORA` is an interactive tool for the standardized production of two-level logic diagrams, called "logigrams" in CORA. Two examples of a logigram, including the interface through which they are produced, are plotted in Figure <a href="#fig:logigrams" data-reference-type="ref" data-reference="fig:logigrams">3</a> for a binary (left) and a multi-value system (right), respectively.
 
 ![Logigrams for system of binary (left panel) and multi-valued functions (right panel).\label{fig:logigrams}](schemes.png)
 
@@ -67,11 +67,12 @@ Future work on `CORA` aims to explore several different directions. We list them
 
 -   So far, `CORA` offers two exact optimization algorithms. At least one heuristic algorithm will be added. Heuristic algorithms are not guaranteed to find a global optimum, but they can handle larger data sets.
 
+-   The `LOGIGRAM` module will receive further functionality.
+
 -   For both exact and heuristic algorithms, we aim to implement procedures for sequential circuit analysis. In sequential circuit analysis, the order in which variables of interest occur matters.
 
 -   Currently, data-mining is only implemented for inputs. A maximally objective analysis would also allow for data-mining on the side of outputs.
 
--   The `LOGIGRAM` module will receive further functionality.
 
 # Requirements
 
