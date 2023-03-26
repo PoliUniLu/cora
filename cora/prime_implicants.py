@@ -17,7 +17,6 @@ from .multiply import transform_to_raw_implicant
 from .draft_cubes import find_implicants_cubes, transform_to_raw_imp
 from .essential import get_essential_implicants, transform_to_raw_impl, \
     reduce_the_onset
-from .boom_1 import best_literals
 COLUMN_LABELS = list(string.ascii_uppercase) + ["AA", "BB", "CC", "DD",
                                                 "EE", "FF"]
 OUTPUT_PATTERN = re.compile("^([a-zA-Z0-9]+)\{([0-9]+(,[0-9]+)*)\}$")
