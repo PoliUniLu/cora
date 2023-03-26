@@ -3,7 +3,7 @@ from native_petric import petric
 import sys
 
 
-def find_irredundant_sums_native(implicants_with_coverage, coverage):
+def _find_irredundant_sums_native(implicants_with_coverage, coverage):
     
     petric_input  = [x[1] for x in implicants_with_coverage]
     #print('Petric called with {} immplicants'.format(len(petric_input)))
@@ -19,24 +19,24 @@ def find_irredundant_sums_native(implicants_with_coverage, coverage):
     
     
 
-def find_irredundant_sums(implicants_with_coverage, coverage, max_depth = None):
+def _find_irredundant_sums(implicants_with_coverage, coverage, max_depth = None):
 	if max_depth is None:
 		max_depth = len(implicants_with_coverage)
 
 	results = []
-	find_irrendundant_sums_internal(implicants_with_coverage, [],
-		                                      set(), len(coverage), results,
-		                                      max_depth)
+	_find_irrendundant_sums_internal(implicants_with_coverage, [],
+									 set(), len(coverage), results,
+									 max_depth)
 	return results
 
-def find_irrendundant_sums_internal(implicants_with_coverage, partial_solution, 
-	                                coverage, to_cover, all_solutions, max_depth):
+def _find_irrendundant_sums_internal(implicants_with_coverage, partial_solution,
+									 coverage, to_cover, all_solutions, max_depth):
 
 	# If we reached maximal depth / maximal length of the sum, do not continue.
 	if len(partial_solution) > max_depth:
 		return
 
-	if not is_irredundant_sum(partial_solution, coverage):
+	if not _is_irredundant_sum(partial_solution, coverage):
 			return
 
 	# If the coverage is empty, this means the partial solution already covers everything.
@@ -53,14 +53,14 @@ def find_irrendundant_sums_internal(implicants_with_coverage, partial_solution,
 		                  for j in range(len(implicants_with_coverage)) 
 		                  if j > i]
 		new_coverage = coverage.union(imp_coverage)
-		find_irrendundant_sums_internal(new_implicants,
-			                            new_partial_solution,
-			                            new_coverage,
-			                            to_cover,
-			                            all_solutions,
-			                            max_depth)
+		_find_irrendundant_sums_internal(new_implicants,
+										 new_partial_solution,
+										 new_coverage,
+										 to_cover,
+										 all_solutions,
+										 max_depth)
 
-def is_irredundant_sum(partial_solution_with_coverage, coverage):
+def _is_irredundant_sum(partial_solution_with_coverage, coverage):
 	coverage_counts = {k:0 for k in coverage}
 	for imp, imp_coverage in partial_solution_with_coverage:
 		for x in imp_coverage:
@@ -72,7 +72,7 @@ def is_irredundant_sum(partial_solution_with_coverage, coverage):
 
 
 
-def implicants_coverage(pi_chart):
+def _implicants_coverage(pi_chart):
   final_res=[]
   coverage=set()
   for i,row in enumerate(pi_chart.index):
@@ -87,7 +87,7 @@ def implicants_coverage(pi_chart):
 
 
 
-def boolean_multiply(x, y):
+def _boolean_multiply(x, y):
     assert(isinstance(x,set))
     assert(isinstance(y,set))
     res = set()

@@ -31,7 +31,7 @@ class KnownValues(unittest.TestCase):
     
     def test_petric_function(self):
         for implicants, coverage,irr_sums in self.known_values:
-            result=cora.find_irredundant_sums(implicants,coverage)
+            result=cora._find_irredundant_sums(implicants, coverage)
             self.assertEqual(irr_sums,result)
 
 
@@ -61,7 +61,7 @@ class KnownValues(unittest.TestCase):
 
     def test_petric_function(self):
         for implicants, coverage in self.known_values:
-            result = cora.find_irredundant_sums(implicants, coverage)
+            result = cora._find_irredundant_sums(implicants, coverage)
             self.assertEqual(76, len(result))
 if __name__ == '__main__':
     unittest.main()

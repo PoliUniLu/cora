@@ -21,7 +21,7 @@ class ValuedVariable:
 
 
 
-def get_levels(data, outputs,inputs):
+def _get_levels(data, outputs, inputs):
       inputs = data.drop(outputs,axis=1)
       if len(inputs) == 1:
           dim_corrected = [inputs.iloc[:,0].values]
@@ -38,7 +38,7 @@ def get_levels(data, outputs,inputs):
       levels =  [len(x) for x in dim_corrected]
       return levels
 
-def initialze_minterms(levels):
+def _initialze_minterms(levels):
     l= len(levels)
     res = []
     for ind,el in enumerate(levels):
@@ -50,7 +50,7 @@ def initialze_minterms(levels):
 
     return res
 
-def is_an_impicant(data,output,inputs,combination):
+def _is_an_impicant(data, output, inputs, combination):
      tmp_onset = data[data[output[0]] == 1]
      onset = tmp_onset[inputs]
      tmp_offset = data[data[output[0]] == 0]
@@ -73,14 +73,14 @@ def is_an_impicant(data,output,inputs,combination):
             )
 
 from collections import deque
-def minterm_value(m1):
+def _minterm_value(m1):
     s1 = 0
     for ind,el in enumerate(m1):
         if el != -1:
             s1=s1+ind+1
     return s1       
        
-def merge_minterms(m1,m2):
+def _merge_minterms(m1, m2):
     res = []
     for ind,el in enumerate(m1):
         if el == -1:
@@ -92,7 +92,7 @@ def merge_minterms(m1,m2):
                 res.append(m1[ind]+m2[ind])
     return res
 
-def extend_minterm(m1,levels):
+def _extend_minterm(m1, levels):
     res = []
     ldv = max(i for i,v in enumerate(m1) if v > -1)
     # We need to switch variables starting from ldv+1 
@@ -107,31 +107,31 @@ def extend_minterm(m1,levels):
         res.extend(extentions)
     return res
         
-def find_implicants_cubes(data,outputs,inputs):
-    levels = get_levels(data,outputs,inputs)
-    minterms_inputs = initialze_minterms(levels)
+def _find_implicants_cubes(data, outputs, inputs):
+    levels = _get_levels(data, outputs, inputs)
+    minterms_inputs = _initialze_minterms(levels)
     q = deque(minterms_inputs)
     res = []
     while len(q) >  0:
 
         x = q.popleft()
-        if any(implicant_includes(imp,x) for imp in res):
+        if any(_implicant_includes(imp, x) for imp in res):
             continue
-        elif is_an_impicant(data,outputs,inputs,x):
+        elif _is_an_impicant(data, outputs, inputs, x):
             res.append(x)
         else:
-            q.extend(extend_minterm(x,levels))
+            q.extend(_extend_minterm(x, levels))
 
     return res
 
     
-def implicant_includes(x,y):
+def _implicant_includes(x, y):
     # Implicant x includes y
     return all(i == j or i == -1 for i,j in zip(x,y))
 
 
 
-def transform_to_raw_imp(impl, levels):
+def _transform_to_raw_imp(impl, levels):
     s = {(ValuedVariable(i, v) 
                         ) for i,v in enumerate(impl)
                         if v != -1}
@@ -140,15 +140,15 @@ def transform_to_raw_imp(impl, levels):
         res[x._ident] = frozenset([x._val])
     return tuple(res)
 
-def minterm_to_str(minterm, levels, labels, tag,multi_output):
+def _minterm_to_str(minterm, levels, labels, tag, multi_output):
     is_multi_level = any(x > 2 for x in levels)
-    tmp = [set_to_str(x, y, z, is_multi_level) for x,y,z in
+    tmp = [_set_to_str(x, y, z, is_multi_level) for x,y,z in
            zip(minterm, levels, labels)]
     res = '{}'.format('*'.join(x for x in tmp if x != ''))
     
     return res if res != '' else '1'
 
-def set_to_str(s,levels,label, is_multi_level):
+def _set_to_str(s, levels, label, is_multi_level):
     if len(s) == levels:
         return ''
 

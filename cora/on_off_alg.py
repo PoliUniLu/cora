@@ -3,7 +3,7 @@ import numpy as np
 from collections import defaultdict
 
 
-from .multiply import bool_multiply
+from .multiply import _bool_multiply
 
 class MultiValueMintermOn:
     
@@ -29,7 +29,7 @@ class MultiValueMintermOn:
     def __hash__(self):
         return hash((self.minterm, self.coverage))
         
-    def can_be_reduced(self,other):
+    def _can_be_reduced(self,other):
         n = len(self.minterm)
         diff = 0
         for i in range(0,n):
@@ -41,8 +41,8 @@ class MultiValueMintermOn:
         else:
             return(False)
       
-    def reduce(self, other):
-        if not self.can_be_reduced(other):
+    def _reduce(self, other):
+        if not self._can_be_reduced(other):
             return None
   
         n = len(self.minterm)
@@ -57,7 +57,7 @@ class MultiValueMintermOn:
 
         
     
-    def reduce_with_off_set(self, off_matrix):
+    def _reduce_with_off_set(self, off_matrix):
         res = []       
         for ind,elm in enumerate(off_matrix.data):
 
@@ -102,8 +102,8 @@ class OnOffReductionMatrix:
                         continue
                     m1 = self.matrix[i]
                     m2 = self.matrix[j]
-                    if m1.can_be_reduced(m2):
-                        new_matrix.append(m1.reduce(m2))
+                    if m1._can_be_reduced(m2):
+                        new_matrix.append(m1._reduce(m2))
                         any_reduction = True
                         used[i] = True
                         used[j] = True
@@ -137,7 +137,7 @@ class MultiValueOffMatrix:
    
         
    
-def set_labels(term_object,labels):
+def _set_labels(term_object, labels):
     implicant = []
     for i,j in zip(term_object[0],labels):
         if i == int(-1):
@@ -152,9 +152,7 @@ def set_labels(term_object,labels):
 
 
 
-def on_off_grouping(table, output, multi_output = False):
-    
-
+def _on_off_grouping(table, output, multi_output = False):
     data_positive =table[table[output] == 1]
     inputs =  [x for x in table.columns if x!= output]
     data_on =  np.array(data_positive[inputs])
@@ -169,7 +167,7 @@ def on_off_grouping(table, output, multi_output = False):
       
     return onset, offset
 
-def prepare_m_for_bool_multiply(m_in):
+def _prepare_m_for_bool_multiply(m_in):
     if len(m_in) == 0:
         raise RuntimeError()
     coverage = m_in[0].coverage
@@ -177,20 +175,20 @@ def prepare_m_for_bool_multiply(m_in):
     return coverage, m
     
 
-def reduction(onset, offset):
+def _reduction(onset, offset):
     on_off_matrixes = []
     for minterm in onset:
         on_off_matrixes.append(OnOffReductionMatrix(
     
-                                    minterm.reduce_with_off_set(offset)))        
+                                    minterm._reduce_with_off_set(offset)))
     
     imp_cov_dict = defaultdict(lambda: set())
     
     for matrix in on_off_matrixes:
         reduced_matrix = matrix.reduction()
  
-        coverage,m = prepare_m_for_bool_multiply(reduced_matrix)
-        res = bool_multiply(m)
+        coverage,m = _prepare_m_for_bool_multiply(reduced_matrix)
+        res = _bool_multiply(m)
         
         
         for imp in res:

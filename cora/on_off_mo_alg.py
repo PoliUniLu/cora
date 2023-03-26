@@ -2,8 +2,8 @@ from collections import defaultdict
 import pandas as pd
 import numpy as np
 
-from .on_off_alg import MultiValueMintermOn, OnOffReductionMatrix, bool_multiply
-from .multiply import transform_to_raw_implicant
+from .on_off_alg import MultiValueMintermOn, OnOffReductionMatrix, _bool_multiply
+from .multiply import _transform_to_raw_implicant
 
     
 class MultiValueMintermOnMo(MultiValueMintermOn):
@@ -34,11 +34,11 @@ class MultiValueMintermOnMo(MultiValueMintermOn):
         return hash((self.minterm, self.coverage, self.tag))
     
      
-    def can_be_reduced(self,other):
-        return self.tag == other.tag and super().can_be_reduced(other)
+    def _can_be_reduced(self,other):
+        return self.tag == other.tag and super()._can_be_reduced(other)
     
-    def reduce(self, other):
-        tmp = super().reduce(other)
+    def _reduce(self, other):
+        tmp = super()._reduce(other)
         return MultiValueMintermOnMo(tmp.minterm, tmp.coverage, self.tag)
      
     def reduce_with_off_set(self, off_matrix):
@@ -151,7 +151,7 @@ def reduction_mo(onset, offset):
                                 if any(x > 0 and y > 0 for x,y in zip(current_tag, mt.tag))]
             
    
-            b_m = bool_multiply([x.minterm for x in current_minterms])
+            b_m = _bool_multiply([x.minterm for x in current_minterms])
             tag_imp_dict[tuple([x for x in reversed(current_tag)])].extend(b_m)
             
        

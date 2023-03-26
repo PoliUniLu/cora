@@ -10,13 +10,13 @@ import string
 import re
 from collections import defaultdict
 
-from .petric import find_irredundant_sums_native, boolean_multiply
-from .on_off_alg import on_off_grouping, reduction
+from .petric import _find_irredundant_sums_native, _boolean_multiply
+from .on_off_alg import _on_off_grouping, _reduction
 from .on_off_mo_alg import on_off_grouping_mo, reduction_mo
-from .multiply import transform_to_raw_implicant
-from .draft_cubes import find_implicants_cubes, transform_to_raw_imp
-from .essential import get_essential_implicants, transform_to_raw_impl, \
-    reduce_the_onset
+from .multiply import _transform_to_raw_implicant
+from .draft_cubes import _find_implicants_cubes, _transform_to_raw_imp
+from .essential import get_essential_implicants, _transform_to_raw_impl, \
+    _reduce_the_onset
 COLUMN_LABELS = list(string.ascii_uppercase) + ["AA", "BB", "CC", "DD",
                                                 "EE", "FF"]
 OUTPUT_PATTERN = re.compile("^([a-zA-Z0-9]+)\{([0-9]+(,[0-9]+)*)\}$")
@@ -742,7 +742,7 @@ class OptimizationContext:
             for tag, implicants in impl_dict.items():
 
                 for im in implicants:
-                    raw_im = transform_to_raw_implicant(im, self.levels)
+                    raw_im = _transform_to_raw_implicant(im, self.levels)
                     o_tag = self._output_coverage_of_pi(raw_im)
 
                     cov = frozenset([int(x) for x in
@@ -796,11 +796,11 @@ class OptimizationContext:
                                                   self.output_labels[0],
                                                   self.levels)
             if len(essentials) > 0:
-                cov_essentials = reduce_the_onset(essentials,
-                                                  self.preprocessed_data,
-                                                  self.output_labels[0])
+                cov_essentials = _reduce_the_onset(essentials,
+                                                   self.preprocessed_data,
+                                                   self.output_labels[0])
                 for impl, cov in zip(essentials, cov_essentials):
-                    raw_i = transform_to_raw_impl(impl, self.levels)
+                    raw_i = _transform_to_raw_impl(impl, self.levels)
 
                     prime_implicants.append(Implicant(
                         self,
@@ -815,17 +815,17 @@ class OptimizationContext:
                         cov_essentials) > 0 else set()
                     data_reduced = self.preprocessed_data.drop(reduced_indexes,
                                                                inplace=False)
-                    onset, offset = on_off_grouping(data_reduced,
-                                                    self.output_labels[0],
-                                                    self.multi_output)
+                    onset, offset = _on_off_grouping(data_reduced,
+                                                     self.output_labels[0],
+                                                     self.multi_output)
             else:
-                onset, offset = on_off_grouping(self.preprocessed_data,
-                                                self.output_labels[0],
-                                                self.multi_output)
-            impl_dict = reduction(onset, offset)
+                onset, offset = _on_off_grouping(self.preprocessed_data,
+                                                 self.output_labels[0],
+                                                 self.multi_output)
+            impl_dict = _reduction(onset, offset)
 
             for impl, cov in impl_dict.items():
-                raw_i = transform_to_raw_implicant(impl, self.levels)
+                raw_i = _transform_to_raw_implicant(impl, self.levels)
 
                 prime_implicants.append(Implicant(
                     self,
@@ -995,11 +995,11 @@ class OptimizationContext:
             raise RuntimeError("irredudant sums are not supported in multi\
                          output mode. Use get_irredundant_systems")
 
-        result = find_irredundant_sums_native(([(i, i.coverage)
-                                                for i in prime_implicants]),
-                                              self.cares
+        result = _find_irredundant_sums_native(([(i, i.coverage)
+                                                 for i in prime_implicants]),
+                                               self.cares
 
-                                              )
+                                               )
         irredundant_objects = []
         for i, system in enumerate(result):
             irredundant_objects.append(IrredundantSystem(
@@ -1159,7 +1159,7 @@ class OptimizationContext:
 
         mult_input = [set(frozenset(imp for imp in irs) for irs in f) for f in
                       res]
-        reduction_result = reduce(boolean_multiply, mult_input)
+        reduction_result = reduce(_boolean_multiply, mult_input)
         res = []
         index = 0
         for r in reduction_result:
@@ -1187,9 +1187,9 @@ class OptimizationContext:
         res = []
         for k, system in enumerate(imp_per_output):
             coverage = set().union(*[set(i[1].coverage) for i in system])
-            result = find_irredundant_sums_native(([(i, impl.coverage)
-                                                    for i, impl in system]),
-                                                  coverage)
+            result = _find_irredundant_sums_native(([(i, impl.coverage)
+                                                     for i, impl in system]),
+                                                   coverage)
             irredundant_objects = []
             for i, system in enumerate(result):
                 irredundant_objects.append(IrredundantSystem(self,

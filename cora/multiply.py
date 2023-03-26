@@ -18,7 +18,7 @@ class ValuedVariable:
     def __repr__(self):
         return str(self)
 
-def bool_multiply(m):
+def _bool_multiply(m):
     sets_to_multiply = []
     for row in m:
         s = {frozenset([ValuedVariable(i, v) 
@@ -44,7 +44,7 @@ def bool_multiply(m):
         res = tmp_res
     return res
 
-def transform_to_raw_implicant(impl, levels):
+def _transform_to_raw_implicant(impl, levels):
     res = [frozenset(range(i)) for i in levels]
     for x in impl:
         res[x._ident] = frozenset([x._val])
