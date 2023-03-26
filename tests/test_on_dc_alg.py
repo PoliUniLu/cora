@@ -63,7 +63,7 @@ class OptimizationContext_tests(unittest.TestCase):
 
             }
         expected_result = pd.DataFrame.from_dict(expected_cols)
-        expected_result.astype({'Inc_O': 'float64','Inc_P': 'float64',''
+        expected_result = expected_result.astype({'Inc_O': 'float64','Inc_P': 'float64',''
                                 'O':'int64','P':'int64'})
         pd.testing.assert_frame_equal(result, expected_result)
 

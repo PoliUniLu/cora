@@ -488,8 +488,7 @@ class OptimizationContext:
             convert_dict[col]='float64'
         for col in self.output_labels:
             convert_dict[col]='int64'
-        self.preprocessed_data_raw = res
-        self.preprocessed_data_raw.astype(convert_dict)
+        self.preprocessed_data_raw = res.astype(convert_dict)
         self.preprocessed_data = res[[x for x in self.input_labels]
                                      + self.output_labels]
         self.preprocessing = True
