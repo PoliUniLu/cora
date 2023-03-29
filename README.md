@@ -7,11 +7,11 @@ CORA is a Python library for **Combinational Regularity Analysis** (CORA).
 
 ## Description
 
-Combinational Regularity Analysis (CORA) is a member of the family of Configurational Comparative Methods (CCMs; Thiem *et al*. 2022). It is thus closely related to Qualitative Comparative Analysis (QCA; Ragin 1987) and Coincidence Analysis (CNA; Baumgartner 2009; Baumgartner and Ambühl 2020). Modern CCMs seek to detect INUS structures in data (Thiem 2017, 2022). Such structures are specific cause-effect relations that can be represented in the Boolean language of propositional logic (Baumgartner 2008; Mackie 1965; Psillos 2009). Most importantly, these relations are marked by causal conjunctivity (e.g., *a* **and** **not** *b* **and** *c* **and** $\cdots$) and causal disjunctivity (e.g., *d* **or** *e* **or** *f* **or** $\cdots$). For this reason, CCMs differ fundamentally from most other empirical research methods (Thiem *et al*. 2016).
+Combinational Regularity Analysis (CORA) is a member of the family of Configurational Comparative Methods (CCMs; Thiem *et al*. 2022). It is thus closely related to Qualitative Comparative Analysis (QCA; Ragin 1987) and Coincidence Analysis (CNA; Baumgartner 2009; Baumgartner and Ambühl 2020). Modern CCMs seek to detect INUS structures in data (Thiem 2017, 2022). Such structures are elaborate cause-effect relations that can be represented in the Boolean language of propositional logic (Baumgartner 2008; Mackie 1965; Psillos 2009). Most importantly, these relations are marked by causal conjunctivity (e.g., *a* **and** **not** *b* **and** *c* **and** $\cdots$) and causal disjunctivity (e.g., *d* **or** *e* **or** *f* **or** $\cdots$). For this reason, CCMs differ fundamentally from most other empirical research methods (Thiem *et al*. 2016).
 
 In contrast to QCA and CNA, however, CORA has been inspired by switching circuit analysis, a subfield of electrical engineering. INUS structures and switching circuits have much in common because propositional logic - the language of INUS causation - and switching algebra - the language of switching circuit analysis - are operationally equivalent branches of the same underlying Boolean algebra (Lewin and Protheroe 1992). It is therefore no coincidence that one of the first systematic algorithms for Boolean optimization - the Quine-McCluskey algorithm (McCluskey 1956; Quine 1955) - had been co-developed by an analytical philosopher (Willard Van Orman Quine) and an electrical engineer (Edward J. McCluskey).
 
-Most importantly, CORA is currently the only CCM able to analyze INUS structures that simultaneously feature simple as well as conjunctively complex effects (e.g., *y* **and** **not** *z*, **not** *y* **and** *z*, *y* **and** *z*). CORA can process such structures even in multi-value form (Mkrtchyan *et al*. 2023). In addition, CORA offers a configurational version of Occam's Razor: a data-mining approach to solution building that reduces model ambiguities by keeping the number of required variables for finding a solution at a minimum. Lastly, CORA includes a lean yet powerful visualization module called LOGIGRAM, with which two-level logic diagrams can be produced from any (system of) Boolean function(s) in disjunctive normal form (Thiem *et al*. 2023).
+Most importantly, CORA is currently the only CCM able to analyze INUS structures that simultaneously feature simple as well as complex effects (e.g., *y* **and** **not** *z*, **not** *y* **and** *z*, *y* **and** *z*). CORA can process such structures even in multi-value form (Mkrtchyan *et al*. 2023). In addition, CORA offers a configurational version of Occam's Razor: a data-mining approach to solution building that reduces model ambiguities by keeping the number of required variables for finding a solution at a minimum. Lastly, CORA includes a lean yet powerful visualization module called LOGIGRAM, with which two-level logic diagrams can be produced from any (system of) Boolean or multi-value function(s) in disjunctive normal form. Logic diagrams considerably outperfrom Venn diagrams, which are standardly used in QCA, when it comes to the visualization and interpretability of INUS structures (Thiem *et al*. 2023).
 
 ## Installation
 
@@ -34,7 +34,7 @@ The main features of the package are part of the `OptimizationContext` class, in
 - `get_prime_implicants`,
 - `prime_implicant_chart`,
 - `get_irredundant_systems`,
-- `get_irredundat_solutions`.
+- `get_irredundant_solutions`.
 
 ***Note:***
 Use the `help` function to access the documentation of CORA.
@@ -51,9 +51,9 @@ df = pd.DataFrame([[1,1,0,1],
 
 context = OptimizationContext(data = df, output_labels = ["OUT"])
 PIs = context.get_prime_implicants() #result: (B, c, #a)
-irredundant_solutions =  context.get_irredundant_sums() # result: [M1: #a + B, M2: #a + c]
+irredundant_solutions = context.get_irredundant_sums() # result: [M1: #a + B, M2: #a + c]
 ```
-The data-mining approach in searching for solutions is another feature of the package.
+The data-mining approach that searches for feasible tuples of solution-generating inputs is another feature of the package.
 
 **Example:**
 ```python
@@ -86,9 +86,11 @@ To access more examples see the `/examples` folder or follow [![Open in Colab](h
 When using CORA (method and software), please cite it as follows:
 
 **Method:**
+
 Thiem, Alrik, Lusine Mkrtchyan, and Zuzana Sebechlebská. 2022. "Combinational Regularity Analysis (CORA) - A New Method for Uncovering Complex Causation in Medical and Health Research." *BMC Medical Research Methodology*  **22** (1):333. [Link](http://dx.doi.org/10.1186/s12874-022-01800-9)
 
 **Software:**
+
 Sebechlebská, Zuzana, Lusine Mkrtchyan and Alrik Thiem. 2022. CORA: A Python package for Combinational Regularity Analysis, Version <*current version number*>. Available from: https://github.com/PoliUniLu/cora.
 
 
