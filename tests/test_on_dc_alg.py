@@ -258,6 +258,29 @@ class OptimizationContext_tests(unittest.TestCase):
             }
             expected_result = pd.DataFrame.from_dict(expected_cols)
             pd.testing.assert_frame_equal(result, expected_result)
+    def test_sol_data_frame(self):
+            opt_context = OptimizationContext(
+                pd.DataFrame(data=[[1, 0, 1, 1, 1],
+                                   [1, 0, 1, 2, 1],
+                                   [1, 1, 1, 1, 2],
+                                   [1, 1, 1, 1, 2],
+                                   [0, 1, 0, 1, 0],
+                                   [0, 1, 0, 1, 1],
+                                   [1, 1, 1, 1, 0],
+                                   [1, 0, 1, 1, 0],
+                                   [0 ,1 ,0 ,2, 2]],
+                             columns=["A", "B",
+                                      "C", "X","Y"]),
+                ["X{1}","Y{1,2}"])
+            expected_cols = {
+             'B*C' : [0, 0, 1, 0],
+             'A*B':[1, 0, 0, 0],
+             'Output':['X{1}','Y{1, 2}','X{1}','Y{1, 2}'],
+             'System':['1', '1', '2', '2']
+             }
+            expected_result = pd.DataFrame.from_dict(expected_cols)
+            result = opt_context.get_solution_dataframe()
+            pd.testing.assert_frame_equal(result, expected_result)
 
 
 if __name__ == '__main__':

@@ -1267,7 +1267,8 @@ class OptimizationContext:
             df = pd.DataFrame(data, range(n_rows),
                               [i.implicant for i in prime_implicants])
 
-            out_strings = [str(i + 1) for i in range(l)]
+            #out_strings = [str(i + 1) for i in range(l)]
+            out_strings=self.output_labels_final
             df["Output"] = out_strings * len(solutions)
             tmp = []
             for i in range(len(solutions)):
@@ -1389,7 +1390,6 @@ class IrredundantSystemsMulti():
 
     def sort_implicants(self):
         implicants = self.unique_implicants()
-        print("here_unique:{}".format(implicants))
         res = defaultdict(list)
 
         for imp1 in implicants:
@@ -1403,7 +1403,6 @@ class IrredundantSystemsMulti():
                       and set(imp1.outputs) == set(imp2.outputs)
                       and imp1 != imp2):
                     res[imp1].append(imp2)
-        print("Res:{}".format(res))
         return res
 
     def impl_cov_score(self):
@@ -1420,34 +1419,25 @@ class IrredundantSystemsMulti():
         output_columns = self.context.output_labels
         implicants = self.unique_implicants()
         sorted_implicants = self.sort_implicants()
-        print("Sorted:{}".format(sorted_implicants))
 
         unique_cov = []
 
         for impl in sorted_implicants:
-            print(impl)
             tmp_data = data[input_columns]
-            print("TMP_data;{}".format(tmp_data))
             outputs = []
             for i in impl.outputs:
                 outputs.append(output_columns[i - 1])
-            print("Outputs:{}".format(outputs))
             mask = data.apply(lambda row_series: all(row_series[output] == 1
                                                      for output in outputs),
                               axis=1)
-            print("mask:{}".format(mask))
             tmp_positive_data = tmp_data[mask]
-            print("Pos_data:{}".format(tmp_positive_data))
             tmp = tmp_positive_data.apply(
                 lambda row_series: row_series.name if all(x in y for x, y in
                                                           zip(row_series.values,
                                                             impl.raw_implicant))
                 else np.NAN, axis=1)
             s_in = set(x for x in tmp.values if not np.isnan(x))
-            print("S_in:{}".format(s_in))
             s_out = set()
-            print("Array_sorted_impls:{}".format(sorted_implicants[impl]))
-            print(len(sorted_implicants[impl]))
             if len(sorted_implicants[impl]) > 0:
                 for imp_2 in sorted_implicants[impl]:
                     tmp2 = tmp_positive_data.apply(
@@ -1457,7 +1447,6 @@ class IrredundantSystemsMulti():
                                 imp_2.raw_implicant))
                         else np.NAN, axis=1)
                     s_out.update(set(x for x in tmp2.values if not np.isnan(x)))
-            print("S_out:{}".format(s_out))
             unique_cov.append(len(s_in - s_out) / len(tmp_positive_data.index))
 
         return {str(impl_i.implicant): coverage
