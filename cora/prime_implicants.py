@@ -1424,14 +1424,19 @@ class IrredundantSystemsMulti():
 
         for impl in sorted_implicants:
             tmp_data = data[input_columns]
-            outputs = []
-            for i in impl.outputs:
-                outputs.append(output_columns[i - 1])
-            mask = data.apply(lambda row_series: all(row_series[output] == 1
-                                                     for output in outputs),
+            outputs = dict()
+            for indx,output in enumerate(output_columns):
+                if int(indx+1) in impl.outputs:
+                    outputs[output] = 1
+                else:
+                    outputs[output] = 0
+            mask = data.apply(lambda row_series: all(row_series[key] == value
+                                                     for key , value
+                                                     in outputs.items()),
+
                               axis=1)
-            tmp_positive_data = tmp_data[mask]
-            tmp = tmp_positive_data.apply(
+            tmp_coresponding_data = tmp_data[mask]
+            tmp = tmp_coresponding_data.apply(
                 lambda row_series: row_series.name if all(x in y for x, y in
                                                           zip(row_series.values,
                                                             impl.raw_implicant))
@@ -1440,14 +1445,14 @@ class IrredundantSystemsMulti():
             s_out = set()
             if len(sorted_implicants[impl]) > 0:
                 for imp_2 in sorted_implicants[impl]:
-                    tmp2 = tmp_positive_data.apply(
+                    tmp2 = tmp_coresponding_data.apply(
                         lambda row_series: row_series.name if all(
                             x in y for x, y in
                             zip(row_series.values,
                                 imp_2.raw_implicant))
                         else np.NAN, axis=1)
                     s_out.update(set(x for x in tmp2.values if not np.isnan(x)))
-            unique_cov.append(len(s_in - s_out) / len(tmp_positive_data.index))
+            unique_cov.append(len(s_in - s_out) / len(tmp_coresponding_data.index))
 
         return {str(impl_i.implicant): coverage
                 for impl_i, coverage in zip(implicants, unique_cov)}
@@ -1887,28 +1892,27 @@ class ImplicantMultiOutput:
                 'Size of input columns ({}) does not match implicant\
                     size({})'.format(len(input_columns),
                                      len(self.raw_implicant)))
-        if len(self.outputs) == 1:
-            out = self.output_labels[0]
 
-            tmp_data = data[data[out] == 1][input_columns]
+        tmp_data = data[input_columns]
+        outputs_complex = dict()
+        for indx,output in enumerate(self.context.output_labels):
+               if int(indx+1) in self.outputs:
+                    outputs_complex[output] = 1
+               else:
+                    outputs_complex[output] = 0
+        mask = data.apply(lambda row_series: all(row_series[key] == value
+                                                     for key , value
+                                                    in outputs_complex.items()),
 
-            self.cov_score = tmp_data.apply(
-                lambda row_series: 1.0 if all(x in y for x, y in
+                                          axis=1)
+
+        tmp_data = tmp_data[mask]
+
+        self.cov_score = tmp_data.apply(
+            lambda row_series: 1.0 if all(x in y for x, y in
                                               zip(row_series.values,
                                                   self.raw_implicant))
-                else 0.0, axis=1).mean()
-
-        else:
-            tmp_data = data[data.apply(lambda row_series:
-                                       all(row_series[output] == 1
-                                           for output in self.output_labels),
-                                       axis=1)][input_columns]
-
-            self.cov_score = tmp_data.apply(
-                lambda row_series: 1.0 if all(x in y for x, y in
-                                              zip(row_series.values,
-                                                  self.raw_implicant))
-                else 0.0, axis=1).mean()
+                                    else 0.0, axis=1).mean()
         return self.cov_score
 
     def inclusion_score(self):
