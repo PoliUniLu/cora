@@ -1,17 +1,16 @@
 import unittest
-
 import pandas as pd
-import numpy as np
-
-
+import os
 from cora import OptimizationContext
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# test the Class Optimization Context
+def fpath(fname):
+    return os.path.join(THIS_DIR, fname)
 class OptimizationContext_tests(unittest.TestCase):
 
 
     def test_coverage_scores(self):
-        data = pd.read_csv('data/ansorg_2014.csv')
+        data = pd.read_csv(fpath('data/ansorg_2014.csv'))
         context = OptimizationContext(data,["INTGOV","ENGIC"],
                                       input_labels=["ECOFAIL",
                                                     "STATEFAIL",
