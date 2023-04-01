@@ -1827,7 +1827,7 @@ class ImplicantMultiOutput:
      context : object
                An object of the OptimizationContext class
                to which the implacant refers.
-               It contains the original data, output_lables,
+               It contains the original data, original output_labels
                input_labels etc...
 
      implicant : array of sets of numbers
@@ -1838,14 +1838,16 @@ class ImplicantMultiOutput:
                       some additional information.
 
      coverage : set of numbers
-                The set  of the indexes of the original data,
-                which are covered by the implicant.
+                The set  of the indexes of the truth table,
+                which are covered by the implicant. (Columns of the PI chart)
 
      outputs : array of integers
-               The numbers represent the indexes of the corresponding outputs.
+               The numbers represent the indexes of the corresponding outputs
+               to the implicant.
 
      output_labels : array of strings
-                     The array contains the output labels.
+                     The array contains the output labels corresponding to the
+                     implicant.
 
      cov_u : float
           statistical value
@@ -1981,8 +1983,8 @@ class Implicant:
                        some additional information.
 
       coverage : set of numbers
-                 The set  of the indexes of the original data,
-                 which are covered by the implicant.
+                 The set  of the indexes of the truth table,
+                 which are covered by the implicant. (Columns of PI chart.)
 
       cov_u : float
           statistical value
