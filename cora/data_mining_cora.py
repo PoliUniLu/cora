@@ -30,12 +30,13 @@ class TupleResult:
 def data_mining(data,
                 output_labels,
                 len_of_tuple,
-                case_col=None,
-                n_cut=1,
-                inc_score1=1,
-                inc_score2=None,
-                U=None,
-                algorithm="ON-DC"):
+                input_labels = None,
+                case_col = None,
+                n_cut = 1,
+                inc_score1 = 1,
+                inc_score2 = None,
+                U = None,
+                algorithm = "ON-DC"):
     '''
       Function performing data mining on a subset of input variables.
 
@@ -52,6 +53,9 @@ def data_mining(data,
 
       case_col : string
       The name of the column from the data frame containing the case ids.
+
+      input_labels : an array of strings
+      The names of the input columns from the data frame.
 
       n_cut : int
       The minimum number of cases under which a truth table row is declared as a
@@ -89,11 +93,10 @@ def data_mining(data,
     '''
     res = []
 
-        
-    for i,comb in enumerate(itertools.combinations([x for x in data.columns
-   
-                                                if (x not in output_labels and
-                                                        x!=case_col)],
+    if input_labels is None:
+        input_labels = [x for x in data.columns if (x not in output_labels and
+                                                        x!=case_col)]
+    for i,comb in enumerate(itertools.combinations([x for x in input_labels],
                                                        len_of_tuple)):
         cols = list(comb)
         data_object = cora.OptimizationContext(data,
