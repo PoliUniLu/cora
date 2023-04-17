@@ -1435,12 +1435,14 @@ class IrredundantSystemsMulti():
                                                      in outputs.items()),
 
                               axis=1)
+
             tmp_coresponding_data = tmp_data[mask]
             tmp = tmp_coresponding_data.apply(
                 lambda row_series: row_series.name if all(x in y for x, y in
                                                           zip(row_series.values,
                                                             impl.raw_implicant))
                 else np.NAN, axis=1)
+
             s_in = set(x for x in tmp.values if not np.isnan(x))
             s_out = set()
             if len(sorted_implicants[impl]) > 0:
@@ -1452,10 +1454,11 @@ class IrredundantSystemsMulti():
                                 imp_2.raw_implicant))
                         else np.NAN, axis=1)
                     s_out.update(set(x for x in tmp2.values if not np.isnan(x)))
-            unique_cov.append(len(s_in - s_out) / len(tmp_coresponding_data.index))
 
+
+            unique_cov.append(len(s_in - s_out) / len(tmp_coresponding_data.index))
         return {str(impl_i.implicant): coverage
-                for impl_i, coverage in zip(implicants, unique_cov)}
+                for impl_i, coverage in zip(sorted_implicants, unique_cov)}
 
         # coverage of the system
 
