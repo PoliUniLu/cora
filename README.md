@@ -11,7 +11,7 @@ Combinational Regularity Analysis (CORA) is a member of the family of Configurat
 
 In contrast to QCA and CNA, however, CORA has been inspired by switching circuit analysis, a subfield of electrical engineering. INUS structures and switching circuits have much in common because propositional logic - the language of INUS causation - and switching algebra - the language of switching circuit analysis - are operationally equivalent branches of the same underlying Boolean algebra (Lewin and Protheroe 1992). It is therefore no coincidence that one of the first systematic algorithms for Boolean optimization - the Quine-McCluskey algorithm (McCluskey 1956; Quine 1955) - had been co-developed by an analytical philosopher (Willard Van Orman Quine) and an electrical engineer (Edward J. McCluskey).
 
-Most importantly, CORA is currently the only CCM able to analyze INUS structures that simultaneously feature simple as well as complex effects (e.g., *y* **and** **not** *z*, **not** *y* **and** *z*, *y* **and** *z*). CORA can process such structures even in multi-value form (Mkrtchyan *et al*. 2023). In addition, CORA offers a configurational version of Occam's Razor: a data-mining approach to solution building that reduces model ambiguities by keeping the number of required variables for finding a solution at a minimum. Lastly, CORA includes a lean yet powerful visualization module called LOGIGRAM, with which two-level logic diagrams can be produced from any (system of) Boolean or multi-value function(s) in disjunctive normal form. Logic diagrams considerably outperfrom Venn diagrams, which are standardly used in QCA, when it comes to the visualization and interpretability of INUS structures (Thiem *et al*. 2023).
+Most importantly, CORA is currently the only CCM able to analyze INUS structures that simultaneously feature simple as well as complex effects (e.g., *y* **and** **not** *z*, **not** *y* **and** *z*, *y* **and** *z*). CORA can process such structures even in multi-value form (Mkrtchyan *et al*. 2023). In addition, CORA offers a configurational version of Occam's Razor: a data-mining approach to solution building that reduces model ambiguities by keeping the number of required variables for finding a solution at a minimum. Lastly, CORA includes a lean yet powerful visualization module called LOGIGRAM, with which two-level logic diagrams can be produced from any (system of) Boolean or multi-value function(s) in disjunctive normal form. Logic diagrams considerably outperfrom Venn diagrams, which are often used in QCA, when it comes to the representation and interpretability of INUS structures (Thiem *et al*. 2023).
 
 ## Installation
 
@@ -49,10 +49,10 @@ df = pd.DataFrame([[1,1,0,1],
                    [0,1,0,1]], columns=["A","B","C","OUT"])
 
 context = OptimizationContext(data = df, output_labels = ["OUT"])
-PIs = context.get_prime_implicants() #result: (B, c, #a)
+PIs = context.get_prime_implicants() # result: (B, c, #a); essential prime implicants are marked by prefixed hashtags
 irredundant_solutions = context.get_irredundant_sums() # result: [M1: #a + B, M2: #a + c]
 ```
-The data-mining approach that searches for feasible tuples of solution-generating inputs is another feature of the package.
+Configurational data-mining is another feature of the package. It analyzes all n-tuples of input combinations, and can thus be used to search for feasible tuples of solution-generating inputs. In essense, it is a configurational version of Occam's Razor (Feldman 2016). 
 
 **Example:**
 ```python
@@ -63,7 +63,7 @@ df = pd.DataFrame([[1,2,0,1,1],
                    [1,1,1,0,1],
                    [0,2,1,0,0],
                    [0,2,2,0,1],], columns=["A","B","C","D","OUT"])
-result = cora.data_mining(df, ["OUT"], len_of_tuple= 2, inc_score1= 0.5, n_cut =1 )
+result = cora.data_mining(df, ["OUT"], len_of_tuple = 2, inc_score1 = 0.5, n_cut = 1)
 result # print(result.to_markdown())
 
 |    | Combination   |   Nr_of_systems |   Inc_score |   Cov_score |   Score |
@@ -118,6 +118,7 @@ Pull requests are welcome. Note that, although the current codebase does not hav
 * Baumgartner, Michael. 2008. "Regularity Theories Reassessed." *Philosophia* **36** (3):327-54. [Link](https://doi.org/10.1177/0049124109339)
 * Baumgartner, Michael. 2009. "Inferring Causal Complexity." *Sociological Methods & Research* **38** (1):71-101. [Link](https://doi.org/10.1177/0049124109339)
 * Baumgartner, Michael, and Mathias Ambühl. 2020. "Causal modeling with multi-value and fuzzy-set Coincidence Analysis." *Political Science Research and Methods* **8** (3):526-42. [Link](https://doi.org/10.1017/psrm.2018.45)
+* Feldman, Jacob. 2016. "The Simplicity Principle in Perception and Cognition." *Wiley Interdisciplinary Reviews: Cognitive Science* **7** (5):330-40. [Link](https://doi.org/10.1002/wcs.1406)
 * Lewin, Douglas, and David Protheroe. 1992. *Design of Logic Systems*. 2nd ed. London: Chapman & Hall.
 * Mackie, John L. 1965. "Causes and Conditions." *American Philosophical Quarterly* **2** (4):245-64. [Link](https://www.jstor.org/stable/20009173)
 * McCluskey, Edward J. 1956. "Minimization of Boolean Functions." *Bell Systems Technical Journal* **35** (6):1417-44. [Link](http://onlinelibrary.wiley.com/doi/10.1002/j.1538-7305.1956.tb03835.x/abstract)
