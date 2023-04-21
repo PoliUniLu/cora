@@ -76,7 +76,7 @@ result # print(result.to_markdown())
 |  5 | ['C', 'D']    |               1 |        0.75 |           1 |    0.75 |
 
 ```
-To access more examples see the `/examples` folder or follow [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/PoliUniLu/cora/blob/master/examples/cora_examples_notebook.ipynb)
+To access more examples see the `/examples` folder or follow [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/gist/ZuzanaSebb/800d5d1fce3da66127369ccc7511a122/-cora_1-0-3.ipynb?authuser=1)
 
 
 
