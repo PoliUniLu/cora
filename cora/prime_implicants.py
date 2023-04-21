@@ -1110,7 +1110,33 @@ class OptimizationContext:
 
         self.details = df_implicant
         return self.details
+    def pi_details_experimental(self):
 
+
+        prime_implicants = self.get_prime_implicants()
+
+        cov_x = [(x.implicant,
+                  round(x.coverage_score(), 2),
+                  round(x.inclusion_score(), 2)) for x in prime_implicants]
+
+        if not self.multi_output:
+            irr_sums = self.get_irredundant_sums()
+            new_cols = ["M" + str(x.index) for x in irr_sums]
+            cov_per_impl = [x.impl_cov_score1() for x in irr_sums]
+
+        else:
+            irr_systems = self.get_irredundant_systems()
+            new_cols = ["S" + str(x.index) for x in irr_systems]
+            cov_per_impl = [x.impl_cov_score1() for x in irr_systems]
+
+        df_implicant = pd.DataFrame(cov_x, columns=['PI', 'Cov.r', 'Inc.'])
+        for f_cov_per_impl, f_label in zip(cov_per_impl, new_cols):
+            tmp = [round(f_cov_per_impl[x.implicant], 2) if x.implicant
+                                            in f_cov_per_impl.keys() else None
+                   for x in prime_implicants]
+            df_implicant[f_label] = tmp
+
+        return  df_implicant
 
     def get_irredundant_systems(self):
         """
@@ -1418,11 +1444,14 @@ class IrredundantSystemsMulti():
         input_columns = self.context.input_data.columns
         output_columns = self.context.output_labels
         implicants = self.unique_implicants()
+        #print(implicants)
         sorted_implicants = self.sort_implicants()
+        #print(sorted_implicants)
 
         unique_cov = []
 
-        for impl in sorted_implicants:
+        for impl in implicants:
+            #print("Imp:{}".format(impl))
             tmp_data = data[input_columns]
             outputs = dict()
             for indx,output in enumerate(output_columns):
@@ -1437,6 +1466,7 @@ class IrredundantSystemsMulti():
                               axis=1)
 
             tmp_coresponding_data = tmp_data[mask]
+            #print('Corresponding data:{} '.format(tmp_coresponding_data))
             tmp = tmp_coresponding_data.apply(
                 lambda row_series: row_series.name if all(x in y for x, y in
                                                           zip(row_series.values,
@@ -1444,7 +1474,10 @@ class IrredundantSystemsMulti():
                 else np.NAN, axis=1)
 
             s_in = set(x for x in tmp.values if not np.isnan(x))
+            #print('set in :{}'.format(s_in))
+            #print('set out :{}'.format(s_out))
             s_out = set()
+
             if len(sorted_implicants[impl]) > 0:
                 for imp_2 in sorted_implicants[impl]:
                     tmp2 = tmp_coresponding_data.apply(
@@ -1454,14 +1487,67 @@ class IrredundantSystemsMulti():
                                 imp_2.raw_implicant))
                         else np.NAN, axis=1)
                     s_out.update(set(x for x in tmp2.values if not np.isnan(x)))
+            #print('set out :{}'.format(s_out))
 
 
             unique_cov.append(len(s_in - s_out) / len(tmp_coresponding_data.index))
         return {str(impl_i.implicant): coverage
-                for impl_i, coverage in zip(sorted_implicants, unique_cov)}
+                for impl_i, coverage in zip(implicants, unique_cov)}
 
         # coverage of the system
 
+    def impl_cov_score1(self):
+
+
+        data = self.context.data
+        input_columns = self.context.input_data.columns
+        output_columns = self.context.output_labels
+        implicants = self.unique_implicants()
+        sorted_implicants = self.sort_implicants()
+
+        unique_cov = []
+
+        for impl in sorted_implicants:
+            # print("Imp:{}".format(impl))
+            tmp_data = data[input_columns]
+            outputs = dict()
+            for indx, output in enumerate(output_columns):
+                if int(indx + 1) in impl.outputs:
+                    outputs[output] = 1
+
+            mask = data.apply(lambda row_series: all(row_series[key] == value
+                                                     for key, value
+                                                     in outputs.items()),
+
+                              axis=1)
+
+            tmp_coresponding_data = tmp_data[mask]
+            # print('Corresponding data:{} '.format(tmp_coresponding_data))
+            tmp = tmp_coresponding_data.apply(
+                lambda row_series: row_series.name if all(x in y for x, y in
+                                                          zip(row_series.values,
+                                                              impl.raw_implicant))
+                else np.NAN, axis=1)
+
+            s_in = set(x for x in tmp.values if not np.isnan(x))
+            # print('set in :{}'.format(s_in))
+            s_out = set()
+
+            if len(sorted_implicants[impl]) > 0:
+                for imp_2 in sorted_implicants[impl]:
+                    tmp2 = tmp_coresponding_data.apply(
+                        lambda row_series: row_series.name if all(
+                            x in y for x, y in
+                            zip(row_series.values,
+                                imp_2.raw_implicant))
+                        else np.NAN, axis=1)
+                    s_out.update(set(x for x in tmp2.values if not np.isnan(x)))
+            # print('set out :{}'.format(s_out))
+
+            unique_cov.append(
+                len(s_in - s_out) / len(tmp_coresponding_data.index))
+        return {str(impl_i.implicant): coverage
+                for impl_i, coverage in zip(sorted_implicants, unique_cov)}
     def coverage_score(self):
         
         '''
