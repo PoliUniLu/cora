@@ -558,7 +558,7 @@ class OptimizationContext:
             dim_corrected = [inputs.iloc[:, 0].values]
         else:
             dim = [pd.unique(col.values).tolist() for _, col in
-                   inputs.iteritems()]
+                   inputs.items()]
             dim_corrected = []
             for ar in dim:
                 if len(ar) > 1:
