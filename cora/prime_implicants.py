@@ -951,7 +951,7 @@ class OptimizationContext:
                                        for x in prime_implicants]).astype(int)
         self.pi_chart = pd.DataFrame(
             res.transpose(),
-            columns = cares,
+            columns = list(cares),
             index = [(x.implicant) for x in prime_implicants]).astype(int)
         return self.pi_chart
 

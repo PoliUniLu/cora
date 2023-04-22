@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "cora"
-version = "1.0.0"
+version = "1.0.1"
 description = "Boolean minimization algorithms library"
 authors = ["Zuzana Sebechlebská <zuzanasebechlebska@gmail.com>"]
 readme = "README.md"
