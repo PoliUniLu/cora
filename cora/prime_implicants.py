@@ -946,7 +946,7 @@ class OptimizationContext:
                 res[column_nr, row_nr] = True
         if self.multi_output:
             return pd.DataFrame(res.transpose(),
-                                columns = cares,
+                                columns = list(cares),
                                 index = ['{}, {}'.format(x.implicant, x.outputs)
                                        for x in prime_implicants]).astype(int)
         self.pi_chart = pd.DataFrame(
@@ -1177,7 +1177,6 @@ class OptimizationContext:
             return self.irredundant_systems
 
         prime_implicants = self.get_prime_implicants()
-
         if not self.multi_output:
             raise RuntimeError("irredudant systems are not supported in single\
                            output mode. Use get_irredundant_sums")
@@ -1185,6 +1184,8 @@ class OptimizationContext:
 
         mult_input = [set(frozenset(imp for imp in irs) for irs in f) for f in
                       res]
+        if len(mult_input) == 0:
+            return []
         reduction_result = reduce(_boolean_multiply, mult_input)
         res = []
         index = 0
