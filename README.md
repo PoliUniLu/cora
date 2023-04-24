@@ -28,8 +28,8 @@ It is recommended to install the package into a dedicated virtual environment.
 ## Google Colab
 
 To open CORA with a graphical interface in Google Colab, click the button below:
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/gist/ZuzanaSebb/aae880e37c5d0f32f9908daaba5bc6a0/-cora_1-0-3.ipynb?authuser=1)
 
-[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)]([ynb?authuser=1](https://colab.research.google.com/gist/ZuzanaSebb/6894786750a72e168300ef5089474e94/-cora_1-0-3.ipynb?authuser=1#scrollTo=8RJnIwZ9n9S8))
 ## Usage
 The main features of the package are part of the `OptimizationContext` class, including functions:
 - `get_prime_implicants`,
@@ -78,7 +78,8 @@ result # print(result.to_markdown())
 |  5 | ['C', 'D']    |               1 |        0.75 |           1 |    0.75 |
 
 ```
-To access more examples see the `/examples` folder or follow [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/PoliUniLu/cora/blob/master/examples/cora_examples_notebook.ipynb)
+To access more examples see the `/examples` folder or follow 
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/PoliUniLu/cora/blob/master/examples/cora_examples_notebook.ipynb)
 
 
 
