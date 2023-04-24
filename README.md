@@ -29,7 +29,7 @@ It is recommended to install the package into a dedicated virtual environment.
 
 To open CORA with a graphical interface in Google Colab, click the button below:
 
-[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/gist/ZuzanaSebb/5be1d13cd20c194ed264dec9dc30c8a3/-cora_1-0-3.ipynb?authuser=1)
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)]([ynb?authuser=1](https://colab.research.google.com/gist/ZuzanaSebb/7ecb3ad6ea99999ad6c72d8943e46c6a/-cora_1-0-3.ipynb?authuser=1))
 ## Usage
 The main features of the package are part of the `OptimizationContext` class, including functions:
 - `get_prime_implicants`,
