@@ -89,13 +89,4 @@ class OptimizationContext_tests(unittest.TestCase):
         self.assertEqual(result.to_dict(),expected_result)
 
 
-    def test_cov(self):
-        data = pd.read_csv("data/new_data_cov.csv")
-        print(data)
-        context = OptimizationContext(data,["y","z"],case_col='ID',inc_score1=0.5)
-        pi = context.pi_details()
-        pi_e = context.pi_details_experimental()
-        print(pi)
-        print(pi_e)
-
 
