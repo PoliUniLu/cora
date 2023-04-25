@@ -1481,7 +1481,7 @@ class IrredundantSystemsMulti():
 
         unique_cov = []
 
-        for impl in sorted_implicants:
+        for impl in implicants:
             # print("Imp:{}".format(impl))
             tmp_data = data[input_columns]
             outputs = dict()
@@ -1521,7 +1521,7 @@ class IrredundantSystemsMulti():
             unique_cov.append(
                 len(s_in - s_out) / len(tmp_coresponding_data.index))
         return {str(impl_i.implicant): coverage
-                for impl_i, coverage in zip(sorted_implicants, unique_cov)}
+                for impl_i, coverage in zip(implicants, unique_cov)}
     def coverage_score(self):
         
         '''
