@@ -1094,12 +1094,12 @@ class OptimizationContext:
         if not self.multi_output:
             irr_sums = self.get_irredundant_sums()
             new_cols = ["M" + str(x.index) for x in irr_sums]
-            cov_per_impl = [x.impl_cov_score() for x in irr_sums]
+            cov_per_impl = [x.impl_cov_score1() for x in irr_sums]
 
         else:
             irr_systems = self.get_irredundant_systems()
             new_cols = ["S" + str(x.index) for x in irr_systems]
-            cov_per_impl = [x.impl_cov_score() for x in irr_systems]
+            cov_per_impl = [x.impl_cov_score1() for x in irr_systems]
 
         df_implicant = pd.DataFrame(cov_x, columns=['PI', 'Cov.r', 'Inc.'])
         for f_cov_per_impl, f_label in zip(cov_per_impl, new_cols):
@@ -1990,8 +1990,7 @@ class ImplicantMultiOutput:
         for indx,output in enumerate(self.context.output_labels):
                if int(indx+1) in self.outputs:
                     outputs_complex[output] = 1
-               else:
-                    outputs_complex[output] = 0
+
         mask = data.apply(lambda row_series: all(row_series[key] == value
                                                      for key , value
                                                     in outputs_complex.items()),
@@ -2006,6 +2005,7 @@ class ImplicantMultiOutput:
                                                   self.raw_implicant))
                                     else 0.0, axis=1).mean()
         return self.cov_score
+
 
     def inclusion_score(self):
         '''

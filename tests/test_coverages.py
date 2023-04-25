@@ -1,7 +1,7 @@
 import unittest
 import pandas as pd
 import os
-from cora import OptimizationContext
+from cora import OptimizationContext,data_mining
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def fpath(fname):
@@ -87,5 +87,15 @@ class OptimizationContext_tests(unittest.TestCase):
         expected_result = {'Cov.': {'Solution details': 1.0},
                            'Inc.': {'Solution details': 1.0}}
         self.assertEqual(result.to_dict(),expected_result)
+
+
+    def test_cov(self):
+        data = pd.read_csv("data/new_data_cov.csv")
+        print(data)
+        context = OptimizationContext(data,["y","z"],case_col='ID',inc_score1=0.5)
+        pi = context.pi_details()
+        pi_e = context.pi_details_experimental()
+        print(pi)
+        print(pi_e)
 
 

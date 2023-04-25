@@ -23,19 +23,26 @@ class TestPrimeImplicants(unittest.TestCase):
         data = pd.DataFrame([[1,0,1,0,1],[1,0,0,0,1],[0,1,0,1,1],[0,0,1,1,0]],
                             columns = ["A","B","C","Y","X"])
 
-        data_mining_on_off = data_mining(data,["Y","X"],2,algorithm="ON-OFF")
-        data_mining_on_dc = data_mining(data, ["Y","X"], 2,algorithm="ON-DC")
+        data_mining_on_off = data_mining(data,["Y","X"],1,algorithm="ON-OFF")
+        print(data_mining_on_off)
+        data_mining_on_dc = data_mining(data, ["Y","X"], 1,algorithm="ON-DC")
 
         assert_frame_equal(data_mining_on_dc,data_mining_on_off)
     def test_data_mining_single_output(self):
         data =  pd.read_csv(fpath('data/data_mining_tests.csv'))
         print(data)
 
-        res = data_mining(data, ["XWES3{1}"], 2,
+        res_on_off = data_mining(data, ["XWES3{1}"], 2,
                           input_labels=["XNS3","XPS3","XGHG3"],
                           case_col='COUNTRY',
                           inc_score1=0.5,
                           algorithm="ON-OFF")
+        res_on_dc = data_mining(data, ["XWES3{1}"], 2,
+                          input_labels=["XNS3","XPS3","XGHG3"],
+                          case_col='COUNTRY',
+                          inc_score1=0.5,
+                          algorithm="ON-DC")
+        assert_frame_equal(res_on_dc, res_on_off)
 
 
 if __name__ == '__main__':
