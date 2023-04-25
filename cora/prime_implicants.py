@@ -1122,7 +1122,7 @@ class OptimizationContext:
         if not self.multi_output:
             irr_sums = self.get_irredundant_sums()
             new_cols = ["M" + str(x.index) for x in irr_sums]
-            cov_per_impl = [x.impl_cov_score1() for x in irr_sums]
+            cov_per_impl = [x.impl_cov_score() for x in irr_sums]
 
         else:
             irr_systems = self.get_irredundant_systems()
