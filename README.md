@@ -28,6 +28,7 @@ It is recommended to install the package into a dedicated virtual environment.
 ## Google Colab
 
 To open CORA with a graphical interface in Google Colab, click the button below:
+
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/gist/ZuzanaSebb/7b53b37c55c4e26c5582d13c0558691f/-cora_1-0-3.ipynb)
 
 ## Usage
@@ -51,10 +52,10 @@ df = pd.DataFrame([[1,1,0,1],
                    [0,1,0,1]], columns=["A","B","C","OUT"])
 
 context = OptimizationContext(data = df, output_labels = ["OUT"])
-PIs = context.get_prime_implicants() # result: (B, c, #a); essential prime implicants are marked by prefixed hashtags
+PIs = context.get_prime_implicants() # result: {B, c, #a}; essential prime implicants marked by hashtags
 irredundant_solutions = context.get_irredundant_sums() # result: [M1: #a + B, M2: #a + c]
 ```
-Configurational data-mining is another feature of the package. It analyzes all n-tuples of input combinations, and can thus be used to search for feasible tuples of solution-generating inputs. In essense, it is a configurational version of Occam's Razor (Feldman 2016). 
+Configurational data-mining is another feature. It analyzes all n-tuples of input combinations to search for feasible tuples of solution-generating inputs. In essence, this feature thus provides a configurational version of Occam's Razor (Feldman 2016). 
 
 **Example:**
 ```python
@@ -78,7 +79,7 @@ result # print(result.to_markdown())
 |  5 | ['C', 'D']    |               1 |        0.75 |           1 |    0.75 |
 
 ```
-To access more examples see the `/examples` folder or follow 
+To access more examples, see the `/examples` folder or follow 
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/PoliUniLu/cora/blob/master/examples/cora_examples_notebook.ipynb)
 
 
