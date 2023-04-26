@@ -1400,7 +1400,7 @@ class IrredundantSystemsMulti():
                     res[imp1].append(imp2)
 
                 elif (len(imp1.outputs) > 1
-                      and set(imp1.outputs) == set(imp2.outputs)
+                      and set(imp1.outputs).issubset(imp2.outputs)
                       and imp1 != imp2):
                     res[imp1].append(imp2)
         return res
