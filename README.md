@@ -29,7 +29,7 @@ It is recommended to install the package into a dedicated virtual environment.
 
 To open CORA with a graphical interface in Google Colab, click the button below:
 
-[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/gist/ZuzanaSebb/a3252201a37712e449a30ac169346fe6/cora_2-0-1_tests.ipynb)
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/gist/ZuzanaSebb/5803f0943e1b0b94c3b9b8ad930c140b/cora_2-0-1.ipynb?authuser=1)
 
 ## Usage
 The main features of the package are part of the `OptimizationContext` class, including functions:
