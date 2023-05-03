@@ -465,11 +465,12 @@ class OptimizationContext:
             if (self.U != 0 and self.U != 1):
                 raise Exception('U must be 0 or 1.')
             if (self.U == 1):
-                data_grouped[self.output_labels] = (data_grouped[inc_columns] >
-                                                    self.inc_score1).astype(int)
-            if (self.U == 0):
                 data_grouped[self.output_labels] = (data_grouped[inc_columns] >=
                                                     self.inc_score2).astype(int)
+
+            if (self.U == 0):
+                data_grouped[self.output_labels] = (data_grouped[inc_columns] >=
+                                                    self.inc_score1).astype(int)
 
         res = data_grouped.reset_index()
         if self.rename_columns:
