@@ -29,7 +29,7 @@ It is recommended to install the package into a dedicated virtual environment.
 
 To open CORA with a graphical interface in Google Colab, click the button below:
 
-[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/gist/ZuzanaSebb/82e71d7a1d76f2504ed182fbca0a96cc/cora_2-0-3.ipynb)
+[![Open in Colab](https://github.com/PoliUniLu/cora/figures/colab_badge.svg)])](https://colab.research.google.com/gist/ZuzanaSebb/82e71d7a1d76f2504ed182fbca0a96cc/cora_2-0-3.ipynb)
 
 ## Usage
 The main features of the package are part of the `OptimizationContext` class, including functions:
@@ -80,7 +80,7 @@ result # print(result.to_markdown())
 
 ```
 To access more examples, see the `/examples` folder or follow 
-[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/PoliUniLu/cora/blob/master/examples/cora_examples_notebook.ipynb)
+[![Open in Colab](https://github.com/PoliUniLu/cora/figures/colab_badge.svg)](https://colab.research.google.com/github/PoliUniLu/cora/blob/master/examples/cora_examples_notebook.ipynb)
 
 
 
@@ -94,7 +94,7 @@ Thiem, Alrik, Lusine Mkrtchyan, and Zuzana Sebechlebská. 2022. "Combinational R
 
 **Software:**
 
-Sebechlebská, Zuzana, Lusine Mkrtchyan and Alrik Thiem. 2022. CORA: A Python package for Combinational Regularity Analysis, Version <*current version number*>. Available from: https://github.com/PoliUniLu/cora.
+Sebechlebská, Zuzana, Lusine Mkrtchyan and Alrik Thiem. 2023. CORA and LOGIGRAM: A Duo of Python Packages for Combinational Regularity Analysis (CORA)." *JOSS: The Journal of Open Source Software* **8** (85):5019. [Link](https://doi.org/10.21105/joss.05019)
 
 
 ## Copyright
