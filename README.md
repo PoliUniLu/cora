@@ -34,6 +34,7 @@ To open CORA with a graphical interface in Google Colab, click the button below:
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/gist/ZuzanaSebb/82e71d7a1d76f2504ed182fbca0a96cc/cora_2-0-3.ipynb)
 
 
+
 ## Usage
 The main features of the package are part of the `OptimizationContext` class, including functions:
 - `get_prime_implicants`,
