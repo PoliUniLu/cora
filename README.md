@@ -2,6 +2,7 @@
 [![Tests](https://github.com/PoliUniLu/cora/workflows/Cora/badge.svg)](https://github.com/PoliUniLu/cora/actions?workflow=Cora)
 [![codecov](https://codecov.io/github/PoliUniLu/cora/branch/master/graph/badge.svg?token=36V7QBSJI3)](https://codecov.io/github/PoliUniLu/cora)
 [![DOI](https://zenodo.org/badge/289114682.svg)](https://zenodo.org/badge/latestdoi/289114682)
+[![status](https://joss.theoj.org/papers/ce3956e82d1ee4f1d17a9d204e7566be/status.svg)](https://joss.theoj.org/papers/ce3956e82d1ee4f1d17a9d204e7566be)
 
 
 
@@ -30,6 +31,7 @@ It is recommended to install the package into a dedicated virtual environment.
 To open CORA with a graphical interface in Google Colab, click the button below:
 
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/gist/ZuzanaSebb/82e71d7a1d76f2504ed182fbca0a96cc/cora_2-0-3.ipynb)
+
 
 ## Usage
 The main features of the package are part of the `OptimizationContext` class, including functions:
