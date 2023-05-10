@@ -84,7 +84,7 @@ result # print(result.to_markdown())
 
 ```
 To access more examples, see the `/examples` folder or follow 
-[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/PoliUniLu/cora/blob/master/examples/cora_examples_notebook.ipynb)
+[![Open in Colab](/figures/colab_badge.svg)](https://colab.research.google.com/github/PoliUniLu/cora/blob/master/examples/cora_examples_notebook.ipynb)
 
 
 
