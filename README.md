@@ -5,7 +5,7 @@
 [![status](https://joss.theoj.org/papers/ce3956e82d1ee4f1d17a9d204e7566be/status.svg)](https://joss.theoj.org/papers/ce3956e82d1ee4f1d17a9d204e7566be)
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/gist/ZuzanaSebb/82e71d7a1d76f2504ed182fbca0a96cc/cora_2-0-3.ipynb)
 <br/><br/>
-![image](/figures/CORA_white.svg)
+<img src="/figures/CORA_white.svg" alt="logo" width="400"/>
 
 
 CORA is a Python library for **Combinational Regularity Analysis** (CORA). 
