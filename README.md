@@ -35,7 +35,7 @@ It is recommended to install the package into a dedicated virtual environment.
 
 To open CORA with a graphical interface in Google Colab, click the button below:
 
-[![Open in Colab](/figures/colab_badge.svg)](https://colab.research.google.com/gist/ZuzanaSebb/82e71d7a1d76f2504ed182fbca0a96cc/cora_2-0-3.ipynb)
+[![Open in Colab](/figures/colab_badge.svg)](https://colab.research.google.com/gist/ZuzanaSebb/9201f49b76a5b0b61330ab7e8be02d04/cora_2-0-4.ipynb)
 
 
 
