@@ -88,7 +88,7 @@ result # print(result.to_markdown())
 
 ```
 To access more examples, see the `/examples` folder or follow 
-[![Open in Colab](/figures/colab_badge.svg)](https://colab.research.google.com/gist/ZuzanaSebb/c489a37755021e74d996e56bfb027273/cora_examples_notebook.ipynb)
+[![Open in Colab](/figures/colab_badge.svg)](https://colab.research.google.com/gist/AlrikThiem/34c01eb6982028583a63242df8c9e7c0/cora_examples_notebook.ipynb)
 
 
 
