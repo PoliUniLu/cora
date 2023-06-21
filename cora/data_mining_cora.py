@@ -36,7 +36,8 @@ def data_mining(data,
                 inc_score1 = 1,
                 inc_score2 = None,
                 U = None,
-                algorithm = "ON-DC"):
+                algorithm = "ON-DC",
+                automatic = False):
     '''
       Function performing data mining on a subset of input variables.
 
@@ -72,6 +73,10 @@ def data_mining(data,
 
       algorithm : string
       The name of the optimization algorithm
+
+      automatic : boolean
+      If true the function will return the first non-zero solution approached by
+      the data-mining search.
 
       Returns
       -------
@@ -143,11 +148,27 @@ def data_mining(data,
                                      'Inc_score',
                                      'Cov_score',
                                      'Score'])
-          
-    return result
+
+    if not automatic or sum(result['Nr_of_systems'])!=0 or len_of_tuple >= len(input_labels):
+        return result
+
+
+
+    else:
+        return data_mining(data,
+                           output_labels,
+                           len_of_tuple + 1,
+                           input_labels,
+                           case_col,
+                           n_cut,
+                           inc_score1,
+                           inc_score2,
+                           U,
+                           algorithm,
+                           automatic)
 
 
 if __name__ == '__main__':
-    df = pd.DataFrame([[1,1,0,1,1,1],[0,1,1,1,0,1],[0,0,1,0,0,1],[1,0,1,1,0,1]],
-                      columns = ["A","B","C","D","Z","P"])
-    print(data_mining(df,['Z','P'],2))
+    df = pd.DataFrame([[1,1,0,0],[0,1,1,0],[0,0,1,0],[1,0,1,1]],
+                      columns = ["A","B","C","Z"])
+    print(data_mining(df,['Z'],1,automatic = True))

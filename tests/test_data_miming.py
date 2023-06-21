@@ -43,6 +43,23 @@ class TestPrimeImplicants(unittest.TestCase):
                           inc_score1=0.5,
                           algorithm="ON-DC")
         assert_frame_equal(res_on_dc, res_on_off)
+    def test_data_mining_automatic(self):
+        data = pd.read_csv(fpath('data/testdata1.csv'))
+        res_on_off_automatic = data_mining(data, ["S"], 1,
+                                 input_labels=["C",  "R" ,"L"  ,"E"],
+                                 case_col='Case',
+                                 inc_score1=0.8,
+                                 algorithm="ON-OFF",
+                                 automatic = True)
+        res_on_dc_nonautomatic = data_mining(data, ["S"], 2,
+                                 input_labels=["C",  "R" ,"L"  ,"E"],
+                                 case_col='Case',
+                                 inc_score1=0.8,
+                                 algorithm="ON-DC"
+                                 )
+
+        assert_frame_equal(res_on_dc_nonautomatic, res_on_off_automatic)
+
 
 
 if __name__ == '__main__':
