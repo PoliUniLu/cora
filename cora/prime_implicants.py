@@ -1311,7 +1311,7 @@ incl_score : float
  
 """
 class IrredundantSystemsMulti():
-    # Class where self represents just one single system
+    # Class where 'self' represents just one single system
     # the whole solution is composed of these systems
 
     def __init__(self, context, system_multiple, index
@@ -1410,7 +1410,7 @@ class IrredundantSystemsMulti():
         
         '''
         Return:
-        Float value, representing the proportion of instantiations of the implicant among
+        Float value, representing the proportion of instantiations of the prime implicant among
         all instantiations of the (corresponding) outcomes, combinations of outcomes, respectively, 
         unique to the implicant.
         '''
@@ -1523,6 +1523,7 @@ class IrredundantSystemsMulti():
                 len(s_in - s_out) / len(tmp_coresponding_data.index))
         return {str(impl_i.implicant): coverage
                 for impl_i, coverage in zip(implicants, unique_cov)}
+    
     def coverage_score(self):
         
         '''
@@ -1555,8 +1556,8 @@ class IrredundantSystemsMulti():
     def inclusion_score(self):
         '''
         Return:
-        Float value, representing the proportion of instantiations of the disjunction of implicants
-        in conjunction with the outcomes among all instantiations of the disjunction of implicants.
+        Float value, representing the proportion of instantiations of the disjunction of prime implicants
+        in conjunction with the outcomes among all instantiations of the disjunction of prime implicants.
         '''
         if self.incl_score is None:
             data = self.context.data
@@ -1687,7 +1688,7 @@ class IrredundantSystem():
         
         '''
         Return:
-        Float value, representing the proportion of instantiations of the implicant among
+        Float value, representing the proportion of instantiations of the disjunction of the prime implicants among
         all instantiations of the outcome.
         '''
         
@@ -1708,8 +1709,8 @@ class IrredundantSystem():
     
         '''
         Return:
-        Float value, representing the proportion of instantiations of the disjunction of implicants
-        in conjunction with the outcome among all instantiations of the disjunction of implicants.
+        Float value, representing the proportion of instantiations of the disjunction of prime implicants
+        in conjunction with the outcome among all instantiations of the disjunction of prime implicants.
         '''
         
         data = self.context.data
@@ -1946,8 +1947,8 @@ class ImplicantMultiOutput:
         
         '''
         Return:
-        Float value, representing the proportion of instantiations of the implicant among
-        all instantiations of the outcomes.
+        Float value, representing the proportion of instantiations of the prime implicant among
+        all instantiations of the outcomes to which the prime implicant refers.
         '''
         
         data = self.context.data
@@ -1984,8 +1985,8 @@ class ImplicantMultiOutput:
     def inclusion_score(self):
         '''
         Return:
-        Float value, representing the proportion of instantiations of the implicant
-        in conjunction with the outcomes among all instantiations of the implicant.
+        Float value, representing the proportion of instantiations of the prime implicant
+        in conjunction with the outcomes that the prime implicant refers to among all instantiations of the implicant.
         '''
         data = self.context.data
         input_columns = self.context.input_data.columns
@@ -2030,12 +2031,12 @@ class ImplicantMultiOutput:
 
 class Implicant:
     """
-     Class Implicant  refers to a prime implicant and its properties.
+     Class Implicant refers to a prime implicant and its properties.
      Parameters
      ----------
      context : object
-               An object of the  OptimizationContext class
-               to which the implacant refers.
+               An object of the OptimizationContext class
+               to which the implicant refers.
                It contains the original data, output_labels,
                input_labels etc...
 
@@ -2043,12 +2044,12 @@ class Implicant:
                 Each set corresponds to one input variabels.
 
       raw_implicant  : an array of sets of number
-                       An arrbitrary representation of an implicant containing
+                       An arbitrary representation of an implicant containing
                        some additional information.
 
       coverage : set of numbers
-                 The set  of the indexes of the truth table,
-                 which are covered by the implicant. (Columns of PI chart.)
+                 The set of the indexes of the truth table,
+                 which are covered by the prime implicant (columns of PI chart.)
 
       cov_u : float
           statistical value
@@ -2080,7 +2081,7 @@ class Implicant:
     def coverage_score(self):
         '''
         Return:
-        Float value, representing the proportion of instantiations of the implicant among
+        Float value, representing the proportion of instantiations of the prime implicant among
         all instantiations of the outcome.
         '''
         data = self.context.data
@@ -2102,8 +2103,8 @@ class Implicant:
     def inclusion_score(self):
         '''
         Return:
-        Float value, representing the proportion of instantiations of the implicant
-        in conjunction with the outcome among all instantiations of the implicant.
+        Float value, representing the proportion of instantiations of the prime implicant
+        in conjunction with the outcome among all instantiations of the prime implicant.
         '''
         data = self.context.data
         input_columns = self.context.input_data.columns
