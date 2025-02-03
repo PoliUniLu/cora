@@ -6,7 +6,7 @@ authors = ["Zuzana Sebechlebská <zuzanasebechlebska@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.11"
+python = ">=3.8,<3.12"
 nativepetric = {git = "https://github.com/PoliUniLu/petric.git"}
 numpy = "==1.22"
 pandas = "==1.5.3"
