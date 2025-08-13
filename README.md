@@ -6,7 +6,7 @@
 [![DOI](https://zenodo.org/badge/289114682.svg)](https://zenodo.org/badge/latestdoi/289114682)
 [![status](https://joss.theoj.org/papers/ce3956e82d1ee4f1d17a9d204e7566be/status.svg)](https://joss.theoj.org/papers/ce3956e82d1ee4f1d17a9d204e7566be)
 
-[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/gist/ZuzanaSebb/815ea245ac21cf8b3d2bf61c4790d18f/cora_2-0-15.ipynb)
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/gist/ZuzanaSebb/5bcfdd7f29c07a43c9aef94b9273d902/copy-of-cora_2-0-15.ipynb)
 <br/><br/>
 <img src="/figures/CORA_white.svg" alt="logo" width="400"/>
 
@@ -35,7 +35,7 @@ It is recommended to install the package into a dedicated virtual environment.
 
 To open CORA with a graphical interface in Google Colab, click the button below:
 
-[![Open in Colab](/figures/colab_badge.svg)](https://colab.research.google.com/gist/ZuzanaSebb/815ea245ac21cf8b3d2bf61c4790d18f/cora_2-0-15.ipynb)
+[![Open in Colab](/figures/colab_badge.svg)](https://colab.research.google.com/gist/ZuzanaSebb/5bcfdd7f29c07a43c9aef94b9273d902/copy-of-cora_2-0-15.ipynb)
 
 
 
