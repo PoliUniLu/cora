@@ -107,7 +107,7 @@ def on_off_grouping_mo(table, outputs):
 
     offset = table[offset_index]
     offset_data = offset[input_columns].apply(tuple, axis=1)
-    offset_tags_tmp = offset[outputs].applymap(lambda x: 1 if x == 0 else 0)
+    offset_tags_tmp = offset[outputs].map(lambda x: 1 if x == 0 else 0)
 
     offset_tags = offset_tags_tmp.apply(tuple, axis=1)
 

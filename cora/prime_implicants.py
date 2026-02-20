@@ -1529,7 +1529,7 @@ class IrredundantSystemsMulti:
                     if all(
                         x in y for x, y in zip(row_series.values, impl.raw_implicant)
                     )
-                    else np.NAN
+                    else np.nan
                 ),
                 axis=1,
             )
@@ -1548,7 +1548,7 @@ class IrredundantSystemsMulti:
                                 x in y
                                 for x, y in zip(row_series.values, imp_2.raw_implicant)
                             )
-                            else np.NAN
+                            else np.nan
                         ),
                         axis=1,
                     )
@@ -1596,7 +1596,7 @@ class IrredundantSystemsMulti:
                     if all(
                         x in y for x, y in zip(row_series.values, impl.raw_implicant)
                     )
-                    else np.NAN
+                    else np.nan
                 ),
                 axis=1,
             )
@@ -1614,7 +1614,7 @@ class IrredundantSystemsMulti:
                                 x in y
                                 for x, y in zip(row_series.values, imp_2.raw_implicant)
                             )
-                            else np.NAN
+                            else np.nan
                         ),
                         axis=1,
                     )
